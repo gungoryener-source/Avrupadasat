@@ -159,8 +159,7 @@ try {
   await cp.getByLabel("Doğrulama kodu").fill("000000");
   await cp.getByRole("button", { name: "Doğrula" }).click();
   await cp.getByText("Kod hatalı").waitFor();
-  await cp.getByLabel("Doğrulama kodu").fill(totp(secret));
-  await cp.getByRole("button", { name: "Doğrula" }).click();
+  await enterTotp(cp, secret);
   await cp.waitForURL(`${BASE}/panel`);
   s.ok();
 

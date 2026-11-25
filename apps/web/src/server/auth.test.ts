@@ -67,10 +67,27 @@ describe.skipIf(!process.env.DATABASE_URL)("kimlik doğrulama", () => {
     expect((await readSession(r.token))?.twoFactorPassed).toBe(false);
     expect(await passTwoFactor(r.token, "111111", null)).toBeNull();
     const u = await db().user.findUniqueOrThrow({ where: { id: userId } });
-    const fresh = await passTwoFactor(r.token, totp(decryptField(u.twoFactorSecretEnc!)), null);
+    // Kurulumda kullanılan kod tekrar kabul edilmez; bir sonraki zaman adımının kodu kullanılır
+    const fresh = await passTwoFactor(
+      r.token,
+      totp(decryptField(u.twoFactorSecretEnc!), Date.now() + 30_000),
+      null,
+    );
     expect(fresh).toBeTruthy();
     expect(await readSession(r.token)).toBeNull();
     expect((await readSession(fresh))?.twoFactorPassed).toBe(true);
+  });
+
+  it("aynı 2FA kodu ikinci kez kullanılamaz (tekrar oynatma koruması)", async () => {
+    const u = await db().user.findUniqueOrThrow({ where: { id: userId } });
+    const secret = decryptField(u.twoFactorSecretEnc!);
+    await db().user.update({ where: { id: userId }, data: { lastTotpStep: null } });
+    const code = totp(secret);
+    const a = await login(email, PW, nextIp());
+    const b = await login(email, PW, nextIp());
+    if (!a.ok || !b.ok) throw new Error("giriş");
+    expect(await passTwoFactor(a.token, code, null)).toBeTruthy();
+    expect(await passTwoFactor(b.token, code, null)).toBeNull();
   });
 
   it(`${MAX_FAILED} hatalı denemeden sonra hesap kilitlenir; doğru şifre de reddedilir`, async () => {

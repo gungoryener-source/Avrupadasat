@@ -46,6 +46,17 @@ async function user(
 async function main() {
   await prisma.tenant.deleteMany({ where: { slug: { in: ["e2e-tekstil", "e2e-diger"] } } });
   await prisma.rateLimit.deleteMany({});
+  // Aşama 1 testi demo yöneticinin 2FA kurulumunu baştan yapar
+  await prisma.user.updateMany({
+    where: { email: "admin@avrupadasat.local" },
+    data: {
+      twoFactorSecretEnc: null,
+      twoFactorEnabledAt: null,
+      lastTotpStep: null,
+      failedLogins: 0,
+      lockedUntil: null,
+    },
+  });
   const tenant = await prisma.tenant.create({
     data: {
       name: "E2E Tekstil",

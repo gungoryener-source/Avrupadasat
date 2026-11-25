@@ -112,7 +112,23 @@ export async function login(page, email, password, secret) {
   await page.getByLabel("Şifre").fill(password);
   await page.getByRole("button", { name: "Giriş yap" }).click();
   await page.waitForURL(/\/giris\/2fa/);
-  await page.getByLabel("Doğrulama kodu").fill(totp(secret));
-  await page.getByRole("button", { name: "Doğrula" }).click();
+  await enterTotp(page, secret);
   await page.waitForURL(/\/(panel|admin)/);
+}
+
+/** Aynı kod bir kez kullanılabildiği için reddedilirse bir sonraki 30 sn'lik adımı bekler */
+export async function enterTotp(page, secret) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await page.getByLabel("Doğrulama kodu").fill(totp(secret));
+    await page.getByRole("button", { name: "Doğrula" }).click();
+    const r = await Promise.race([
+      page.waitForURL(/\/(panel|admin)/, { timeout: 8000 }).then(() => "ok"),
+      page
+        .getByText("Kod hatalı")
+        .waitFor({ timeout: 8000 })
+        .then(() => "err"),
+    ]).catch(() => "timeout");
+    if (r === "ok") return;
+    await page.waitForTimeout(30_000 - (Date.now() % 30_000) + 500);
+  }
 }

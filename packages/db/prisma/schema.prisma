@@ -114,6 +114,8 @@ model User {
   /// TOTP sırrı, AES-256-GCM ile şifreli
   twoFactorSecretEnc String?
   twoFactorEnabledAt DateTime?
+  /// Son kabul edilen TOTP zaman adımı (aynı kodun tekrar kullanımını engeller)
+  lastTotpStep     Int?
   failedLogins     Int        @default(0)
   lockedUntil      DateTime?
   lastLoginAt      DateTime?
@@ -640,4 +642,66 @@ model Invoice {
   tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, period])
+}
+
+enum MessageStatus {
+  NEW
+  DRAFTED
+  SENT
+  CLOSED
+}
+
+/// Pazaryeri alıcı mesajı. Yapay zekâ yalnız TASLAK üretir; gönderim insan onayıyla.
+model CustomerMessage {
+  id          String        @id @default(cuid())
+  tenantId    String
+  channel     SalesChannel
+  externalId  String
+  orderRef    String?
+  buyerName   String
+  subject     String
+  bodyDe      String
+  bodyTr      String?
+  draftDe     String?
+  draftTr     String?
+  status      MessageStatus @default(NEW)
+  aiModel     String?
+  sentAt      DateTime?
+  sentById    String?
+  receivedAt  DateTime      @default(now())
+
+  @@unique([tenantId, channel, externalId])
+  @@index([tenantId, status, receivedAt])
+}
+
+/// Almanca ürün içeriği: Türkçe girdi → yapay zekâ taslağı → insan onayı
+model ProductContent {
+  id            String    @id @default(cuid())
+  tenantId      String
+  sku           String
+  titleTr       String
+  featuresTr    String
+  titleDe       String?
+  bulletsDe     String?
+  descriptionDe String?
+  status        String    @default("DRAFT")
+  aiModel       String?
+  approvedById  String?
+  approvedAt    DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, sku])
+}
+
+/// Mobil uygulama erişim token'ı (yalnız hash saklanır)
+model ApiToken {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  name       String
+  lastUsedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
 }

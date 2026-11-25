@@ -21,6 +21,8 @@ export const TENANT_SCOPED_MODELS = new Set([
   "Disbursement",
   "StorageSnapshot",
   "Invoice",
+  "CustomerMessage",
+  "ProductContent",
 ]);
 
 const READ_OPS = new Set([

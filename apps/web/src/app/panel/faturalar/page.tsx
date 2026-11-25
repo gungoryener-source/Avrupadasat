@@ -16,6 +16,11 @@ export default async function InvoicesPage() {
   return (
     <>
       <h1>Faturalar</h1>
+      <p style={{ fontSize: 14 }}>
+        <a href={`/panel/oss?donem=${new Date().toISOString().slice(0, 7)}`} download>
+          Bu ayın ülke bazında satış raporu (OSS beyanı için, CSV)
+        </a>
+      </p>
       <table className="tbl">
         <thead>
           <tr>

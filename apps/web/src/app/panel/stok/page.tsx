@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { forTenant } from "@avrupadasat/db";
 import { fmtDate } from "@/components/AppShell";
 import { db } from "@/server/db";
@@ -66,11 +67,13 @@ export default async function StockPage({
                 </b>
               </td>
               <td>
-                {i.contentApprovedAt ? (
-                  <span className="tag ok">Onaylı</span>
-                ) : (
-                  <span className="tag warn">Bekliyor</span>
-                )}
+                <Link href={`/panel/icerik/${encodeURIComponent(i.sku)}`}>
+                  {i.contentApprovedAt ? (
+                    <span className="tag ok">Onaylı</span>
+                  ) : (
+                    <span className="tag warn">Hazırla</span>
+                  )}
+                </Link>
               </td>
               <td>{fmtDate(i.updatedAt)}</td>
             </tr>
