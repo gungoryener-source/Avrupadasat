@@ -106,3 +106,25 @@ jobs:
         with:
           name: e2e-ekran-goruntuleri
           path: /tmp/e2e/*.png
+
+  images:
+    name: Kapsayıcı imajları (web · worker · migrate)
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Derle (yayınlamadan)
+        run: |
+          for t in web worker migrate; do
+            docker buildx build --target "$t" -t "avrupadasat-$t:ci" --load .
+          done
+      - name: Web imajı ayağa kalkıyor mu
+        run: |
+          docker run -d --name web -p 3000:3000 \
+            -e DATABASE_URL=postgresql://x:x@127.0.0.1:1/x \
+            -e AUTH_SECRET="$(openssl rand -base64 48)" \
+            -e FIELD_ENCRYPTION_KEY="$(openssl rand -base64 32)" \
+            -e NEXT_PUBLIC_SITE_URL=http://localhost:3000 avrupadasat-web:ci
+          npx wait-on -t 60000 http://localhost:3000/api/health
+          docker exec web id -u | grep -vx 0   # root olarak çalışmamalı

@@ -712,3 +712,9 @@ model ApiToken {
 
   @@index([userId])
 }
+
+/// Arka plan süreçlerinin son canlılık zamanı (izleme için; kişisel veri yok)
+model SystemHeartbeat {
+  name   String   @id
+  seenAt DateTime
+}

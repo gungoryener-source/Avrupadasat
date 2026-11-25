@@ -111,6 +111,41 @@ Platform cron'u da kullanılabilir (`Authorization: Bearer $CRON_SECRET`).
 - Bildirim hatası olayın yeniden denenmesine yol açmaz (e-posta iki kez gitmesin diye). Geçersiz cihaz anahtarları otomatik silinir.
 - Mağaza yayını adımları: `docs/MOBIL-YAYIN.md`.
 
+## Kapsayıcı imajları (Docker)
+
+Kök dizindeki `Dockerfile` üç hedef üretir; gizli değer imaja girmez:
+
+| Hedef     | İçerik                                                     | Boyut (yaklaşık) |
+| --------- | ---------------------------------------------------------- | ---------------- |
+| `web`     | Next.js standalone, root olmayan kullanıcı, HEALTHCHECK    | 440 MB           |
+| `worker`  | Tek dosyaya paketlenmiş worker (esbuild), SIGTERM'de temiz | 335 MB           |
+| `migrate` | Yalnız Prisma CLI + geçişler; dağıtımda bir kez çalışır    | 1,1 GB           |
+
+```bash
+docker build --target web --build-arg NEXT_PUBLIC_SITE_URL=https://alan-adi -t avrupadasat-web .
+docker build --target worker  -t avrupadasat-worker .
+docker build --target migrate -t avrupadasat-migrate .
+```
+
+- Sıra: `migrate` → `web` → `worker` (örnek: `deploy/compose.example.yml`). Web ve worker salt okunur dosya sistemiyle, tüm Linux yetkileri kaldırılmış hâlde test edildi.
+- `NEXT_PUBLIC_SITE_URL` derlemede gömülür; alan adı değişirse imaj yeniden derlenir.
+- Belgeler için kapsayıcıda `STORAGE_DRIVER=s3` kullanın.
+- CI her PR'da üç imajı derler ve web imajının root olmadan ayağa kalktığını doğrular (yayınlamaz). Kayıt defterine (registry) gönderme, barındırma seçilince eklenecek.
+- Kurumsal proxy arkasında derleme: CA dosyası `--secret id=ca,src=ca.crt` ile verilir, imaja kopyalanmaz.
+
+## İzleme
+
+- `GET /api/health`: herkese açık, yalnız "ayakta mı" (yük dengeleyici için).
+- `GET /api/health/deep`: `Authorization: Bearer <HEALTH_TOKEN>` (yoksa `CRON_SECRET`). Veritabanı, worker nabzı, bekleyen/başarısız olaylar. `ok`/`warn` → 200, `down` → 503.
+  - `down`: veritabanı yok, worker 2 dakikadır nabız göndermiyor veya 15 dakikadan eski bekleyen olay var.
+  - `warn`: kalıcı başarısız (5 deneme) olay var → ekip `lastError` alanına bakıp düzeltir, olayı yeniden kuyruğa alır (`attempts = 0`).
+- Bir izleme servisi (ör. Better Stack, UptimeRobot, Grafana) bu ucu 1 dakikada bir yoklamalı ve 503'te ekibe haber vermeli.
+
+## Bağımlılık güvenliği
+
+- `pnpm audit --prod`: 26.11.2026 itibarıyla bilinen açık yok. Expo derleme aracındaki `minimatch` (GHSA-g3hv-75wg-m249) `pnpm-workspace.yaml` içindeki override ile 11.x'e yükseltildi; Expo export ve parmak izi doğrulandı.
+- Dependabot haftalık güncelleme PR'ları açar (npm, GitHub Actions, Docker). CI'da yüksek seviye açık derlemeyi durdurur.
+
 ## Hesap silme
 
 - Kullanıcı kendi hesabını panelde Hesabım sayfasından veya mobil uygulamada Hesap ekranından siler. Parola ve 2FA açıksa doğrulama kodu istenir; deneme sınırı saatte 5.
