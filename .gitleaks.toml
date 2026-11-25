@@ -1,0 +1,12 @@
+# Varsayılan kurallar + yalnız test dosyalarındaki RFC örnek sırları için istisna
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test sabitleri (RFC 4226/6238 örnek TOTP sırları, sahte e-posta/şifre)"
+paths = [
+  '''packages/db/prisma/seed-e2e\.ts''',
+  '''packages/db/prisma/seed\.ts''',
+  '''.*\.test\.ts''',
+  '''e2e/.*\.mjs''',
+]
