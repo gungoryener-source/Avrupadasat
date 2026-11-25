@@ -156,7 +156,8 @@ footer button {
 }
 .alert-err,
 .alert-ok,
-.alert-info {
+.alert-info,
+.alert-warn {
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 14px;
@@ -172,6 +173,10 @@ footer button {
   background: #eef2fb;
   color: var(--navy);
   word-break: break-all;
+}
+.alert-warn {
+  background: #fff8e6;
+  color: #7a4b00;
 }
 .check {
   display: flex;

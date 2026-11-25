@@ -126,6 +126,35 @@ try {
   await ap.getByRole("heading", { name: "Yanıt bekleyen mesajlar" }).waitFor();
   s.ok();
 
+  s = step(
+    "Hesap silme: yanlış parola reddedilir; parola + 2FA ile silinir, oturum kapanır, giriş olmaz",
+  );
+  const xp = await (await b.newContext({ locale: "tr-TR" })).newPage();
+  await login(xp, E.other.email, E.password, E.other.secret);
+  await xp.goto(`${BASE}/panel/hesap`);
+  await xp.getByRole("heading", { name: "Hesabımı sil" }).waitFor();
+  await xp.getByText(/Firmanın tek yetkilisi sizsiniz/).waitFor();
+  await xp.getByLabel("Parola").fill("yanlis-parola");
+  await xp.getByLabel(/Doğrulama kodu/).fill(totp(E.other.secret, Date.now() + 30_000));
+  await xp.getByLabel(/geri alınamayacağını anladım/).check();
+  await xp.getByRole("button", { name: "Hesabımı sil", exact: true }).click();
+  await xp.getByText("Parola veya doğrulama kodu hatalı.").waitFor();
+  await xp.getByLabel("Parola").fill(E.password);
+  await xp.getByLabel(/Doğrulama kodu/).fill(totp(E.other.secret, Date.now() + 30_000));
+  await xp.getByLabel(/geri alınamayacağını anladım/).check();
+  await xp.getByRole("button", { name: "Hesabımı sil", exact: true }).click();
+  await xp.waitForURL(/\/giris\?hesap=silindi/);
+  await xp.getByText("Hesabınız silindi").waitFor();
+  const back = await xp.goto(`${BASE}/panel`);
+  assert(/\/giris/.test(xp.url()), `oturum kapanmadı: ${xp.url()} ${back?.status()}`);
+  const relog = await xp.request.post(`${BASE}/api/v1/auth`, {
+    data: { email: E.other.email, password: E.password },
+  });
+  assert(relog.status() === 401, `silinen hesapla giriş ${relog.status()}`);
+  const pub = await xp.goto(`${BASE}/hesap-silme`);
+  assert(pub?.status() === 200, "hesap silme bilgi sayfası");
+  s.ok();
+
   console.log("\nAşama 5 uçtan uca: TÜMÜ GEÇTİ");
 } finally {
   await b.close();

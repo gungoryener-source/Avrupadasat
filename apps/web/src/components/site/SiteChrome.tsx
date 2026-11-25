@@ -74,6 +74,7 @@ export function SiteFooter() {
           <Link href="/cerezler">Çerezler</Link>
           <Link href="/hizmet-sartlari">Hizmet şartları</Link>
           <Link href="/impressum">Impressum</Link>
+          <Link href="/hesap-silme">Hesap silme</Link>
           <ConsentSettingsLink />
         </div>
       </div>

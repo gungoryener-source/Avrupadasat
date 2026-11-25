@@ -1,6 +1,6 @@
 # Avrupadasat — Yazılım Geliştirme Planı
 
-Son güncelleme: 25.11.2026 — Aşama 0–7 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
+Son güncelleme: 25.11.2026 — Aşama 0–8 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
 
 ## Kararlar
 
@@ -138,6 +138,12 @@ Strateji: kuruluşu rakibe yakın fiyatla verip asıl geliri aylık operasyon ve
 - [x] Amazon/eBay sandbox modu (`INTEGRATIONS_SANDBOX=1`); panelden canlı kimlik bilgisi girişi (şifreli)
 - [x] Mobil: anlık bildirimler (Expo), EAS derleme profilleri, simgeler, iOS gizlilik manifesti, mağaza kontrol listesi
 - [x] Yerel Lighthouse ölçümü ve bulunan sorunların düzeltilmesi
+
+## Aşama 8 — hesap silme (25.11.2026) ✅
+
+- [x] Web (Hesabım) ve mobil uygulamadan kendi hesabını silme; parola + 2FA ile yeniden doğrulama
+- [x] Kişisel verilerin anonimleştirilmesi, oturum ve cihaz anahtarlarının silinmesi; firma kayıtları korunur
+- [x] Son firma sahibi ayrılınca ekibe bildirim; uygulama dışı bilgi sayfası `/hesap-silme` (mağaza şartı)
 
 ## Kalan işler (kod dışı / hesap gerektiren)
 

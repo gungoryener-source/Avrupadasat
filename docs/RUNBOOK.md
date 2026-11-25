@@ -111,6 +111,15 @@ Platform cron'u da kullanılabilir (`Authorization: Bearer $CRON_SECRET`).
 - Bildirim hatası olayın yeniden denenmesine yol açmaz (e-posta iki kez gitmesin diye). Geçersiz cihaz anahtarları otomatik silinir.
 - Mağaza yayını adımları: `docs/MOBIL-YAYIN.md`.
 
+## Hesap silme
+
+- Kullanıcı kendi hesabını panelde Hesabım sayfasından veya mobil uygulamada Hesap ekranından siler. Parola ve 2FA açıksa doğrulama kodu istenir; deneme sınırı saatte 5.
+- Silinenler ve anonimleştirilenler: ad, e-posta, parola, 2FA sırrı, oturumlar, mobil anahtarlar (anlık bildirim dahil), davet ve sıfırlama bağlantıları, firma üyelikleri. Kullanıcı satırı audit bütünlüğü için anonim olarak kalır.
+- Firmaya ait kayıtlar (fatura, sipariş, sevkiyat, belge) silinmez. Son firma sahibi ayrılırsa `account.deletion_requested.v1` olayı ekibe e-posta gönderir; firma kaydının akıbetine ekip karar verir.
+- Ekip hesapları kendini silemez; yönetici kapatır.
+- Giriş yapamayanlar için `/hesap-silme` sayfasındaki e-posta yolu işletilir (30 gün).
+- ⚠️ Saklama süreleri (TR VUK, DE HGB/AO) ve anonimleştirme kapsamı avukatla doğrulanmalı.
+
 ## Lighthouse (yerel, 25.11.2026)
 
 | Sayfa                       | Performans | Erişilebilirlik | En iyi uygulamalar | SEO |
@@ -127,6 +136,6 @@ Yerel üretim derlemesi, mobil benzetim. Yayında CDN, gerçek alan adı ve GTM/
 
 - Amazon, eBay ve Shopify adaptörleri sahte sunucularla test edildi; her biri gerçek hesap/sandbox ile bir kez doğrulanmalı.
 - Fatura KDV modeli (`vatRatePct`) ve DATEV hesap eşlemesi vergi danışmanıyla doğrulanacak.
-- Mobil: Apple/Google geliştirici hesapları, EAS projesi, mağaza kayıtları (`docs/MOBIL-YAYIN.md`); panelde self-servis hesap silme yok.
+- Mobil: Apple/Google geliştirici hesapları, EAS projesi, mağaza kayıtları (`docs/MOBIL-YAYIN.md`).
 - Hukuki metinler taslak; avukat onayı gerekiyor.
 - Yayın sonrası: securityheaders.com, Tag Assistant, Meta Events Manager, bağımsız sızma testi.

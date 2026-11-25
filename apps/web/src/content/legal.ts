@@ -205,6 +205,49 @@ export const legal: ContentPage[] = [
     schema: "WebPage",
     updated: U,
   },
+  {
+    slug: "hesap-silme",
+    title: "Hesap silme",
+    description:
+      "Avrupadasat müşteri hesabınızı web panelinden veya mobil uygulamadan nasıl silebileceğiniz ve hangi verilerin saklandığı.",
+    kicker: "Hukuki",
+    h1: "Hesabınızı silme",
+    intro: DRAFT,
+    sections: [
+      {
+        h2: "Web panelinden",
+        bullets: [
+          "Panele giriş yapın ve sol menüden “Hesabım” sayfasını açın.",
+          "“Hesabımı sil” bölümünde parolanızı (iki adımlı doğrulama açıksa doğrulama kodunu da) girin ve onaylayın.",
+          "Silme hemen gerçekleşir; tüm oturumlarınız kapanır.",
+        ],
+      },
+      {
+        h2: "Mobil uygulamadan",
+        bullets: [
+          "Uygulamada sağ üstteki “Hesap” düğmesine dokunun.",
+          "“Hesabımı sil”i seçin, parolanızı (ve gerekiyorsa doğrulama kodunu) girip onaylayın.",
+        ],
+      },
+      {
+        h2: "Giriş yapamıyorsanız",
+        paragraphs: [
+          "Hesabınıza kayıtlı e-posta adresinden [e-posta] adresine “Hesap silme talebi” konulu bir e-posta gönderin. Kimliğinizi doğruladıktan sonra en geç 30 gün içinde işlem yapılır.",
+        ],
+      },
+      {
+        h2: "Silinen ve saklanan veriler",
+        bullets: [
+          "Silinir: adınız, e-posta adresiniz, parolanız, iki adımlı doğrulama bilgileriniz, oturumlarınız, mobil cihaz ve bildirim kayıtlarınız, firma üyelikleriniz.",
+          "Firmaya ait kayıtlar (faturalar, sevkiyat ve sipariş kayıtları, belgeler) kişisel hesabınıza değil firmanıza aittir ve yasal saklama süreleri boyunca saklanabilir. [Saklama süreleri avukat ve mali müşavir ile netleştirilecek]",
+          "Güvenlik kayıtlarında işlem geçmişi kalır ancak artık size ait ad veya e-posta içermez.",
+          "Firmanın son yetkilisi sizseniz, firma kaydının kapatılması için ekibimiz sizinle iletişime geçer.",
+        ],
+      },
+    ],
+    schema: "WebPage",
+    updated: U,
+  },
 ];
 
 export const legalBySlug = new Map(legal.map((l) => [l.slug, l]));

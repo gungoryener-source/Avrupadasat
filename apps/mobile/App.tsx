@@ -5,6 +5,8 @@ import * as SecureStore from "expo-secure-store";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  Linking,
   FlatList,
   Pressable,
   RefreshControl,
@@ -161,6 +163,7 @@ function Login({ api, onToken }: { api: Api; onToken: (t: string) => void }) {
 function Main({ api, onUnauthorized }: { api: Api; onUnauthorized: () => void }) {
   const [tab, setTab] = useState<Tab>("home");
   const [detail, setDetail] = useState<string | null>(null);
+  const [account, setAccount] = useState(false);
   useEffect(() => {
     registerForPush(api).catch(() => undefined);
     // Bildirime dokununca ilgili sekme açılır
@@ -168,6 +171,7 @@ function Main({ api, onUnauthorized }: { api: Api; onUnauthorized: () => void })
       const screen = screenFromNotification(r.notification.request.content.data);
       if (screen) {
         setDetail(null);
+        setAccount(false);
         setTab(screen);
       }
     });
@@ -187,10 +191,12 @@ function Main({ api, onUnauthorized }: { api: Api; onUnauthorized: () => void })
   return (
     <View style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        {detail ? (
+        {account ? (
+          <AccountScreen api={api} onBack={() => setAccount(false)} onSignOut={onUnauthorized} />
+        ) : detail ? (
           <ShipmentScreen id={detail} api={api} guard={guard} onBack={() => setDetail(null)} />
         ) : tab === "home" ? (
-          <HomeScreen api={api} guard={guard} onSignOut={onUnauthorized} />
+          <HomeScreen api={api} guard={guard} onAccount={() => setAccount(true)} />
         ) : tab === "shipments" ? (
           <ShipmentsScreen api={api} guard={guard} onOpen={setDetail} />
         ) : tab === "stock" ? (
@@ -213,6 +219,7 @@ function Main({ api, onUnauthorized }: { api: Api; onUnauthorized: () => void })
             style={s.tab}
             onPress={() => {
               setDetail(null);
+              setAccount(false);
               setTab(k);
             }}
             accessibilityRole="tab"
@@ -242,7 +249,7 @@ function useLoad<T>(load: () => Promise<T | null>) {
   return { data, loading, refresh };
 }
 
-function HomeScreen({ api, guard, onSignOut }: { api: Api; guard: Guard; onSignOut: () => void }) {
+function HomeScreen({ api, guard, onAccount }: { api: Api; guard: Guard; onAccount: () => void }) {
   const load = useCallback(() => guard<Overview>(api.overview()), [api, guard]);
   const { data, loading, refresh } = useLoad(load);
   return (
@@ -250,7 +257,12 @@ function HomeScreen({ api, guard, onSignOut }: { api: Api; guard: Guard; onSignO
       contentContainerStyle={{ padding: 18, gap: 12 }}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
     >
-      <Logo />
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+        <Logo />
+        <Pressable onPress={onAccount} accessibilityRole="button" hitSlop={12}>
+          <Text style={{ color: C.p, fontWeight: "700" }}>Hesap</Text>
+        </Pressable>
+      </View>
       {data?.salesLocked && (
         <Text style={s.note}>Satış adımları vergi kayıtları tamamlanınca açılacak.</Text>
       )}
@@ -287,8 +299,110 @@ function HomeScreen({ api, guard, onSignOut }: { api: Api; guard: Guard; onSignO
           ))}
         </View>
       ) : null}
-      <Pressable onPress={onSignOut} accessibilityRole="button">
-        <Text style={[s.mute, { textAlign: "center", marginTop: 12 }]}>Çıkış yap</Text>
+    </ScrollView>
+  );
+}
+
+function AccountScreen({
+  api,
+  onBack,
+  onSignOut,
+}: {
+  api: Api;
+  onBack: () => void;
+  onSignOut: () => void;
+}) {
+  const [me, setMe] = useState<{ name: string; tenant: { name: string } } | null>(null);
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    api.me().then(setMe, () => undefined);
+  }, [api]);
+
+  const remove = () =>
+    Alert.alert(
+      "Hesabınız silinsin mi?",
+      "Adınız, e-posta adresiniz, parolanız ve cihaz kayıtlarınız kalıcı olarak silinir. Bu işlem geri alınamaz.",
+      [
+        { text: "Vazgeç", style: "cancel" },
+        {
+          text: "Hesabımı sil",
+          style: "destructive",
+          onPress: async () => {
+            setBusy(true);
+            setError(null);
+            try {
+              await api.deleteAccount(password, code.trim());
+              setPassword("");
+              onSignOut();
+            } catch (e) {
+              setError(e instanceof ApiError ? e.message : "Bağlantı hatası");
+            } finally {
+              setBusy(false);
+            }
+          },
+        },
+      ],
+    );
+
+  return (
+    <ScrollView
+      contentContainerStyle={{ padding: 18, gap: 12 }}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Pressable onPress={onBack} accessibilityRole="button">
+        <Text style={{ color: C.p }}>‹ Geri</Text>
+      </Pressable>
+      <Text style={s.h1}>Hesap</Text>
+      {me && (
+        <View style={s.card}>
+          <Text style={{ fontWeight: "700" }}>{me.name}</Text>
+          <Text style={s.mute}>{me.tenant.name}</Text>
+        </View>
+      )}
+      <Pressable
+        style={[s.btn, { backgroundColor: "#fff", borderWidth: 1, borderColor: "#d0d5dd" }]}
+        onPress={onSignOut}
+        accessibilityRole="button"
+      >
+        <Text style={[s.btnText, { color: C.ink }]}>Çıkış yap</Text>
+      </Pressable>
+
+      <Text style={[s.h2, { marginTop: 18 }]}>Hesabımı sil</Text>
+      <Text style={s.mute}>
+        Firmanıza ait faturalar ve sevkiyat kayıtları yasal saklama süreleri boyunca firmada
+        kalabilir.
+      </Text>
+      <Pressable onPress={() => Linking.openURL(`${API_URL}/hesap-silme`)} accessibilityRole="link">
+        <Text style={{ color: C.p }}>Ayrıntılar</Text>
+      </Pressable>
+      {error && <Text style={s.err}>{error}</Text>}
+      <TextInput
+        style={s.input}
+        placeholder="Parola"
+        secureTextEntry
+        autoComplete="current-password"
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TextInput
+        style={s.input}
+        placeholder="Doğrulama kodu (2FA açıksa)"
+        keyboardType="number-pad"
+        autoComplete="one-time-code"
+        maxLength={6}
+        value={code}
+        onChangeText={setCode}
+      />
+      <Pressable
+        style={[s.btn, (busy || !password) && { opacity: 0.6 }]}
+        disabled={busy || !password}
+        onPress={remove}
+        accessibilityRole="button"
+      >
+        <Text style={s.btnText}>{busy ? "Siliniyor…" : "Hesabımı sil"}</Text>
       </Pressable>
     </ScrollView>
   );

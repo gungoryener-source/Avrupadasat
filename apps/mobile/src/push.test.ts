@@ -25,3 +25,24 @@ describe("anlık bildirim", () => {
     expect(screenFromNotification({ screen: 1 })).toBeNull();
   });
 });
+
+describe("hesap silme", () => {
+  it("DELETE /api/v1/me parola, kod ve onayla gider; hata mesajı iletilir", async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const f = (async (url: string, init: RequestInit) => {
+      calls.push({ url, init });
+      return new Response(JSON.stringify({ error: "Parola veya doğrulama kodu hatalı." }), {
+        status: 400,
+      });
+    }) as unknown as typeof fetch;
+    await expect(
+      createApi("https://x.test", () => "as_t", f).deleteAccount("pw", "123456"),
+    ).rejects.toThrow("Parola veya doğrulama kodu hatalı.");
+    expect(calls[0]!.init.method).toBe("DELETE");
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({
+      password: "pw",
+      code: "123456",
+      confirm: true,
+    });
+  });
+});

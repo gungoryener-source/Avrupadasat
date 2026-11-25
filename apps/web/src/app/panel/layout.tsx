@@ -24,6 +24,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     { href: "/panel/mesajlar", label: "Müşteri mesajları" },
     { href: "/panel/faturalar", label: "Faturalar" },
     { href: "/panel/kullanicilar", label: "Kullanıcılar" },
+    { href: "/panel/hesap", label: "Hesabım" },
   ];
   return (
     <AppShell nav={nav} user={s.name} subtitle={tenant.name}>
