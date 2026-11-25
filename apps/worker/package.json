@@ -8,7 +8,9 @@
     "start": "tsx src/index.ts",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/worker.mjs --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\" --log-level=warning",
+    "start:prod": "node dist/worker.mjs"
   },
   "dependencies": {
     "@avrupadasat/core": "workspace:*",
@@ -20,6 +22,7 @@
     "@types/node": "22.20.6",
     "@types/nodemailer": "8.0.2",
     "@types/smtp-server": "3.5.13",
+    "esbuild": "0.28.2",
     "smtp-server": "3.21.7",
     "tsx": "4.23.15",
     "vitest": "5.1.1"

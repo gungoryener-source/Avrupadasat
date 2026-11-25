@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 /**
@@ -19,6 +20,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Kapsayıcı imajı için (Dockerfile NEXT_OUTPUT=standalone ile derler); yerel/Vercel derlemesi etkilenmez
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
+  outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
   // Belge yükleme sınırı 10 MB (sunucuda ayrıca doğrulanır)
   experimental: { serverActions: { bodySizeLimit: "11mb" } },
   reactStrictMode: true,

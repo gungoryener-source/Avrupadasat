@@ -1,6 +1,6 @@
 # Avrupadasat — Yazılım Geliştirme Planı
 
-Son güncelleme: 25.11.2026 — Aşama 0–8 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
+Son güncelleme: 25.11.2026 — Aşama 0–9 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
 
 ## Kararlar
 
@@ -145,8 +145,16 @@ Strateji: kuruluşu rakibe yakın fiyatla verip asıl geliri aylık operasyon ve
 - [x] Kişisel verilerin anonimleştirilmesi, oturum ve cihaz anahtarlarının silinmesi; firma kayıtları korunur
 - [x] Son firma sahibi ayrılınca ekibe bildirim; uygulama dışı bilgi sayfası `/hesap-silme` (mağaza şartı)
 
+## Aşama 9 — yayına hazırlık (26.11.2026) ✅
+
+- [x] Docker imajları (web standalone, worker paketli, migrate); salt okunur kapsayıcıda tam e2e geçti
+- [x] Derin sağlık ucu + worker nabzı (izleme servisi için)
+- [x] Bağımlılık taraması temiz; Dependabot; CI'da imaj derleme
+- [x] Örnek dağıtım dosyası (`deploy/compose.example.yml`)
+
 ## Kalan işler (kod dışı / hesap gerektiren)
 
+- Barındırma seçimi (Vercel + yönetilen DB veya AB'de kapsayıcı) ve izleme servisi kurulumu
 - Amazon, eBay, Shopify: gerçek hesap veya sandbox ile ilk doğrulama
 - Mobil: Apple/Google geliştirici hesapları, `eas init`, mağaza kayıtları ve inceleme için demo hesabı
 - Kendi (Shopify'sız) Almanca mağaza istenirse: ödeme sağlayıcısı + hukuki metinlerle ayrı proje

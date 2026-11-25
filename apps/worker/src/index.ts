@@ -111,9 +111,22 @@ let stopping = false;
 process.on("SIGTERM", () => (stopping = true));
 process.on("SIGINT", () => (stopping = true));
 
+let lastBeat = 0;
+async function heartbeat() {
+  if (Date.now() - lastBeat < 30_000) return;
+  lastBeat = Date.now();
+  const seenAt = new Date();
+  await getPrisma().systemHeartbeat.upsert({
+    where: { name: "worker" },
+    create: { name: "worker", seenAt },
+    update: { seenAt },
+  });
+}
+
 console.info(`Worker başladı (her ${POLL_MS} ms)`);
 while (!stopping) {
   try {
+    await heartbeat();
     await runCron();
     const n = await tick();
     if (n === 0) await new Promise((r) => setTimeout(r, POLL_MS));

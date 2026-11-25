@@ -1,0 +1,34 @@
+# Örnek: AB'deki tek bir sunucuda kapsayıcılarla çalıştırma (yönetilen PostgreSQL ile).
+# Önünde TLS sonlandıran bir ters vekil (Caddy/Traefik/yük dengeleyici) olmalı.
+# Belgeler için STORAGE_DRIVER=s3 zorunlu (kapsayıcı diski salt okunur ve geçicidir).
+# Gizli değerler .env.production dosyasında veya secret manager'da; repoya girmez.
+services:
+  migrate:
+    image: avrupadasat-migrate:${TAG:-latest}
+    env_file: .env.production
+    restart: "no"
+
+  web:
+    image: avrupadasat-web:${TAG:-latest}
+    env_file: .env.production
+    environment:
+      PORT: 3000
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+
+  worker:
+    image: avrupadasat-worker:${TAG:-latest}
+    env_file: .env.production
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]

@@ -1,0 +1,14 @@
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/.expo
+**/.storage
+**/generated
+**/.env
+**/.env.*
+!.env.example
+.git
+e2e/shots
+apps/mobile
+*.log
