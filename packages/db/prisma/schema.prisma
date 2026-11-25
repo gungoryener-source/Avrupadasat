@@ -80,6 +80,10 @@ model Tenant {
   city          String?
   status        TenantStatus @default(ONBOARDING)
   packageCode   PackageCode?
+  /// Depoda kullanılan palet (depo bildirir; faturalama günlük anlık görüntülerden ortalar)
+  palletsInUse  Int          @default(0)
+  /// Fatura KDV oranı (%). TODO(verify): müşteri tipine göre (Alman şirketi / yurt dışı B2B) vergi danışmanıyla
+  vatRatePct    Int          @default(19)
   /// AES-256-GCM ile şifreli (src/crypto.ts)
   taxNumberEnc  String?
   ibanEnc       String?
@@ -96,6 +100,9 @@ model Tenant {
   quotes        Quote[]
   contracts     Contract[]
   contacts      TenantContact[]
+  orders        Order[]
+  invoices      Invoice[]
+  connections   MarketplaceConnection[]
 }
 
 model User {
@@ -464,4 +471,173 @@ model StockMovement {
   createdAt DateTime @default(now())
 
   @@index([tenantId, sku, createdAt])
+}
+
+enum SalesChannel {
+  AMAZON
+  EBAY
+  WEBSHOP
+  MANUAL
+}
+
+model MarketplaceConnection {
+  id             String       @id @default(cuid())
+  tenantId       String
+  channel        SalesChannel
+  /// mock | live
+  mode           String       @default("mock")
+  status         String       @default("ACTIVE")
+  /// Pazaryeri kimlik bilgileri (şifreli JSON)
+  credentialsEnc String?
+  lastSyncAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  tenant         Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, channel])
+}
+
+enum OrderStatus {
+  NEW
+  ON_HOLD
+  ALLOCATED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id          String       @id @default(cuid())
+  tenantId    String
+  channel     SalesChannel
+  externalId  String
+  status      OrderStatus  @default(NEW)
+  /// Alıcı adı + adres (kişisel veri): şifreli JSON
+  shipToEnc   String
+  country     String       @default("DE")
+  itemsCents  Int          @default(0)
+  currency    String       @default("EUR")
+  carrier     String?
+  trackingNo  String?
+  holdReason  String?
+  orderedAt   DateTime
+  shippedAt   DateTime?
+  createdAt   DateTime     @default(now())
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lines       OrderLine[]
+  workOrders  WorkOrder[]
+  returns     ReturnItem[]
+
+  @@unique([tenantId, channel, externalId])
+  @@index([tenantId, status, orderedAt])
+}
+
+model OrderLine {
+  id         String @id @default(cuid())
+  tenantId   String
+  orderId    String
+  sku        String
+  quantity   Int
+  priceCents Int    @default(0)
+
+  order      Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, sku])
+}
+
+enum WorkOrderType {
+  PICK_PACK
+  PRE_FBA
+}
+
+model WorkOrder {
+  id          String        @id @default(cuid())
+  tenantId    String
+  orderId     String?
+  type        WorkOrderType
+  cartons     Int           @default(0)
+  status      String        @default("OPEN")
+  completedAt DateTime?
+  completedById String?
+  createdAt   DateTime      @default(now())
+
+  order       Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+}
+
+enum ReturnCondition {
+  SELLABLE
+  REPACK
+  DAMAGED
+}
+
+model ReturnItem {
+  id          String           @id @default(cuid())
+  tenantId    String
+  orderId     String?
+  sku         String
+  quantity    Int
+  reason      String?
+  condition   ReturnCondition?
+  status      String           @default("RECEIVED")
+  processedAt DateTime?
+  createdAt   DateTime         @default(now())
+
+  order       Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status])
+}
+
+/// Üçüncü taraf masrafları (noter, kargo, gümrük) — faturaya birebir yansır
+model Disbursement {
+  id          String   @id @default(cuid())
+  tenantId    String
+  description String
+  amountCents Int
+  incurredAt  DateTime
+  invoiceId   String?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, incurredAt])
+}
+
+model StorageSnapshot {
+  id       String   @id @default(cuid())
+  tenantId String
+  day      DateTime @db.Date
+  pallets  Int
+
+  @@unique([tenantId, day])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOID
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  tenantId   String
+  number     String?       @unique
+  period     String
+  status     InvoiceStatus @default(DRAFT)
+  /// [{ code, description, quantity, unitCents, totalCents }]
+  lines      Json
+  netCents   Int
+  vatRatePct Int
+  vatCents   Int
+  grossCents Int
+  issuedAt   DateTime?
+  dueAt      DateTime?
+  paidAt     DateTime?
+  createdAt  DateTime      @default(now())
+
+  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, period])
 }

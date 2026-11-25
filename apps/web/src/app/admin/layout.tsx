@@ -30,8 +30,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       ? [{ href: "/admin/siparisler", label: "Siparişler & iadeler" }]
       : []),
     ...(can(r, "invoice.read") ? [{ href: "/admin/faturalar", label: "Faturalar" }] : []),
-    ...(can(r, "tenant.read") ? [{ href: "/admin/mesajlar", label: "Müşteri mesajları" }] : []),
-    ...(can(r, "tenant.read") ? [{ href: "/admin/partnerler", label: "Partner skor kartı" }] : []),
+    ...(can(r, "message.read") ? [{ href: "/admin/mesajlar", label: "Müşteri mesajları" }] : []),
+    ...(r !== "PARTNER" && can(r, "tenant.read")
+      ? [{ href: "/admin/partnerler", label: "Partner skor kartı" }]
+      : []),
+    ...(can(r, "data.export")
+      ? [{ href: "/admin/disa-aktar", label: "Muhasebe dışa aktarımı" }]
+      : []),
     ...(can(r, "audit.read") ? [{ href: "/admin/audit", label: "Audit log" }] : []),
   ];
   return (

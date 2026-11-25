@@ -13,6 +13,14 @@ export const TENANT_SCOPED_MODELS = new Set([
   "AsnLine",
   "Document",
   "StockMovement",
+  "MarketplaceConnection",
+  "Order",
+  "OrderLine",
+  "WorkOrder",
+  "ReturnItem",
+  "Disbursement",
+  "StorageSnapshot",
+  "Invoice",
 ]);
 
 const READ_OPS = new Set([
