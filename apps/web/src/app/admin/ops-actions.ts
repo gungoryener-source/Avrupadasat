@@ -123,3 +123,23 @@ export async function stockCountAction(fd: FormData) {
   await importStockCounts(tenantId, text, s.userId);
   revalidatePath(`/admin/musteriler/${tenantId}`);
 }
+
+export async function palletsAction(fd: FormData) {
+  const input = z
+    .object({ tenantId: z.string().min(1), pallets: z.coerce.number().int().min(0).max(10_000) })
+    .parse(Object.fromEntries(fd));
+  const s = await scoped("stock.write", input.tenantId);
+  await db().tenant.update({
+    where: { id: input.tenantId },
+    data: { palletsInUse: input.pallets },
+  });
+  await audit({
+    actorUserId: s.userId,
+    tenantId: input.tenantId,
+    action: "tenant.updated",
+    entity: "Tenant",
+    entityId: input.tenantId,
+    meta: { palletsInUse: input.pallets },
+  });
+  revalidatePath(`/admin/musteriler/${input.tenantId}`);
+}

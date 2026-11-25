@@ -81,7 +81,33 @@ export const quoteSentV1 = z.object({
   tokenEnc: z.string(),
 });
 
+export const orderCreatedV1 = z.object({
+  orderId: z.string(),
+  channel: z.string(),
+  status: z.string(),
+});
+export const orderShippedV1 = z.object({
+  orderId: z.string(),
+  channel: z.string(),
+  carrier: z.string(),
+  trackingNo: z.string(),
+});
+export const returnProcessedV1 = z.object({
+  returnId: z.string(),
+  sku: z.string(),
+  condition: z.enum(["SELLABLE", "REPACK", "DAMAGED"]),
+});
+export const invoiceIssuedV1 = z.object({
+  invoiceId: z.string(),
+  number: z.string(),
+  grossCents: z.number().int(),
+});
+
 export const eventSchemas = {
+  "order.created.v1": orderCreatedV1,
+  "order.shipped.v1": orderShippedV1,
+  "return.processed.v1": returnProcessedV1,
+  "invoice.issued.v1": invoiceIssuedV1,
   "lead.submitted.v1": leadSubmittedV1,
   "user.invited.v1": userInvitedV1,
   "quote.sent.v1": quoteSentV1,

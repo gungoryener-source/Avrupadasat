@@ -180,3 +180,124 @@ export async function quotePdf(q: QuotePdfInput): Promise<Uint8Array> {
   }
   return doc.save();
 }
+
+export interface InvoicePdfInput {
+  number: string;
+  period: string;
+  issuedAt: Date;
+  dueAt: Date | null;
+  customer: string;
+  lines: { description: string; quantity: number; unitCents: number; totalCents: number }[];
+  netCents: number;
+  vatRatePct: number;
+  vatCents: number;
+  grossCents: number;
+}
+
+export async function invoicePdf(inv: InvoicePdfInput): Promise<Uint8Array> {
+  const doc = await PDFDocument.create();
+  doc.setTitle(`Fatura ${inv.number}`);
+  doc.setAuthor(brand.name);
+  doc.setLanguage("tr-TR");
+  const { regular, bold } = await fonts(doc);
+  const page = doc.addPage([595.28, 841.89]);
+  const L = 50;
+  const W = 495;
+  let y = 790;
+  const d = (x: Date) => x.toLocaleDateString("tr-TR");
+  page.drawRectangle({ x: L, y: y - 6, width: 30, height: 30, color: RED });
+  page.drawText(brand.monogram, { x: L + 6, y: y + 4, size: 11, font: bold, color: rgb(1, 1, 1) });
+  page.drawText(brand.name, { x: L + 40, y: y + 8, size: 16, font: bold, color: INK });
+  page.drawText("[Şirket unvanı, adres, vergi no — Impressum ile aynı]", {
+    x: L + 40,
+    y: y - 6,
+    size: 7,
+    font: regular,
+    color: MUTE,
+  });
+  page.drawText("FATURA", { x: L + W - 90, y: y + 8, size: 16, font: bold, color: RED });
+  page.drawText(inv.number, { x: L + W - 90, y: y - 6, size: 9, font: regular, color: MUTE });
+  y -= 60;
+  page.drawText(inv.customer, { x: L, y, size: 12, font: bold, color: INK });
+  page.drawText(`Dönem: ${inv.period}`, { x: L + W - 150, y, size: 9, font: regular, color: INK });
+  page.drawText(`Tarih: ${d(inv.issuedAt)}`, {
+    x: L + W - 150,
+    y: y - 13,
+    size: 9,
+    font: regular,
+    color: INK,
+  });
+  if (inv.dueAt)
+    page.drawText(`Vade: ${d(inv.dueAt)}`, {
+      x: L + W - 150,
+      y: y - 26,
+      size: 9,
+      font: regular,
+      color: INK,
+    });
+  y -= 56;
+  page.drawRectangle({ x: L, y: y - 6, width: W, height: 22, color: rgb(0.96, 0.97, 0.98) });
+  for (const [t, x] of [
+    ["Açıklama", 8],
+    ["Miktar", 300],
+    ["Birim", 360],
+    ["Tutar", W - 60],
+  ] as const)
+    page.drawText(t, { x: L + x, y, size: 9, font: bold, color: INK });
+  y -= 24;
+  for (const l of inv.lines) {
+    const rows = wrap(l.description, regular, 9, 280);
+    rows.forEach((r, i) =>
+      page.drawText(r, { x: L + 8, y: y - i * 12, size: 9, font: regular, color: INK }),
+    );
+    page.drawText(String(l.quantity), { x: L + 300, y, size: 9, font: regular, color: INK });
+    page.drawText(formatEur(l.unitCents, { decimals: true }), {
+      x: L + 360,
+      y,
+      size: 9,
+      font: regular,
+      color: INK,
+    });
+    const amt = formatEur(l.totalCents, { decimals: true });
+    page.drawText(amt, {
+      x: L + W - 8 - regular.widthOfTextAtSize(amt, 9),
+      y,
+      size: 9,
+      font: regular,
+      color: INK,
+    });
+    y -= rows.length * 12 + 8;
+    if (y < 140) break;
+  }
+  y -= 10;
+  for (const [label, cents, f] of [
+    ["Ara toplam (net)", inv.netCents, regular],
+    [`KDV %${inv.vatRatePct}`, inv.vatCents, regular],
+    ["Genel toplam", inv.grossCents, bold],
+  ] as const) {
+    const v = formatEur(cents, { decimals: true });
+    page.drawText(label, { x: L + 300, y, size: 10, font: f, color: INK });
+    page.drawText(v, {
+      x: L + W - 8 - f.widthOfTextAtSize(v, 10),
+      y,
+      size: 10,
+      font: f,
+      color: INK,
+    });
+    y -= 16;
+  }
+  y -= 16;
+  for (const n of [
+    "Ödeme: [IBAN ve banka bilgisi]. Açıklama alanına fatura numarasını yazınız.",
+    inv.vatRatePct === 0
+      ? "KDV: [Yurt dışı B2B hizmet — ters yükleme / vergi dışı ibaresi vergi danışmanıyla netleşecek]"
+      : "",
+    "Masraf yansıtma kalemleri faturası karşılığında birebir yansıtılmıştır.",
+  ].filter(Boolean)) {
+    for (const r of wrap(n, regular, 8, W)) {
+      page.drawText(r, { x: L, y, size: 8, font: regular, color: MUTE });
+      y -= 11;
+    }
+  }
+  return doc.save();
+}

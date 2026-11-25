@@ -83,7 +83,7 @@ async function main() {
   const os = await prisma.shipment.create({
     data: { tenantId: other.id, reference: "GIZLI-1", pallets: 3 },
   });
-  console.log(
+  process.stdout.write(
     JSON.stringify({
       password: PW,
       admin: { email: admin.email, secret: SECRETS.admin },
@@ -93,7 +93,7 @@ async function main() {
       tenantId: tenant.id,
       otherTenantId: other.id,
       otherShipmentId: os.id,
-    }),
+    }) + "\n",
   );
 }
 

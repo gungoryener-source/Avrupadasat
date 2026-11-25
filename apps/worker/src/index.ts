@@ -49,6 +49,34 @@ async function tick(): Promise<number> {
   });
 }
 
+/** Zamanlanmış işler: web uygulamasının korumalı cron uç noktasını çağırır */
+const CRON = [
+  { job: "sync", everyMs: 15 * 60_000 },
+  { job: "snapshot", everyMs: 24 * 3600_000 },
+] as const;
+const lastRun = new Map<string, number>();
+
+async function runCron() {
+  const secret = process.env.CRON_SECRET;
+  const base = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!secret || !base) return;
+  for (const c of CRON) {
+    const last = lastRun.get(c.job) ?? 0;
+    if (Date.now() - last < c.everyMs) continue;
+    lastRun.set(c.job, Date.now());
+    try {
+      const res = await fetch(`${base}/api/cron/${c.job}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${secret}` },
+        signal: AbortSignal.timeout(60_000),
+      });
+      console.info(`[cron] ${c.job} → ${res.status}`);
+    } catch (e) {
+      console.error(`[cron] ${c.job} hata`, e instanceof Error ? e.message : e);
+    }
+  }
+}
+
 let stopping = false;
 process.on("SIGTERM", () => (stopping = true));
 process.on("SIGINT", () => (stopping = true));
@@ -56,6 +84,7 @@ process.on("SIGINT", () => (stopping = true));
 console.info(`Worker başladı (her ${POLL_MS} ms)`);
 while (!stopping) {
   try {
+    await runCron();
     const n = await tick();
     if (n === 0) await new Promise((r) => setTimeout(r, POLL_MS));
   } catch (e) {

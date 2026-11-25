@@ -8,6 +8,7 @@ import { PACKAGE_LABEL, STEP_LABEL, STEP_STATUS, TENANT_STATUS } from "@/server/
 import { requireStaff } from "@/server/session";
 import { resendInviteAction } from "../../actions";
 import {
+  palletsAction,
   stockCountAction,
   updateRegistrationAction,
   updateTenantStatusAction,
@@ -139,6 +140,19 @@ export default async function TenantDetail({ params }: { params: Promise<{ id: s
               {c.email} · {c.phone}
             </p>
           ))}
+          <h3>Depoda kullanılan palet</h3>
+          <form action={palletsAction} className="inline-form">
+            <input type="hidden" name="tenantId" value={t.id} />
+            <input
+              name="pallets"
+              type="number"
+              min={0}
+              defaultValue={t.palletsInUse}
+              style={{ width: 100 }}
+              aria-label="Kullanılan palet"
+            />
+            <Submit className="btn btn-o btn-sm">Kaydet</Submit>
+          </form>
           <h3>Stok sayımı (CSV: sku;miktar)</h3>
           <form action={stockCountAction} className="form">
             <input type="hidden" name="tenantId" value={t.id} />
