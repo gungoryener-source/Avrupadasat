@@ -56,9 +56,25 @@ export function totp(secretB32: string, at = Date.now(), step = 30, digits = 6):
 
 /** ±1 adım saat kaymasına izin verir */
 export function verifyTotp(secretB32: string, code: string, at = Date.now()): boolean {
+  return matchTotpStep(secretB32, code, at) !== null;
+}
+
+/** Eşleşen zaman adımını döner; tekrar kullanım kontrolü için çağıran saklar */
+export function matchTotpStep(
+  secretB32: string,
+  code: string,
+  at = Date.now(),
+  lastUsedStep: number | null = null,
+): number | null {
   const c = code.replace(/\s/g, "");
-  if (!/^\d{6}$/.test(c)) return false;
-  return [-1, 0, 1].some((w) => totp(secretB32, at + w * 30_000) === c);
+  if (!/^\d{6}$/.test(c)) return null;
+  const now = Math.floor(at / 30_000);
+  for (const w of [-1, 0, 1]) {
+    const step = now + w;
+    if (lastUsedStep !== null && step <= lastUsedStep) continue;
+    if (hotp(base32Decode(secretB32), step) === c) return step;
+  }
+  return null;
 }
 
 export function otpauthUri(secretB32: string, account: string, issuer: string): string {

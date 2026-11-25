@@ -10,7 +10,26 @@ import { emit } from "./outbox";
 import { hashPassword, passwordProblem, verifyPassword } from "./password";
 import { hit } from "./rate-limit";
 import { randomToken, sha256 } from "./tokens";
-import { generateSecret, verifyTotp } from "./totp";
+import { generateSecret, matchTotpStep } from "./totp";
+
+/**
+ * TOTP doğrulaması + tekrar kullanım engeli: kabul edilen adım kaydedilir,
+ * aynı veya daha eski adım bir daha kabul edilmez (koşullu güncelleme ile yarışsız).
+ */
+export async function consumeTotp(
+  userId: string,
+  secretEnc: string,
+  code: string,
+  lastStep: number | null,
+): Promise<boolean> {
+  const step = matchTotpStep(decryptField(secretEnc), code, Date.now(), lastStep);
+  if (step === null) return false;
+  const n = await db().user.updateMany({
+    where: { id: userId, OR: [{ lastTotpStep: null }, { lastTotpStep: { lt: step } }] },
+    data: { lastTotpStep: step },
+  });
+  return n.count === 1;
+}
 
 export const MAX_FAILED = 5;
 export const LOCK_MINUTES = 15;
@@ -186,7 +205,7 @@ export async function passTwoFactor(
   });
   if (!s?.user.twoFactorSecretEnc) return null;
   if (!(await hit(`2fa:${s.userId}`, 6, 300))) return null;
-  const ok = verifyTotp(decryptField(s.user.twoFactorSecretEnc), code);
+  const ok = await consumeTotp(s.userId, s.user.twoFactorSecretEnc, code, s.user.lastTotpStep);
   if (!ok) {
     await audit({
       actorUserId: s.userId,
@@ -231,7 +250,11 @@ export async function confirmTwoFactorSetup(
   ip: string | null,
 ): Promise<boolean> {
   const u = await db().user.findUniqueOrThrow({ where: { id: userId } });
-  if (!u.twoFactorSecretEnc || !verifyTotp(decryptField(u.twoFactorSecretEnc), code)) return false;
+  if (
+    !u.twoFactorSecretEnc ||
+    !(await consumeTotp(u.id, u.twoFactorSecretEnc, code, u.lastTotpStep))
+  )
+    return false;
   await db().$transaction([
     db().user.update({ where: { id: userId }, data: { twoFactorEnabledAt: new Date() } }),
     db().session.update({ where: { id: sessionId }, data: { twoFactorPassed: true } }),

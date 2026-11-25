@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { base32Decode, base32Encode, hotp, totp, verifyTotp } from "./totp";
+import { base32Decode, base32Encode, hotp, matchTotpStep, totp, verifyTotp } from "./totp";
 import { passwordProblem } from "./password";
 import { slugify } from "./slug";
 
@@ -28,6 +28,17 @@ describe("TOTP", () => {
     expect(verifyTotp(B32, code, now + 30_000)).toBe(true);
     expect(verifyTotp(B32, code, now + 95_000)).toBe(false);
     expect(verifyTotp(B32, "12345", now)).toBe(false);
+  });
+});
+
+describe("TOTP adımı", () => {
+  it("kullanılmış adım ve öncesi reddedilir", () => {
+    const now = 1_700_000_000_000;
+    const step = Math.floor(now / 30_000);
+    const code = totp(B32, now);
+    expect(matchTotpStep(B32, code, now)).toBe(step);
+    expect(matchTotpStep(B32, code, now, step)).toBeNull();
+    expect(matchTotpStep(B32, totp(B32, now + 30_000), now + 30_000, step)).toBe(step + 1);
   });
 });
 
