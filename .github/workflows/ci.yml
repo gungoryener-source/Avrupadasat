@@ -42,7 +42,7 @@ jobs:
       DATABASE_URL: postgresql://avrupadasat:avrupadasat@localhost:5432/avrupadasat?schema=public
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -83,7 +83,7 @@ jobs:
       CHROME: /usr/bin/google-chrome
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 22
