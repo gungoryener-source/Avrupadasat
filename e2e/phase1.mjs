@@ -4,6 +4,7 @@ import {
   BASE,
   browser,
   runWorkerUntil,
+  enterTotp,
   setup2fa,
   SHOTS,
   step,

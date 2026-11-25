@@ -1,6 +1,6 @@
 # Avrupadasat — Yazılım Geliştirme Planı
 
-Son güncelleme: 24.11.2026
+Son güncelleme: 25.11.2026 — Aşama 0–5 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
 
 ## Kararlar
 
@@ -31,7 +31,7 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 
 ### Aşama 0 — Kurulum (1–2 gün)
 
-- [ ] GitHub reposunun açılması (kullanıcı) ve bağlanması — kod yerelde hazır, repo bekleniyor
+- [ ] GitHub reposunun açılması (kullanıcı) ve bağlanması — kod hazır (git geçmişiyle arşiv), repo bekleniyor
 - [x] Monorepo iskeleti (pnpm + Turborepo), lint, format, test altyapısı, GitHub Actions
 - [x] `CLAUDE.md`, `brand.config.ts`, `.env.example`
 - [x] Veri modeli taslağı (ERD) ve olay kataloğu → `docs/architecture/`
@@ -39,56 +39,56 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 
 ### Aşama 1 — Çekirdek (1–2 hafta)
 
-- [ ] Kimlik doğrulama, roller, çok kiracılı yapı + izolasyon testleri
-- [ ] Firma/müşteri kartı, belgeler, yetkililer
-- [ ] CRM: lead → ön değerlendirme → teklif → sözleşme → onboarding
-- [ ] Teklif PDF'i ve çevrimiçi onay
-- [ ] Ekip paneli iskeleti, audit log
+- [x] Kimlik doğrulama, roller, çok kiracılı yapı + izolasyon testleri
+- [x] Firma/müşteri kartı, belgeler, yetkililer
+- [x] CRM: lead → ön değerlendirme → teklif → sözleşme → onboarding
+- [x] Teklif PDF'i ve çevrimiçi onay
+- [x] Ekip paneli iskeleti, audit log
 - **Bitti sayılır:** Formdan gelen bir lead teklife, sözleşmeye ve aktif müşteriye dönüşebiliyor
 
 ### Aşama 2 — Türkçe site (2 hafta)
 
-- [ ] Ana sayfa, hizmetler, 3 adımlı süreç, paketler (Başlangıç / Operasyon / Pazara Giriş), SSS
-- [ ] **Ücretsiz Avrupa Uygunluk Raporu** (kanca ürün): form → 48 saatte rapor → teklif. Sitede en az 3 noktadan erişim
-- [ ] "Ürünüm Avrupa'ya uygun mu?" sihirbazı (CE, GPSR, ambalaj, WEEE kontrol listesi)
-- [ ] Maliyet hesaplayıcı: aylık operasyon + **kuruluş toplamı (noter, sicil, devlet harçları dahil tahmini)**
-- [ ] **"Almanya'da şirket kuruluşu" hizmet sayfası** (sıfırdan, Türk ihracatçıya göre): UG/GmbH karşılaştırması, Türk noterinde vekâletname + apostil + çeviri adımları, Türkiye–Almanya çifte vergilendirme anlaşması ve kâr transferi örnekleri, dahil olan / olmayan kalemler
-- [ ] Güven unsurları: ekip, iş ortağı avukat ve Steuerberater, gerçek vaka çalışmaları; WhatsApp ve Türkçe danışman CTA'ları
-- [ ] Arama reklamları için tek hedefli açılış sayfası şablonu + A/B varyantı ("Amazon Almanya'da satış", "Almanya'da şirket kurmak", "Almanya'ya e-ihracat", "Almanya'da depo")
-- [ ] Ön değerlendirme / rapor formu → CRM
-- [ ] **Tek, tutarlı fiyat listesi** (palet/ay, mal kabul, kademeli pick & pack, Pre-FBA, iade); kurulum ücreti yok, aylık fesih; hesaplayıcı ile aynı `pricing` tablosundan beslenir
-- [ ] **Uyum paketi** sayfası: Alman KDV kaydı, mali temsilci (Fiskalvertretung), LUCID/VerpackG, GPSR AB sorumlu kişi (resmî kaynaktan doğrulanmadan vaat yok)
-- [ ] **İade merkezi** sayfası: kontrol, yeniden etiketleme, yeniden satış
-- [ ] **"Paket mi, toplu ithalat mı?"** rehberi: 1 Temmuz 2026 paket başı 3 € vergisi, H7/A.TR belirsizliği dürüstçe
-- [ ] **E-ihracat destek rehberi**: kaldırılan / süren destekler, ön onay şartı, "Destek uygunluk ön kontrolü" CTA'sı
-- [ ] Pilot paket: "İlk 1–2 paletle Almanya'yı test edin"
-- [ ] SEO içerik kümesi: şirket kurma maliyeti, gerekli evraklar, ne kadar sürer, depo fiyatları, gümrük vergisi hesaplama, Amazon Almanya'da nasıl satılır
-- [ ] Çerez onayı + Google Consent Mode v2, GA4/GTM olayları; KVKK ve DSGVO metinleri
+- [x] Ana sayfa, hizmetler, 3 adımlı süreç, paketler (Başlangıç / Operasyon / Pazara Giriş), SSS
+- [x] **Ücretsiz Avrupa Uygunluk Raporu** (kanca ürün): form → 48 saatte rapor → teklif. Sitede en az 3 noktadan erişim
+- [x] "Ürünüm Avrupa'ya uygun mu?" sihirbazı (CE, GPSR, ambalaj, WEEE kontrol listesi)
+- [x] Maliyet hesaplayıcı: aylık operasyon + **kuruluş toplamı (noter, sicil, devlet harçları dahil tahmini)**
+- [x] **"Almanya'da şirket kuruluşu" hizmet sayfası** (sıfırdan, Türk ihracatçıya göre): UG/GmbH karşılaştırması, Türk noterinde vekâletname + apostil + çeviri adımları, Türkiye–Almanya çifte vergilendirme anlaşması ve kâr transferi örnekleri, dahil olan / olmayan kalemler
+- [x] Güven unsurları: ekip, iş ortağı avukat ve Steuerberater, gerçek vaka çalışmaları; WhatsApp ve Türkçe danışman CTA'ları
+- [x] Arama reklamları için tek hedefli açılış sayfası şablonu + A/B varyantı ("Amazon Almanya'da satış", "Almanya'da şirket kurmak", "Almanya'ya e-ihracat", "Almanya'da depo")
+- [x] Ön değerlendirme / rapor formu → CRM
+- [x] **Tek, tutarlı fiyat listesi** (palet/ay, mal kabul, kademeli pick & pack, Pre-FBA, iade); kurulum ücreti yok, aylık fesih; hesaplayıcı ile aynı `pricing` tablosundan beslenir
+- [x] **Uyum paketi** sayfası: Alman KDV kaydı, mali temsilci (Fiskalvertretung), LUCID/VerpackG, GPSR AB sorumlu kişi (resmî kaynaktan doğrulanmadan vaat yok)
+- [x] **İade merkezi** sayfası: kontrol, yeniden etiketleme, yeniden satış
+- [x] **"Paket mi, toplu ithalat mı?"** rehberi: 1 Temmuz 2026 paket başı 3 € vergisi, H7/A.TR belirsizliği dürüstçe
+- [x] **E-ihracat destek rehberi**: kaldırılan / süren destekler, ön onay şartı, "Destek uygunluk ön kontrolü" CTA'sı
+- [x] Pilot paket: "İlk 1–2 paletle Almanya'yı test edin"
+- [x] SEO içerik kümesi: şirket kurma maliyeti, gerekli evraklar, ne kadar sürer, depo fiyatları, gümrük vergisi hesaplama, Amazon Almanya'da nasıl satılır
+- [x] Çerez onayı + Google Consent Mode v2, GA4/GTM olayları; KVKK ve DSGVO metinleri
 - **Bitti sayılır:** Site staging'de yayında, form CRM'e düşüyor
 
 ### Aşama 3 — Müşteri paneli (2–3 hafta)
 
-- [ ] Genel bakış: ciro, sipariş, stok, uyarılar
-- [ ] Sevkiyat kaydı ve adım adım takip (manuel giriş): fabrika → TR çıkış → AB giriş → gümrük → depo
-- [ ] Belgeler: ticari fatura, A.TR, çeki listesi, CMR; eksik belge uyarısı
-- [ ] Partner depoya gelen sevkiyat bildirimi (ASN), stok listesi (CSV içe aktarma)
-- [ ] Şirket kurulum süreci takibi (GmbH/UG, vergi no, EORI, LUCID)
-- [ ] **Bekleme yönetimi:** kayıtlar beklenirken panel açık; "bu arada hazırlayabilecekleriniz" listesi (ürün kartları, Almanca içerik onayı, ilk ASN), hatırlatmalar; yalnız satış ve ödeme adımları numara gelene kadar kilitli
+- [x] Genel bakış: ciro, sipariş, stok, uyarılar
+- [x] Sevkiyat kaydı ve adım adım takip (manuel giriş): fabrika → TR çıkış → AB giriş → gümrük → depo
+- [x] Belgeler: ticari fatura, A.TR, çeki listesi, CMR; eksik belge uyarısı
+- [x] Partner depoya gelen sevkiyat bildirimi (ASN), stok listesi (CSV içe aktarma)
+- [x] Şirket kurulum süreci takibi (GmbH/UG, vergi no, EORI, LUCID)
+- [x] **Bekleme yönetimi:** kayıtlar beklenirken panel açık; "bu arada hazırlayabilecekleriniz" listesi (ürün kartları, Almanca içerik onayı, ilk ASN), hatırlatmalar; yalnız satış ve ödeme adımları numara gelene kadar kilitli
 - **Bitti sayılır:** İlk gerçek müşteriler panele girip kendi verisini görebiliyor
 
 ### Aşama 4 — Operasyon (pilot müşteriyle)
 
-- [ ] Sipariş, fulfillment iş emri, iade ve hasar kaydı
-- [ ] Maliyet yansıtma kuralları ve aylık müşteri faturası
-- [ ] Amazon SP-API ve eBay bağlantıları (önce sandbox); Almanca web mağaza
-- [ ] Partner performans skor kartı
+- [x] Sipariş, fulfillment iş emri, iade ve hasar kaydı
+- [x] Maliyet yansıtma kuralları ve aylık müşteri faturası
+- [x] Amazon/eBay adaptör arayüzü + demo modu (canlı bağlantı: kimlik bilgileri ve sandbox doğrulaması bekliyor) — Almanca web mağaza: ⏳ sonraki iş
+- [x] Partner performans skor kartı
 
 ### Aşama 5 — Otomasyon ve mobil
 
-- [ ] AI destekli müşteri mesajı yanıtı (Almanca mesaj, Türkçe çeviriyle onay)
-- [ ] Ürün içeriğinin Almancaya AI ile hazırlanması (insan onaylı)
-- [ ] DATEV aktarımı, KDV/OSS raporu
-- [ ] iOS / Android müşteri uygulaması (Expo / React Native, aynı API)
+- [x] AI destekli müşteri mesajı yanıtı (Almanca mesaj, Türkçe çeviriyle onay)
+- [x] Ürün içeriğinin Almancaya AI ile hazırlanması (insan onaylı)
+- [x] DATEV aktarımı, KDV/OSS raporu
+- [x] iOS / Android müşteri uygulaması (Expo / React Native, aynı API) — mağaza yayını (EAS build) bekliyor
 
 ## Paket kurgusu (taslak, rakip analizinden)
 
@@ -121,3 +121,12 @@ Strateji: kuruluşu rakibe yakın fiyatla verip asıl geliri aylık operasyon ve
 - Her aşama ayrı branch (`phase-0-setup`, `phase-1-core` …), PR ile birleştirme
 - Her aşama sonunda: ✅ yapılanlar · ⚠️ eksikler · ❓ karar bekleyenler · ▶️ sonraki adım
 - Demo verisi canlıya çıkmaz; gerçek vaka ve yorumlar yalnızca izinle
+
+## Kod tarafında kalan işler (25.11.2026)
+
+- Canlı Amazon SP-API / eBay bağlantısı (kimlik bilgileri + sandbox)
+- Gerçek e-posta gönderimi (SMTP/Postmark/SES adaptörü)
+- Ürüne özel Almanca web mağaza (Shopify/WooCommerce entegrasyonu veya kendi mağaza)
+- Nonce tabanlı CSP (GTM ile), S3 uyumlu belge depolama, şifreleme anahtarı rotasyonu
+- Mobil uygulama mağaza yayını (EAS), push bildirimleri
+- Yayın sonrası: Lighthouse, securityheaders.com, Tag Assistant, Meta Events Manager, bağımsız sızma testi

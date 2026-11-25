@@ -1,43 +1,27 @@
-# Veri modeli (Aşama 0 taslağı)
+# Veri modeli
 
-Kaynak: `packages/db/prisma/schema.prisma`
+Kaynak: `packages/db/prisma/schema.prisma` (7 migration).
 
-```mermaid
-erDiagram
-  Tenant ||--o{ Membership : "kullanıcıları"
-  Tenant ||--o{ PartnerAssignment : "partnerleri"
-  Tenant ||--o{ RegistrationTask : "kuruluş adımları"
-  Tenant ||--o{ Shipment : "sevkiyatlar"
-  Tenant ||--o{ StockItem : "stok"
-  Tenant ||--o{ Lead : "dönüşen talepler"
-  User ||--o{ Membership : ""
-  User ||--o{ PartnerAssignment : ""
-```
+| Alan      | Modeller                                                             | Tenant kapsamı                            |
+| --------- | -------------------------------------------------------------------- | ----------------------------------------- |
+| Kimlik    | User, Session, AuthToken, ApiToken, RateLimit                        | sistem                                    |
+| Firma     | Tenant, Membership, PartnerAssignment, TenantContact                 | Membership/Partner/Contact **zorunlu**    |
+| CRM       | Lead, Quote, Contract                                                | Contract **zorunlu**                      |
+| Kuruluş   | RegistrationTask                                                     | **zorunlu**                               |
+| Lojistik  | Shipment, ShipmentEvent, AsnLine, Document, StockItem, StockMovement | **zorunlu**                               |
+| Satış     | MarketplaceConnection, Order, OrderLine, WorkOrder, ReturnItem       | **zorunlu**                               |
+| Finans    | Invoice, Disbursement, StorageSnapshot, PriceList                    | Invoice/Disbursement/Snapshot **zorunlu** |
+| Otomasyon | CustomerMessage, ProductContent                                      | **zorunlu**                               |
+| Sistem    | OutboxEvent, AuditLog, ConsentRecord                                 | sistem                                    |
 
-| Model             | Tenant kapsamı | Not                                                                        |
-| ----------------- | -------------- | -------------------------------------------------------------------------- |
-| Tenant            | —              | Müşteri firma. Vergi no ve IBAN AES-256-GCM ile şifreli (`*Enc`)           |
-| User              | —              | Ekip rolü `staffRole`; müşteri rolü `Membership` ile firma başına          |
-| Membership        | **zorunlu**    | CLIENT_OWNER / CLIENT_USER                                                 |
-| PartnerAssignment | **zorunlu**    | Depo vb. partnerin hizmet verdiği firmalar                                 |
-| Lead              | isteğe bağlı   | Uygunluk raporu talebi; müşteri olunca `tenantId` bağlanır                 |
-| RegistrationTask  | **zorunlu**    | Vekâletname → apostil → noter → sicil → vergi no → USt-IdNr → EORI → LUCID |
-| Shipment          | **zorunlu**    | Fabrika → TR çıkış → AB giriş → gümrük → depo kabul                        |
-| StockItem         | **zorunlu**    | SKU bazında stok                                                           |
-| OutboxEvent       | sistem         | Olaylar; worker işler, idempotency anahtarı benzersiz                      |
-| AuditLog          | sistem         | Giriş, yetki, dışa aktarma, fatura/stok değişiklikleri                     |
-| PriceList         | sistem         | Tarih aralıklı fiyat listesi                                               |
+## Şifreli alanlar (AES-256-GCM, `FIELD_ENCRYPTION_KEY`)
+
+Tenant.taxNumberEnc, Tenant.ibanEnc, User.twoFactorSecretEnc, Order.shipToEnc (alıcı adı ve adresi), MarketplaceConnection.credentialsEnc.
+
+## Yalnız hash'i saklananlar
+
+Session.tokenHash, AuthToken.tokenHash, ApiToken.tokenHash, Quote.publicTokenHash, ConsentRecord.ipHash (günlük tuzlu).
 
 ## İzolasyon kuralı
 
-Müşteri verisine erişen her kod `forTenant(prisma, tenantId)` istemcisini kullanır:
-
-- okuma/güncelleme/silmeye `tenantId` filtresi eklenir; başka firma id'si verilirse `TenantScopeError`,
-- oluşturmada `tenantId` zorlanır,
-- tenant kapsamı dışındaki modeller ve ham SQL kapalıdır.
-
-Testler: `packages/db/src/tenant.test.ts` (CI'da gerçek PostgreSQL ile çalışır).
-
-## Aşama 1'de eklenecek
-
-Quote, Contract, Document (dosya), Session, TwoFactor yedek kodları, Invoice.
+Müşteri verisine erişen kod `forTenant(prisma, tenantId)` kullanır: okuma/güncelleme/silmeye `tenantId` eklenir, başka firma id'si verilirse `TenantScopeError`, oluşturmada `tenantId` zorlanır, ham SQL ve kapsam dışı modeller kapalıdır. Ekip sayfalarında ayrıca `canAccessTenant(actor, tenantId)` (partner yalnız atandığı firmalar).
