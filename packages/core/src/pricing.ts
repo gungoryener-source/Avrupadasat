@@ -46,6 +46,77 @@ export const operations = {
   noticePeriodMonths: 1,
 } as const;
 
+/** Pazara Giriş paketinde kuruluş indirimi (%). TODO(verify): ticari karar */
+export const PAZARA_GIRIS_SETUP_DISCOUNT_PCT = 30;
+
+export type PackageCode = keyof typeof packages;
+export type CompanyForm = "UG" | "GMBH" | "NONE";
+
+export interface QuoteLine {
+  code: string;
+  description: string;
+  quantity: number;
+  unitCents: number;
+  recurring: boolean;
+}
+
+/** Teklif kalemleri — site, teklif ve PDF aynı fonksiyonu kullanır */
+export function buildQuoteLines(pkg: PackageCode, form: CompanyForm, pallets = 10): QuoteLine[] {
+  const lines: QuoteLine[] = [];
+  if (form !== "NONE") {
+    const base = packages.BASLANGIC.oneTime[form];
+    const label = form === "UG" ? "UG (haftungsbeschränkt)" : "GmbH";
+    lines.push({
+      code: `SETUP_${form}`,
+      description: `${label} kuruluş koordinasyonu: vekâletname ve apostil rehberliği, noter, ticaret sicili, vergi kaydı`,
+      quantity: 1,
+      unitCents: base,
+      recurring: false,
+    });
+    if (pkg === "PAZARA_GIRIS") {
+      lines.push({
+        code: "SETUP_DISCOUNT",
+        description: `Pazara Giriş paketi kuruluş indirimi (%${PAZARA_GIRIS_SETUP_DISCOUNT_PCT})`,
+        quantity: 1,
+        unitCents: -Math.round((base * PAZARA_GIRIS_SETUP_DISCOUNT_PCT) / 100),
+        recurring: false,
+      });
+    }
+  }
+  if (pkg === "OPERASYON") {
+    lines.push({
+      code: "SUB_OPERASYON",
+      description:
+        "Operasyon paketi: sanal ofis, muhasebe koordinasyonu, stok ve sevkiyat yazılımı",
+      quantity: 1,
+      unitCents: packages.OPERASYON.monthly,
+      recurring: true,
+    });
+  }
+  if (pkg === "PAZARA_GIRIS") {
+    const large = pallets >= packages.PAZARA_GIRIS.largeFromPallets;
+    lines.push({
+      code: large ? "SUB_PAZARA_GIRIS_L" : "SUB_PAZARA_GIRIS",
+      description: `Pazara Giriş paketi: depo yönetimi, gümrük takibi, Amazon.de/eBay.de, Almanca sayfalar ve pazarlama${large ? " (31+ palet)" : ""}`,
+      quantity: 1,
+      unitCents: large ? packages.PAZARA_GIRIS.monthlyLarge : packages.PAZARA_GIRIS.monthly,
+      recurring: true,
+    });
+  }
+  return lines;
+}
+
+export function quoteTotals(lines: QuoteLine[]) {
+  let oneTime = 0;
+  let monthly = 0;
+  for (const l of lines) {
+    const sum = l.quantity * l.unitCents;
+    if (l.recurring) monthly += sum;
+    else oneTime += sum;
+  }
+  return { oneTimeCents: oneTime, monthlyCents: monthly };
+}
+
 export function pickPackRate(ordersPerMonth: number): number {
   const tier = operations.pickPackTiers.find((t) => ordersPerMonth > t.above);
   return (tier ?? operations.pickPackTiers[operations.pickPackTiers.length - 1]!).perOrder;

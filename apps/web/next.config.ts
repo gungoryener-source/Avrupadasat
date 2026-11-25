@@ -33,13 +33,24 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  transpilePackages: ["@avrupadasat/core", "@avrupadasat/ui"],
+  transpilePackages: ["@avrupadasat/core", "@avrupadasat/ui", "@avrupadasat/db"],
+  serverExternalPackages: ["@node-rs/argon2", "pg", "@prisma/adapter-pg"],
+  outputFileTracingIncludes: { "/**": ["./assets/fonts/**"] },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
       {
         source: "/(panel|admin)/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      // Token içeren sayfalar: Referer ile token sızmasın, önbelleğe alınmasın
+      {
+        source: "/(teklif|sifre)/:path*",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Cache-Control", value: "private, no-store" },
+        ],
       },
     ];
   },

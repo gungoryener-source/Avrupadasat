@@ -3,15 +3,24 @@
  * Aşama 0: bildirimler mock modunda yalnız loglanır.
  */
 import "dotenv/config";
-import { getPrisma } from "@avrupadasat/db";
+import { decryptField, getPrisma } from "@avrupadasat/db";
 import { processRow, type OutboxRow, type Ports } from "./handlers";
 
 const POLL_MS = Number(process.env.WORKER_POLL_MS ?? 2000);
 const BATCH = 20;
 
+const isProd = process.env.NODE_ENV === "production";
+
 const mockPorts: Ports = {
+  appUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  decrypt: (t) => decryptField(t),
   async notify(channel, subject, body) {
     console.info(`[mock:${channel}] ${subject}`, body);
+  },
+  async sendLinkEmail(to, subject, link) {
+    // Mock: geliştirmede bağlantı konsola yazılır; üretimde ASLA loglanmaz
+    const masked = to.replace(/^(.).*(@.*)$/, "$1***$2");
+    console.info(`[mock:email] ${subject} → ${isProd ? masked : to}${isProd ? "" : ` | ${link}`}`);
   },
 };
 

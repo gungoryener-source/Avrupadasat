@@ -92,6 +92,9 @@ model Tenant {
   stockItems    StockItem[]
   registration  RegistrationTask[]
   leads         Lead[]
+  quotes        Quote[]
+  contracts     Contract[]
+  contacts      TenantContact[]
 }
 
 model User {
@@ -100,7 +103,12 @@ model User {
   name             String
   /// Argon2id hash (Aşama 1)
   passwordHash     String?
-  twoFactorSecret  String?
+  /// TOTP sırrı, AES-256-GCM ile şifreli
+  twoFactorSecretEnc String?
+  twoFactorEnabledAt DateTime?
+  failedLogins     Int        @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
   /// Ekip rolü; müşteri kullanıcılarında boş, rolü Membership belirler
   staffRole        StaffRole?
   disabledAt       DateTime?
@@ -108,6 +116,123 @@ model User {
 
   memberships      Membership[]
   partnerOf        PartnerAssignment[]
+  sessions         Session[]
+  tokens           AuthToken[]
+}
+
+model Session {
+  id              String   @id @default(cuid())
+  /// SHA-256(token); ham token yalnız çerezde
+  tokenHash       String   @unique
+  userId          String
+  twoFactorPassed Boolean  @default(false)
+  ip              String?
+  userAgent       String?
+  createdAt       DateTime @default(now())
+  lastSeenAt      DateTime @default(now())
+  expiresAt       DateTime
+
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum TokenPurpose {
+  INVITE
+  PASSWORD_RESET
+}
+
+model AuthToken {
+  id        String       @id @default(cuid())
+  userId    String
+  purpose   TokenPurpose
+  tokenHash String       @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Basit sabit pencereli hız sınırı (çoklu sunucuda da çalışır)
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum CompanyForm {
+  UG
+  GMBH
+  NONE
+}
+
+model Quote {
+  id             String      @id @default(cuid())
+  number         String      @unique
+  leadId         String?
+  tenantId       String?
+  packageCode    PackageCode
+  companyForm    CompanyForm @default(UG)
+  /// [{ code, description, quantity, unitCents, recurring }]
+  lines          Json
+  oneTimeCents   Int
+  monthlyCents   Int
+  status         QuoteStatus @default(DRAFT)
+  publicTokenHash String?    @unique
+  priceListVersion String
+  validUntil     DateTime
+  sentAt         DateTime?
+  acceptedAt     DateTime?
+  acceptedByName String?
+  acceptedIp     String?
+  createdById    String?
+  createdAt      DateTime    @default(now())
+
+  lead           Lead?    @relation(fields: [leadId], references: [id])
+  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
+  contract       Contract?
+
+  @@index([status, createdAt])
+}
+
+/// Çevrimiçi teklif onayı = hizmet sözleşmesi kaydı
+model Contract {
+  id           String   @id @default(cuid())
+  tenantId     String
+  quoteId      String   @unique
+  termsVersion String
+  signerName   String
+  signerEmail  String
+  signerIp     String?
+  signedAt     DateTime @default(now())
+
+  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  quote        Quote  @relation(fields: [quoteId], references: [id])
+
+  @@index([tenantId])
+}
+
+model TenantContact {
+  id        String  @id @default(cuid())
+  tenantId  String
+  name      String
+  title     String?
+  email     String?
+  phone     String?
+  isPrimary Boolean @default(false)
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }
 
 model Membership {
@@ -151,7 +276,9 @@ model Lead {
   tenantId        String?
   createdAt       DateTime   @default(now())
 
+  notes           String?
   tenant          Tenant?    @relation(fields: [tenantId], references: [id])
+  quotes          Quote[]
 
   @@index([status, createdAt])
 }

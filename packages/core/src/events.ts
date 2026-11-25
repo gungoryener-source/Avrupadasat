@@ -64,8 +64,27 @@ export const shipmentStatusChangedV1 = z.object({
   at: z.iso.datetime(),
 });
 
+/**
+ * Bağlantı içeren e-postalar: ham token outbox'a YAZILMAZ; FIELD_ENCRYPTION_KEY ile şifreli taşınır.
+ */
+export const userInvitedV1 = z.object({
+  userId: z.string(),
+  email: z.email(),
+  purpose: z.enum(["INVITE", "PASSWORD_RESET"]),
+  tokenEnc: z.string(),
+});
+
+export const quoteSentV1 = z.object({
+  quoteId: z.string(),
+  number: z.string(),
+  email: z.email(),
+  tokenEnc: z.string(),
+});
+
 export const eventSchemas = {
   "lead.submitted.v1": leadSubmittedV1,
+  "user.invited.v1": userInvitedV1,
+  "quote.sent.v1": quoteSentV1,
   "quote.accepted.v1": quoteAcceptedV1,
   "registration.status_changed.v1": registrationStatusChangedV1,
   "shipment.status_changed.v1": shipmentStatusChangedV1,
