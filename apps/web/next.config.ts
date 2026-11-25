@@ -42,6 +42,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Belge yükleme sınırı 10 MB (sunucuda ayrıca doğrulanır)
+  experimental: { serverActions: { bodySizeLimit: "11mb" } },
   reactStrictMode: true,
   transpilePackages: ["@avrupadasat/core", "@avrupadasat/ui", "@avrupadasat/db"],
   serverExternalPackages: ["@node-rs/argon2", "pg", "@prisma/adapter-pg"],

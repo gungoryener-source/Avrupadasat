@@ -7,7 +7,11 @@ import { db } from "@/server/db";
 import { PACKAGE_LABEL, STEP_LABEL, STEP_STATUS, TENANT_STATUS } from "@/server/labels";
 import { requireStaff } from "@/server/session";
 import { resendInviteAction } from "../../actions";
-import { updateRegistrationAction, updateTenantStatusAction } from "../../ops-actions";
+import {
+  stockCountAction,
+  updateRegistrationAction,
+  updateTenantStatusAction,
+} from "../../ops-actions";
 
 export default async function TenantDetail({ params }: { params: Promise<{ id: string }> }) {
   const s = await requireStaff("tenant.read");
@@ -135,6 +139,17 @@ export default async function TenantDetail({ params }: { params: Promise<{ id: s
               {c.email} · {c.phone}
             </p>
           ))}
+          <h3>Stok sayımı (CSV: sku;miktar)</h3>
+          <form action={stockCountAction} className="form">
+            <input type="hidden" name="tenantId" value={t.id} />
+            <textarea
+              name="csv"
+              rows={3}
+              placeholder={"sku;miktar\nHV-1;120"}
+              aria-label="Sayım CSV"
+            />
+            <Submit className="btn btn-o btn-sm">Sayımı işle</Submit>
+          </form>
           <h3>Sözleşmeler</h3>
           {t.contracts.map((c) => (
             <p key={c.id} style={{ fontSize: 14 }}>

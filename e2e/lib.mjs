@@ -1,5 +1,5 @@
 // Uçtan uca test yardımcıları (playwright-core + sistem Chrome)
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { createHmac } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { chromium } from "playwright-core";
@@ -95,4 +95,24 @@ export async function setup2fa(page) {
   await page.getByLabel("Uygulamadaki 6 haneli kod").fill(totp(secret));
   await page.getByRole("button", { name: /etkinleştir/ }).click();
   return secret;
+}
+
+/** Sabit e2e hesaplarını yeniden kurar ve bilgilerini döner */
+export function seedE2E() {
+  const out = execFileSync("pnpm", ["-s", "--filter", "@avrupadasat/db", "seed:e2e"], {
+    cwd: new URL("..", import.meta.url).pathname,
+    encoding: "utf8",
+  });
+  return JSON.parse(out.trim().split("\n").pop());
+}
+
+export async function login(page, email, password, secret) {
+  await page.goto(`${BASE}/giris`);
+  await page.getByLabel("E-posta").fill(email);
+  await page.getByLabel("Şifre").fill(password);
+  await page.getByRole("button", { name: "Giriş yap" }).click();
+  await page.waitForURL(/\/giris\/2fa/);
+  await page.getByLabel("Doğrulama kodu").fill(totp(secret));
+  await page.getByRole("button", { name: "Doğrula" }).click();
+  await page.waitForURL(/\/(panel|admin)/);
 }
