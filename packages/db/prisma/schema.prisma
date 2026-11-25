@@ -1,0 +1,238 @@
+// Avrupadasat — veri modeli (Aşama 0 taslağı)
+// Kural: Müşteri firmaya ait her kayıtta `tenantId` vardır ve sorgular
+// `forTenant()` istemcisiyle yapılır (bkz. src/tenant.ts). İzolasyon testleri zorunludur.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StaffRole {
+  ADMIN
+  OPS
+  FINANCE
+  SALES
+  PARTNER
+}
+
+enum ClientRole {
+  CLIENT_OWNER
+  CLIENT_USER
+}
+
+enum TenantStatus {
+  ONBOARDING
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
+enum PackageCode {
+  BASLANGIC
+  OPERASYON
+  PAZARA_GIRIS
+}
+
+enum LeadStatus {
+  NEW
+  REPORT_IN_PROGRESS
+  REPORT_SENT
+  QUOTED
+  WON
+  LOST
+}
+
+enum RegistrationStep {
+  VEKALETNAME
+  APOSTIL
+  NOTER
+  TICARET_SICILI
+  VERGI_NO
+  UST_ID
+  EORI
+  LUCID
+}
+
+enum StepStatus {
+  BEKLIYOR
+  SURUYOR
+  TAMAM
+  SORUN
+}
+
+enum ShipmentStage {
+  FABRIKA
+  TR_CIKIS
+  AB_GIRIS
+  GUMRUK
+  DEPO_KABUL
+}
+
+/// Müşteri firma (kiracı)
+model Tenant {
+  id            String       @id @default(cuid())
+  name          String
+  slug          String       @unique
+  city          String?
+  status        TenantStatus @default(ONBOARDING)
+  packageCode   PackageCode?
+  /// AES-256-GCM ile şifreli (src/crypto.ts)
+  taxNumberEnc  String?
+  ibanEnc       String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  memberships   Membership[]
+  partners      PartnerAssignment[]
+  shipments     Shipment[]
+  stockItems    StockItem[]
+  registration  RegistrationTask[]
+  leads         Lead[]
+}
+
+model User {
+  id               String     @id @default(cuid())
+  email            String     @unique
+  name             String
+  /// Argon2id hash (Aşama 1)
+  passwordHash     String?
+  twoFactorSecret  String?
+  /// Ekip rolü; müşteri kullanıcılarında boş, rolü Membership belirler
+  staffRole        StaffRole?
+  disabledAt       DateTime?
+  createdAt        DateTime   @default(now())
+
+  memberships      Membership[]
+  partnerOf        PartnerAssignment[]
+}
+
+model Membership {
+  id        String     @id @default(cuid())
+  userId    String
+  tenantId  String
+  role      ClientRole
+  createdAt DateTime   @default(now())
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+}
+
+/// Partner (ör. depo) kullanıcısının hizmet verdiği firmalar
+model PartnerAssignment {
+  id        String @id @default(cuid())
+  userId    String
+  tenantId  String
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+}
+
+/// Ücretsiz uygunluk raporu / ön değerlendirme talebi
+model Lead {
+  id              String     @id @default(cuid())
+  companyName     String
+  email           String
+  phone           String
+  category        String
+  status          LeadStatus @default(NEW)
+  consentKvkk     Boolean
+  marketingConsent Boolean   @default(false)
+  attribution     Json       @default("{}")
+  /// Müşteriye dönüşünce bağlanır
+  tenantId        String?
+  createdAt       DateTime   @default(now())
+
+  tenant          Tenant?    @relation(fields: [tenantId], references: [id])
+
+  @@index([status, createdAt])
+}
+
+model RegistrationTask {
+  id        String           @id @default(cuid())
+  tenantId  String
+  step      RegistrationStep
+  status    StepStatus       @default(BEKLIYOR)
+  note      String?
+  updatedAt DateTime         @updatedAt
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, step])
+}
+
+model Shipment {
+  id         String        @id @default(cuid())
+  tenantId   String
+  reference  String
+  stage      ShipmentStage @default(FABRIKA)
+  pallets    Int           @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, reference])
+  @@index([tenantId, stage])
+}
+
+model StockItem {
+  id        String   @id @default(cuid())
+  tenantId  String
+  sku       String
+  name      String
+  quantity  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sku])
+}
+
+/// Transactional outbox: olaylar aynı işlemde yazılır, worker işler
+model OutboxEvent {
+  id             String    @id @default(cuid())
+  type           String
+  tenantId       String?
+  payload        Json
+  idempotencyKey String    @unique
+  attempts       Int       @default(0)
+  lastError      String?
+  processedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([processedAt, createdAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  tenantId    String?
+  action      String
+  entity      String
+  entityId    String?
+  meta        Json     @default("{}")
+  ip          String?
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([actorUserId, createdAt])
+}
+
+/// Tarih aralıklı fiyat listesi (varsayılan: packages/core/src/pricing.ts)
+model PriceList {
+  id        String    @id @default(cuid())
+  version   String    @unique
+  validFrom DateTime
+  validTo   DateTime?
+  data      Json
+  createdAt DateTime  @default(now())
+}

@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: Gizli anahtar taraması
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  check:
+    name: Lint · Tip · Test · Build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: avrupadasat
+          POSTGRES_PASSWORD: avrupadasat
+          POSTGRES_DB: avrupadasat
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U avrupadasat"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://avrupadasat:avrupadasat@localhost:5432/avrupadasat?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm db:generate
+      - run: pnpm --filter @avrupadasat/db migrate:deploy
+      - run: pnpm lint
+      - run: pnpm typecheck
+      # Tenant izolasyon testleri dahil (DATABASE_URL tanımlı olduğu için atlanmaz)
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm audit --prod --audit-level high

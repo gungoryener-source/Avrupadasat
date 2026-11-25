@@ -1,0 +1,17 @@
+/* Tasarım belirteçleri — önizleme sitesindeki renklerle aynı */
+:root {
+  --p: #c8102e;
+  --p-dark: #8f0b21;
+  --ink: #0b1324;
+  --navy: #13213f;
+  --mute: #5b6478;
+  --line: #e5e8ef;
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --ok: #138a4b;
+  --warn: #b86e00;
+  --gold: #f2c230;
+  --radius: 16px;
+  --shadow: 0 8px 30px rgba(11, 19, 36, 0.06);
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}

@@ -1,0 +1,101 @@
+/**
+ * Tek kaynaktan fiyat. Site, hesaplayıcı ve teklif bu tabloyu kullanır.
+ * Tutarlar EURO CENT cinsinden tam sayıdır (kayan nokta hatası olmasın).
+ * Fiyatlar TASLAK — partner maliyetleriyle teyit edilecek. TODO(verify)
+ * İleride veritabanındaki tarih aralıklı `PriceList` kaydından okunur; bu dosya varsayılandır.
+ */
+
+export const PRICE_LIST_VERSION = "2026-11-taslak";
+
+export const packages = {
+  BASLANGIC: {
+    name: "Başlangıç",
+    oneTime: { UG: 125_000, GMBH: 300_000 },
+    monthly: 0,
+  },
+  OPERASYON: {
+    name: "Operasyon",
+    monthly: 34_900,
+  },
+  PAZARA_GIRIS: {
+    name: "Pazara Giriş",
+    /** 30 palete kadar; üstü büyük hacim fiyatı */
+    monthly: 49_900,
+    monthlyLarge: 79_900,
+    largeFromPallets: 31,
+  },
+} as const;
+
+export const operations = {
+  storagePerPalletMonth: 1_300,
+  inboundPerCarton: 50,
+  /** Aylık sipariş hacmine göre kademeli pick & pack */
+  pickPackTiers: [
+    { above: 2000, perOrder: 160 },
+    { above: 800, perOrder: 185 },
+    { above: 0, perOrder: 210 },
+  ],
+  preFbaPerCarton: 490,
+  returnPerItem: 400,
+  extras: {
+    marketplacePerSku: 40,
+    customerServicePerOrder: 35,
+    accountingMonthly: 18_000,
+  },
+  setupFee: 0,
+  noticePeriodMonths: 1,
+} as const;
+
+export function pickPackRate(ordersPerMonth: number): number {
+  const tier = operations.pickPackTiers.find((t) => ordersPerMonth > t.above);
+  return (tier ?? operations.pickPackTiers[operations.pickPackTiers.length - 1]!).perOrder;
+}
+
+export interface EstimateInput {
+  pallets: number;
+  ordersPerMonth: number;
+  skus: number;
+  marketplace: boolean;
+  customerService: boolean;
+  accounting: boolean;
+}
+
+export interface Estimate {
+  storage: number;
+  pickPack: number;
+  subscription: number;
+  extras: number;
+  total: number;
+  perOrder: number;
+}
+
+/** Sitedeki aylık maliyet hesaplayıcısının mantığı */
+export function estimateMonthly(input: EstimateInput): Estimate {
+  if (input.pallets < 0 || input.ordersPerMonth < 0 || input.skus < 0) {
+    throw new RangeError("Değerler negatif olamaz");
+  }
+  const storage = input.pallets * operations.storagePerPalletMonth;
+  const pickPack = input.ordersPerMonth * pickPackRate(input.ordersPerMonth);
+  const subscription = !input.marketplace
+    ? packages.OPERASYON.monthly
+    : input.pallets >= packages.PAZARA_GIRIS.largeFromPallets
+      ? packages.PAZARA_GIRIS.monthlyLarge
+      : packages.PAZARA_GIRIS.monthly;
+  let extras = 0;
+  if (input.marketplace) extras += input.skus * operations.extras.marketplacePerSku;
+  if (input.customerService)
+    extras += input.ordersPerMonth * operations.extras.customerServicePerOrder;
+  if (input.accounting) extras += operations.extras.accountingMonthly;
+  const total = storage + pickPack + subscription + extras;
+  const perOrder = input.ordersPerMonth > 0 ? Math.round(total / input.ordersPerMonth) : 0;
+  return { storage, pickPack, subscription, extras, total, perOrder };
+}
+
+/** Türkçe metinde ek alabilsin diye simge önde: "€1.250'dan", "€1,95" */
+export function formatEur(cents: number, opts: { decimals?: boolean } = {}): string {
+  const n = new Intl.NumberFormat("de-DE", {
+    minimumFractionDigits: opts.decimals ? 2 : 0,
+    maximumFractionDigits: opts.decimals ? 2 : 0,
+  }).format(Math.abs(cents) / 100);
+  return `${cents < 0 ? "-" : ""}€${n}`;
+}

@@ -1,0 +1,17 @@
+node_modules/
+.pnpm-store/
+.turbo/
+.next/
+dist/
+coverage/
+generated/
+*.tsbuildinfo
+next-env.d.ts
+
+# Gizli bilgiler asla repoya girmez
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log

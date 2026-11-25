@@ -1,0 +1,14 @@
+# Yalnızca yerel geliştirme için. Üretimde yönetilen PostgreSQL (AB bölgesi) kullanılır.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: avrupadasat
+      POSTGRES_PASSWORD: avrupadasat
+      POSTGRES_DB: avrupadasat
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

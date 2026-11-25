@@ -1,0 +1,33 @@
+{
+  "name": "@avrupadasat/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./crypto": "./src/crypto.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "seed": "tsx prisma/seed.ts",
+    "lint": "eslint src prisma",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@avrupadasat/core": "workspace:*",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.6",
+    "@types/pg": "8.23.1",
+    "dotenv": "18.0.10",
+    "prisma": "7.10.1",
+    "tsx": "4.23.15",
+    "vitest": "5.1.1"
+  }
+}
