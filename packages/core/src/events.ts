@@ -96,7 +96,13 @@ export const invoiceIssuedV1 = z.object({
   grossCents: z.number().int(),
 });
 
+/** Son firma sahibi hesabını sildi: firma verisinin akıbeti (yasal saklama) ekip tarafından karara bağlanır */
+export const accountDeletionRequestedV1 = z.object({
+  reason: z.enum(["last_owner_deleted"]),
+});
+
 export const eventSchemas = {
+  "account.deletion_requested.v1": accountDeletionRequestedV1,
   "order.created.v1": orderCreatedV1,
   "order.shipped.v1": orderShippedV1,
   "return.processed.v1": returnProcessedV1,

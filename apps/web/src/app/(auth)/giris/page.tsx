@@ -6,13 +6,18 @@ export const metadata = { title: "Giriş" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; sifre?: string; hata?: string }>;
+  searchParams: Promise<{ next?: string; sifre?: string; hata?: string; hesap?: string }>;
 }) {
   const sp = await searchParams;
   return (
     <>
       <h1 style={{ marginTop: 0, fontSize: 22 }}>Giriş</h1>
       {sp.sifre === "ok" && <p className="alert-ok">Şifreniz kaydedildi. Giriş yapabilirsiniz.</p>}
+      {sp.hesap === "silindi" && (
+        <p className="alert-ok" role="status">
+          Hesabınız silindi ve tüm oturumlarınız kapatıldı.
+        </p>
+      )}
       {sp.hata === "yetki" && (
         <p className="alert-err">Hesabınıza bağlı bir firma veya rol bulunamadı.</p>
       )}

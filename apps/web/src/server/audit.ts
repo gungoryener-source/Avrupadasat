@@ -28,6 +28,7 @@ export type AuditAction =
   | "return.created"
   | "invoice.generated"
   | "data.exported"
+  | "user.deleted"
   | "pricing.changed"
   | "message.replied";
 

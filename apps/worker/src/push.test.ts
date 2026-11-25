@@ -75,3 +75,29 @@ describe("Expo anlık bildirim", () => {
     expect(sent).toEqual(["sahip@firma.de"]);
   });
 });
+
+describe("hesap silme bildirimi", () => {
+  it("son sahip silinince yalnız ekibe, kişisel veri içermeyen e-posta gider", async () => {
+    const sent: { to: string; text: string }[] = [];
+    const ports: Ports = {
+      appUrl: "https://x.test",
+      sendMail: async (to, m) => void sent.push({ to, text: m.text }),
+      tenantRecipients: async () => ["sahip@firma.de"],
+      opsRecipients: ["ops@ekip.de"],
+      decrypt: (s) => s,
+    };
+    const out = await processRow(
+      {
+        id: "2",
+        type: "account.deletion_requested.v1",
+        tenantId: "t9",
+        payload: { reason: "last_owner_deleted" },
+        attempts: 0,
+      },
+      ports,
+    );
+    expect(out).toEqual({ kind: "done" });
+    expect(sent.map((s) => s.to)).toEqual(["ops@ekip.de"]);
+    expect(sent[0]!.text).toContain("t9");
+  });
+});

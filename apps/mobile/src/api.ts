@@ -94,6 +94,11 @@ export function createApi(
         body: JSON.stringify({ email, password, code: code || undefined }),
       }),
     logout: () => call<void>("/api/v1/auth", { method: "DELETE" }),
+    deleteAccount: (password: string, code?: string) =>
+      call<void>("/api/v1/me", {
+        method: "DELETE",
+        body: JSON.stringify({ password, code: code || undefined, confirm: true }),
+      }),
     registerPush: (token: string) =>
       call<void>("/api/v1/push", { method: "PUT", body: JSON.stringify({ token }) }),
     me: () => call<{ name: string; role: string; tenant: { name: string } }>("/api/v1/me"),

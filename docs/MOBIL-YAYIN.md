@@ -31,7 +31,7 @@ pnpm submit:prod     # Android: dahili test kanalı (taslak), iOS: TestFlight
 - **Hedef kitle:** Platformla sözleşmesi olan firmalar; uygulamada kayıt yok, hesap web panelinden açılır. İnceleme ekibi için **demo müşteri hesabı** (2FA'sız, demo verili, ayrı tenant) hazırlanmalı — üretim verisine erişimi olmamalı.
 - **Ekran görüntüleri:** 6,7" ve 6,5" iPhone, Android telefon (demo hesabından; gerçek müşteri verisi kullanılmaz)
 - **Gizlilik politikası URL'si:** sitedeki gizlilik sayfası (avukat onaylı son hâli)
-- **Hesap silme:** Google Play ve App Store, hesap silme yolunu ister → web panelindeki talep yolu veya destek e-postası belirtilir (⚠️ panelde self-servis silme yok; avukatla birlikte süreç tanımlanmalı)
+- **Hesap silme:** Uygulama içinde Hesap → “Hesabımı sil” (parola + 2FA ile); web panelinde Hesabım sayfası; uygulama dışı bilgi sayfası `/hesap-silme` (Google Play formuna bu URL girilir). Saklanan firma verileri ve süreleri avukatla netleştirilmeli.
 
 ## 5. Gizlilik etiketleri (App Store "App Privacy" / Play "Data safety") — taslak
 
