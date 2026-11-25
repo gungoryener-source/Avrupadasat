@@ -13,6 +13,7 @@
     "postmigrate:dev": "prisma generate",
     "migrate:deploy": "prisma migrate deploy && prisma generate",
     "seed": "tsx prisma/seed.ts",
+    "seed:e2e": "tsx prisma/seed-e2e.ts",
     "lint": "eslint src prisma",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

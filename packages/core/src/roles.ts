@@ -32,15 +32,42 @@ export const PERMISSIONS = [
   "pricing.manage",
   "audit.read",
   "data.export",
+  /** Müşterinin kendi verisine yazabildiği işlemler */
+  "asn.write",
+  "document.write",
+  "catalog.write",
+  "order.read",
+  "order.write",
+  "message.read",
+  "message.write",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const MATRIX: Record<Role, readonly Permission[]> = {
   ADMIN: PERMISSIONS,
   SALES: ["lead.read", "lead.write", "quote.write", "tenant.read"],
-  OPS: ["tenant.read", "shipment.read", "shipment.write", "stock.read", "stock.write"],
+  OPS: [
+    "tenant.read",
+    "shipment.read",
+    "shipment.write",
+    "stock.read",
+    "stock.write",
+    "document.write",
+    "order.read",
+    "order.write",
+    "message.read",
+    "message.write",
+  ],
   FINANCE: ["tenant.read", "invoice.read", "invoice.write", "pricing.manage", "data.export"],
-  PARTNER: ["shipment.read", "shipment.write", "stock.read", "stock.write"],
+  PARTNER: [
+    "tenant.read",
+    "shipment.read",
+    "shipment.write",
+    "stock.read",
+    "stock.write",
+    "order.read",
+    "order.write",
+  ],
   CLIENT_OWNER: [
     "tenant.read",
     "user.manage",
@@ -48,8 +75,24 @@ const MATRIX: Record<Role, readonly Permission[]> = {
     "stock.read",
     "invoice.read",
     "data.export",
+    "asn.write",
+    "document.write",
+    "catalog.write",
+    "order.read",
+    "message.read",
+    "message.write",
   ],
-  CLIENT_USER: ["tenant.read", "shipment.read", "stock.read"],
+  CLIENT_USER: [
+    "tenant.read",
+    "shipment.read",
+    "stock.read",
+    "asn.write",
+    "document.write",
+    "catalog.write",
+    "order.read",
+    "message.read",
+    "message.write",
+  ],
 };
 
 export function can(role: Role, permission: Permission): boolean {

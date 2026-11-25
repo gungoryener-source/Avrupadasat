@@ -90,6 +90,7 @@ model Tenant {
   partners      PartnerAssignment[]
   shipments     Shipment[]
   stockItems    StockItem[]
+  documents     Document[]
   registration  RegistrationTask[]
   leads         Lead[]
   quotes        Quote[]
@@ -302,10 +303,19 @@ model Shipment {
   reference  String
   stage      ShipmentStage @default(FABRIKA)
   pallets    Int           @default(0)
+  cartons    Int           @default(0)
+  origin     String?
+  carrier    String?
+  expectedAt DateTime?
+  receivedAt DateTime?
+  notes      String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  events     ShipmentEvent[]
+  lines      AsnLine[]
+  documents  Document[]
 
   @@unique([tenantId, reference])
   @@index([tenantId, stage])
@@ -316,7 +326,11 @@ model StockItem {
   tenantId  String
   sku       String
   name      String
+  ean       String?
   quantity  Int      @default(0)
+  reserved  Int      @default(0)
+  /// Almanca ürün içeriği onaylandı mı (Aşama 5'te içerik üretimiyle dolar)
+  contentApprovedAt DateTime?
   updatedAt DateTime @updatedAt
 
   tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -375,4 +389,79 @@ model ConsentRecord {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+}
+
+model ShipmentEvent {
+  id         String        @id @default(cuid())
+  tenantId   String
+  shipmentId String
+  stage      ShipmentStage
+  note       String?
+  at         DateTime      @default(now())
+  actorUserId String?
+
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, shipmentId, at])
+}
+
+/// ASN (gelen sevkiyat bildirimi) satırı
+model AsnLine {
+  id          String  @id @default(cuid())
+  tenantId    String
+  shipmentId  String
+  sku         String
+  quantity    Int
+  receivedQty Int?
+  damagedQty  Int     @default(0)
+
+  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@unique([shipmentId, sku])
+  @@index([tenantId])
+}
+
+enum DocumentKind {
+  TICARI_FATURA
+  CEKI_LISTESI
+  ATR
+  CMR
+  CE_BEYAN
+  SIRKET
+  DIGER
+}
+
+model Document {
+  id           String       @id @default(cuid())
+  tenantId     String
+  shipmentId   String?
+  kind         DocumentKind
+  filename     String
+  mime         String
+  size         Int
+  sha256       String
+  /// Depolama anahtarı (rastgele; dosya adı içermez)
+  storageKey   String       @unique
+  scanStatus   String       @default("pending")
+  uploadedById String?
+  createdAt    DateTime     @default(now())
+
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  shipment     Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+}
+
+model StockMovement {
+  id        String   @id @default(cuid())
+  tenantId  String
+  sku       String
+  delta     Int
+  /// RECEIVE, ORDER, RETURN, ADJUST, DAMAGE
+  reason    String
+  refId     String?
+  actorUserId String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, sku, createdAt])
 }

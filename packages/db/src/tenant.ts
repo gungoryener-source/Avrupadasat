@@ -9,6 +9,10 @@ export const TENANT_SCOPED_MODELS = new Set([
   "StockItem",
   "Contract",
   "TenantContact",
+  "ShipmentEvent",
+  "AsnLine",
+  "Document",
+  "StockMovement",
 ]);
 
 const READ_OPS = new Set([
