@@ -5,6 +5,7 @@
  * - GTM ve Meta Pixel YALNIZ onay sonrası yüklenir; onay yoksa hiçbir üçüncü taraf isteği gitmez.
  * - "Reddet" ve "Kabul et" eşit görünürlükte; ön işaretli kutu yok; karar geri alınabilir.
  */
+import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 export const CONSENT_VERSION = "2026-11";
@@ -73,12 +74,15 @@ function loadTags(c: Consent, gtmId?: string, pixelId?: string) {
 }
 
 /** Dönüşüm olayı: onay yoksa HİÇBİR şey gönderilmez. Meta için event_id ile CAPI tekilleştirmesi */
-export function track(event: string, params: Record<string, unknown> = {}) {
+export function track(
+  event: string,
+  params: Record<string, unknown> = {},
+  eventId: string = crypto.randomUUID(),
+) {
   if (typeof window === "undefined") return;
   const w = window as W;
   const c = w.__asConsent;
   if (!c) return;
-  const eventId = crypto.randomUUID();
   if (c.analytics || c.ads) {
     w.dataLayer = w.dataLayer ?? [];
     w.dataLayer.push({ event, event_id: eventId, ...params });
@@ -92,6 +96,10 @@ export function track(event: string, params: Record<string, unknown> = {}) {
     }[event];
     if (metaName) w.fbq("track", metaName, params, { eventID: eventId });
   }
+}
+
+export function adsConsentGiven(): boolean {
+  return typeof window !== "undefined" && Boolean((window as W).__asConsent?.ads);
 }
 
 const Ctx = createContext<{ consent: Consent | null; open: () => void } | null>(null);
@@ -187,7 +195,7 @@ function Banner({
         Siteyi çalıştırmak için zorunlu çerezler kullanıyoruz. İzin verirseniz ziyaret
         istatistikleri ve reklam ölçümü için Google ve Meta araçlarını da kullanırız. Kararınızı
         istediğiniz zaman sayfa altındaki &quot;Çerez ayarları&quot;ndan değiştirebilirsiniz.
-        Ayrıntılar: <a href="/cerezler">Çerez politikası</a>.
+        Ayrıntılar: <Link href="/cerezler">Çerez politikası</Link>.
       </p>
       {details && (
         <div className="consent-opts">

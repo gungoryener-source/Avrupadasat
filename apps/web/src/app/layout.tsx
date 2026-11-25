@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { brand } from "@avrupadasat/core/brand.config";
+import { JsonLd, organizationLd } from "@/components/site/JsonLd";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -19,7 +20,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr">
-      <body>{children}</body>
+      <body>
+        <JsonLd data={organizationLd()} />
+        {children}
+      </body>
     </html>
   );
 }

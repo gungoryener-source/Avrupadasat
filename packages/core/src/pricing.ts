@@ -46,6 +46,42 @@ export const operations = {
   noticePeriodMonths: 1,
 } as const;
 
+/**
+ * Kuruluşta üçüncü taraf masrafları (noter, ticaret sicili, apostil/tercüme) — TAHMİNİ aralık.
+ * TODO(verify): Alman noter ücret tarifesi (GNotKG) ve partner noter teklifiyle doğrulanacak.
+ * Sermaye: UG en az 1 € (pratikte daha fazlası önerilir), GmbH 25.000 € (kuruluşta en az 12.500 € yatırılır).
+ */
+export const formationThirdPartyEstimate = {
+  UG: {
+    minCents: 45_000,
+    maxCents: 90_000,
+    capitalNote: "Sermaye en az 1 €; pratikte en az birkaç bin € önerilir",
+  },
+  GMBH: {
+    minCents: 90_000,
+    maxCents: 180_000,
+    capitalNote: "Sermaye 25.000 €; kuruluşta en az 12.500 € yatırılır",
+  },
+} as const;
+
+export function estimateFormation(
+  form: "UG" | "GMBH",
+  pkg: "BASLANGIC" | "OPERASYON" | "PAZARA_GIRIS",
+) {
+  const service = packages.BASLANGIC.oneTime[form];
+  const discount =
+    pkg === "PAZARA_GIRIS" ? Math.round((service * PAZARA_GIRIS_SETUP_DISCOUNT_PCT) / 100) : 0;
+  const est = formationThirdPartyEstimate[form];
+  return {
+    serviceCents: service - discount,
+    thirdPartyMinCents: est.minCents,
+    thirdPartyMaxCents: est.maxCents,
+    totalMinCents: service - discount + est.minCents,
+    totalMaxCents: service - discount + est.maxCents,
+    capitalNote: est.capitalNote,
+  };
+}
+
 /** Pazara Giriş paketinde kuruluş indirimi (%). TODO(verify): ticari karar */
 export const PAZARA_GIRIS_SETUP_DISCOUNT_PCT = 30;
 

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildQuoteLines, estimateMonthly, formatEur, pickPackRate, quoteTotals } from "./pricing";
+import {
+  buildQuoteLines,
+  estimateFormation,
+  estimateMonthly,
+  formatEur,
+  pickPackRate,
+  quoteTotals,
+} from "./pricing";
 
 const base = { skus: 40, marketplace: true, customerService: false, accounting: false };
 
@@ -76,5 +83,14 @@ describe("biçim", () => {
     expect(formatEur(190_500)).toBe("€1.905");
     expect(formatEur(195, { decimals: true })).toBe("€1,95");
     expect(formatEur(-5_000)).toBe("-€50");
+  });
+});
+
+describe("kuruluş toplam tahmini", () => {
+  it("Pazara Giriş UG: hizmet indirimli + üçüncü taraf aralığı", () => {
+    const e = estimateFormation("UG", "PAZARA_GIRIS");
+    expect(e.serviceCents).toBe(87_500);
+    expect(e.totalMinCents).toBe(132_500);
+    expect(e.totalMaxCents).toBe(177_500);
   });
 });
