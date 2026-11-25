@@ -53,7 +53,7 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 - [x] "Ürünüm Avrupa'ya uygun mu?" sihirbazı (CE, GPSR, ambalaj, WEEE kontrol listesi)
 - [x] Maliyet hesaplayıcı: aylık operasyon + **kuruluş toplamı (noter, sicil, devlet harçları dahil tahmini)**
 - [x] **"Almanya'da şirket kuruluşu" hizmet sayfası** (sıfırdan, Türk ihracatçıya göre): UG/GmbH karşılaştırması, Türk noterinde vekâletname + apostil + çeviri adımları, Türkiye–Almanya çifte vergilendirme anlaşması ve kâr transferi örnekleri, dahil olan / olmayan kalemler
-- [x] Güven unsurları: ekip, iş ortağı avukat ve Steuerberater, gerçek vaka çalışmaları; WhatsApp ve Türkçe danışman CTA'ları
+- [ ] Güven unsurları: ekip, iş ortağı avukat ve Steuerberater, gerçek vaka çalışmaları — ⏳ gerçek isimler ve izinli vakalar gelince; WhatsApp CTA'sı hazır (`brand.config.ts` → numara girilince görünür)
 - [x] Arama reklamları için tek hedefli açılış sayfası şablonu + A/B varyantı ("Amazon Almanya'da satış", "Almanya'da şirket kurmak", "Almanya'ya e-ihracat", "Almanya'da depo")
 - [x] Ön değerlendirme / rapor formu → CRM
 - [x] **Tek, tutarlı fiyat listesi** (palet/ay, mal kabul, kademeli pick & pack, Pre-FBA, iade); kurulum ücreti yok, aylık fesih; hesaplayıcı ile aynı `pricing` tablosundan beslenir
@@ -68,7 +68,7 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 
 ### Aşama 3 — Müşteri paneli (2–3 hafta)
 
-- [x] Genel bakış: ciro, sipariş, stok, uyarılar
+- [x] Genel bakış: stok, yoldaki sevkiyat, kayıt adımları, eksik belge ve düşük stok uyarıları — ciro göstergesi ⏳ (sipariş verisi canlı kanallardan gelince)
 - [x] Sevkiyat kaydı ve adım adım takip (manuel giriş): fabrika → TR çıkış → AB giriş → gümrük → depo
 - [x] Belgeler: ticari fatura, A.TR, çeki listesi, CMR; eksik belge uyarısı
 - [x] Partner depoya gelen sevkiyat bildirimi (ASN), stok listesi (CSV içe aktarma)
