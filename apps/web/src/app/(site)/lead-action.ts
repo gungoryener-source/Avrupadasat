@@ -1,10 +1,14 @@
 "use server";
+import { after } from "next/server";
 import { submitLead } from "@/server/leads";
-import { clientIp } from "@/server/session";
+import { sendCapiLead } from "@/server/meta-capi";
+import { clientIp, userAgent } from "@/server/session";
 import { verifyTurnstile } from "@/server/turnstile";
 
 export type LeadState =
-  { ok: true } | { ok: false; error?: string; fieldErrors?: Record<string, string> } | undefined;
+  | { ok: true; eventId?: string }
+  | { ok: false; error?: string; fieldErrors?: Record<string, string> }
+  | undefined;
 
 const ATTR_KEYS = [
   "utmSource",
@@ -42,7 +46,20 @@ export async function submitLeadAction(_: LeadState, fd: FormData): Promise<Lead
     },
     ip,
   );
-  if (r.ok) return { ok: true };
+  if (r.ok) {
+    // Meta CAPI: yalnız tarayıcıda reklam onayı verilmişse; yanıt gönderildikten sonra çalışır
+    const eventId = String(fd.get("eventId") ?? "");
+    if (fd.get("adsConsent") === "1" && /^[0-9a-f-]{36}$/.test(eventId)) {
+      const ua = await userAgent();
+      const sourceUrl = String(fd.get("sourceUrl") ?? "").slice(0, 300);
+      const email = String(fd.get("email"));
+      const phone = String(fd.get("phone"));
+      after(() =>
+        sendCapiLead({ eventId, email, phone, sourceUrl, ip, userAgent: ua }).then(() => undefined),
+      );
+    }
+    return { ok: true, eventId: eventId || undefined };
+  }
   if (r.reason === "rate_limited")
     return {
       ok: false,

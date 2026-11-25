@@ -1,8 +1,9 @@
 "use client";
+import Script from "next/script";
 import { useActionState, useEffect, useState } from "react";
 import { productCategories } from "@avrupadasat/core/events";
 import { submitLeadAction } from "@/app/(site)/lead-action";
-import { track } from "@/components/consent";
+import { adsConsentGiven, track } from "@/components/consent";
 import { Submit } from "./Submit";
 
 const CATEGORY_LABEL: Record<(typeof productCategories)[number], string> = {
@@ -50,20 +51,53 @@ function useAttribution() {
   return attr;
 }
 
-export function LeadForm({
-  id = "rapor-formu",
-  turnstileSiteKey,
-}: {
-  id?: string;
-  turnstileSiteKey?: string;
-}) {
+const TURNSTILE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+
+export function LeadForm({ id = "rapor-formu" }: { id?: string }) {
   const [state, action] = useActionState(submitLeadAction, undefined);
   const attr = useAttribution();
   const fe = state && !state.ok ? (state.fieldErrors ?? {}) : {};
+  const [meta, setMeta] = useState({ eventId: "", ads: false, url: "", emailHash: "" });
 
   useEffect(() => {
-    if (state?.ok) track("generate_lead", { form: "uygunluk_raporu" });
-  }, [state]);
+    if (state?.ok)
+      track(
+        "generate_lead",
+        {
+          form: "uygunluk_raporu",
+          ...(meta.emailHash ? { user_data: { sha256_email_address: meta.emailHash } } : {}),
+        },
+        meta.eventId || undefined,
+      );
+  }, [state, meta]);
+
+  // Gönderim anında: aynı event_id hem Pixel hem CAPI'de; Enhanced Conversions için e-posta hash'i (yalnız reklam onayıyla)
+  function onSubmitCapture(e: React.FormEvent<HTMLFormElement>) {
+    const form = e.currentTarget;
+    const ads = adsConsentGiven();
+    const eventId = crypto.randomUUID();
+    const url = window.location.href.split("?")[0] ?? "";
+    // Eşzamanlı: form verisi bu olaydan hemen sonra okunur
+    const setVal = (name: string, v: string) => {
+      const el = form.elements.namedItem(name);
+      if (el instanceof HTMLInputElement) el.value = v;
+    };
+    setVal("eventId", eventId);
+    setVal("adsConsent", ads ? "1" : "0");
+    setVal("sourceUrl", url);
+    const email = String(new FormData(form).get("email") ?? "")
+      .trim()
+      .toLowerCase();
+    setMeta({ eventId, ads, url, emailHash: "" });
+    if (ads && email && crypto.subtle) {
+      void crypto.subtle.digest("SHA-256", new TextEncoder().encode(email)).then((buf) => {
+        const emailHash = [...new Uint8Array(buf)]
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        setMeta({ eventId, ads, url, emailHash });
+      });
+    }
+  }
 
   if (state?.ok) {
     return (
@@ -74,7 +108,10 @@ export function LeadForm({
     );
   }
   return (
-    <form action={action} className="form" id={id} noValidate>
+    <form action={action} className="form" id={id} noValidate onSubmitCapture={onSubmitCapture}>
+      <input type="hidden" name="eventId" defaultValue="" />
+      <input type="hidden" name="adsConsent" defaultValue="0" />
+      <input type="hidden" name="sourceUrl" defaultValue="" />
       {state && !state.ok && state.error && <p className="alert-err">{state.error}</p>}
       {Object.entries(attr).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
@@ -142,7 +179,7 @@ export function LeadForm({
       <label className="check">
         <input type="checkbox" name="consentKvkk" required />
         <span>
-          <a href="/kvkk" target="_blank">
+          <a href="/kvkk" target="_blank" rel="noopener">
             KVKK aydınlatma metnini
           </a>{" "}
           okudum; verilerimin talebimi yanıtlamak için işlenmesini kabul ediyorum.
@@ -155,7 +192,15 @@ export function LeadForm({
           Avrupa&apos;ya ihracat rehberleri ve duyurular e-postayla gönderilebilir (isteğe bağlı).
         </span>
       </label>
-      {turnstileSiteKey && <div className="cf-turnstile" data-sitekey={turnstileSiteKey} />}
+      {TURNSTILE_KEY && (
+        <>
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+            strategy="afterInteractive"
+          />
+          <div className="cf-turnstile" data-sitekey={TURNSTILE_KEY} data-language="tr" />
+        </>
+      )}
       <Submit pendingText="Gönderiliyor…">Ücretsiz raporumu iste</Submit>
     </form>
   );

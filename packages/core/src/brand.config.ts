@@ -15,7 +15,8 @@ export const brand = {
   domain: "avrupadasat.com",
   contact: {
     email: "merhaba@avrupadasat.com",
-    whatsapp: "",
+    /** Uluslararası biçimde, ör. "+90 5xx xxx xx xx"; boşsa WhatsApp butonu gizlenir */
+    whatsapp: "" as string,
   },
   /** Bağımsızlık beyanı — sitede ve formlarda gösterilir */
   independenceNotice:

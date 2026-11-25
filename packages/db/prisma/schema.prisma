@@ -363,3 +363,16 @@ model PriceList {
   data      Json
   createdAt DateTime  @default(now())
 }
+
+/// Çerez onay kaydı (kanıt yükümlülüğü). Kişisel veri yok: IP yalnız günlük tuzlu hash.
+model ConsentRecord {
+  id        String   @id @default(cuid())
+  analytics Boolean
+  ads       Boolean
+  version   String
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
