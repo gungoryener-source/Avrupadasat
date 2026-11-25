@@ -11,6 +11,7 @@ export interface Overview {
   missingDocs: { id: string; reference: string; missing: string[] }[];
   lowStock: { sku: string; name: string; quantity: number }[];
   waiting: { id: string; title: string; done: boolean }[];
+  sales: { days: number; revenueCents: number; orders: number; changePct: number | null };
 }
 
 export interface ShipmentRow {

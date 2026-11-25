@@ -41,7 +41,7 @@ Platform cron'u da kullanılabilir (`Authorization: Bearer $CRON_SECRET`).
 
 | Kontrol                                                                                  | Durum                                  |
 | ---------------------------------------------------------------------------------------- | -------------------------------------- |
-| Güvenlik başlıkları (CSP, HSTS, XFO, nosniff, Referrer, Permissions, COOP)               | ✅ e2e'de doğrulandı                   |
+| Güvenlik başlıkları (nonce CSP, HSTS, XFO, nosniff, Referrer, Permissions, COOP)         | ✅ e2e'de doğrulandı                   |
 | Token sayfalarında `Referrer-Policy: no-referrer`, `no-store`                            | ✅                                     |
 | Onaysız durumda hiçbir ölçüm isteği gitmiyor                                             | ✅ e2e (ret, kısmi onay, tam onay)     |
 | Tenant izolasyonu (veritabanı, sayfalar, indirme, mobil API)                             | ✅ birim + e2e                         |
@@ -53,11 +53,43 @@ Platform cron'u da kullanılabilir (`Authorization: Bearer $CRON_SECRET`).
 | Tag Assistant / Meta Events Manager                                                      | ⏳ Gerçek GTM ve Pixel kimlikleriyle   |
 | Sızma testi                                                                              | ⏳ Yayın öncesi bağımsız test önerilir |
 
+## E-posta (SMTP)
+
+- `SMTP_URL` (ör. `smtps://kullanici:sifre@smtp.saglayici.de:465`), `MAIL_FROM`, `OPS_EMAIL` (virgülle birden fazla).
+- `SMTP_URL` yoksa worker e-postaları yalnızca loglar (`[mock:email]`); üretimde `INTEGRATIONS_MODE=live` iken SMTP yoksa gönderim hata verir ve olay yeniden denenir.
+- Üretim loglarında alıcı maskelenir, bağlantı (token) yazılmaz. Ekip bildirimleri kişisel veri içermez.
+
+## Şifreleme anahtarı rotasyonu
+
+1. Yeni anahtar üret: `openssl rand -base64 32`.
+2. `FIELD_ENCRYPTION_KEYS="2:<yeni>,1:<eski>"` yap (ilk giriş aktif anahtar); web ve worker'ı yeniden başlat. Yeni yazılanlar v2 ile şifrelenir, eskiler okunmaya devam eder.
+3. `pnpm db:rotate-keys` ile mevcut kayıtları v2'ye çevir (toplu, tekrar çalıştırılabilir; çıktı tablo bazında sayıları verir).
+4. Çıktı 0 kalan gösterince eski anahtarı listeden çıkar ve yeniden başlat. Eski anahtarı bir süre kasada (secret manager) sakla.
+
+## Belge depolama (S3 uyumlu)
+
+- `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_REGION`, isteğe bağlı `S3_ENDPOINT` (Hetzner/MinIO/IONOS için; path-style), `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`.
+- Bucket herkese kapalı olmalı (Block Public Access); nesneler `AES256` sunucu tarafı şifrelemeyle ve üzerine yazmadan (`If-None-Match`) yüklenir. İndirme yine uygulamanın imzalı, süreli bağlantısı üzerinden yapılır.
+- AB veri yerleşimi için bölge Frankfurt (eu-central-1) veya AB'deki bir sağlayıcı seçilmeli.
+
+## CSP (nonce)
+
+- `src/proxy.ts` her sayfa isteğinde yeni nonce üretir; `script-src` yalnız `'self'`, nonce ve yapılandırılmış GTM/Meta/Turnstile alan adları. API ve statik yollarda `default-src 'none'`.
+- Bu nedenle sayfalar istek başına render edilir (statik önbellek yok). CDN önünde HTML önbelleği kapatılmalı.
+- GTM'den eklenen özel HTML etiketleri nonce almaz ve CSP tarafından engellenir; etiketler GTM şablonlarıyla eklenmeli.
+
+## Amazon SP-API (canlı)
+
+1. Seller Central'da geliştirici kaydı; uygulama (private) oluştur; roller: Orders, Inventory and Order Tracking, Product Listing, ve adres için Restricted (Direct-to-Consumer Shipping).
+2. `AMAZON_SP_API_CLIENT_ID`, `AMAZON_SP_API_CLIENT_SECRET` ortam değişkenlerini tanımla, `INTEGRATIONS_MODE=live`.
+3. Firma adına yetkilendirme sonrası refresh token (`Atzr|…`) ve Seller ID ekip panelinden girilir (`connectAmazonLive`); kimlik bilgileri şifreli saklanır.
+4. Yalnız FBM (MFN) siparişler içe aktarılır; FBA siparişleri atlanır. Kargo onayı kalem kimlikleriyle Amazon'a gönderilir; başarısız olursa audit'e düşer, ekip elle tekrarlar.
+5. Canlıya almadan önce sandbox uç noktasıyla (`sandbox.sellingpartnerapi-eu.amazon.com`) bir tur deneme yapılmalı — adaptör sahte sunucuyla test edildi, gerçek hesapla henüz doğrulanmadı.
+
 ## Bilinen sınırlar / sonraki işler
 
-- Canlı Amazon SP-API ve eBay bağlantısı: adaptör arayüzü hazır; kimlik bilgileri ve sandbox doğrulaması gerekiyor.
-- E-posta gönderimi: worker'daki `sendLinkEmail` mock; SMTP/Postmark/SES adaptörü eklenecek.
-- CSP'de `'unsafe-inline'` script: nonce tabanlı CSP'ye geçiş (GTM ile birlikte) yapılacak.
+- Amazon SP-API: kod hazır; gerçek hesap ve sandbox ile doğrulama gerekiyor. eBay canlı adaptörü henüz yok (demo).
 - Fatura KDV modeli (`vatRatePct`) ve DATEV hesap eşlemesi vergi danışmanıyla doğrulanacak.
-- Mobil uygulama mağaza yayını: EAS build, uygulama simgeleri, gizlilik etiketleri.
+- Ürüne özel Almanca web mağaza.
+- Mobil uygulama mağaza yayını: EAS build, uygulama simgeleri, gizlilik etiketleri, push bildirimleri.
 - Hukuki metinler taslak; avukat onayı gerekiyor.

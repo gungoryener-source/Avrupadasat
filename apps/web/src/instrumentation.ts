@@ -9,8 +9,11 @@ export function register() {
   if (!process.env.DATABASE_URL) problems.push("DATABASE_URL yok");
   if ((process.env.AUTH_SECRET ?? "").length < 32)
     problems.push("AUTH_SECRET en az 32 karakter olmalı");
-  const key = Buffer.from(process.env.FIELD_ENCRYPTION_KEY ?? "", "base64");
-  if (key.length !== 32) problems.push("FIELD_ENCRYPTION_KEY 32 bayt (base64) olmalı");
+  const keys = process.env.FIELD_ENCRYPTION_KEYS
+    ? process.env.FIELD_ENCRYPTION_KEYS.split(",").map((p) => p.split(":")[1] ?? "")
+    : [process.env.FIELD_ENCRYPTION_KEY ?? ""];
+  if (keys.some((k) => Buffer.from(k.trim(), "base64").length !== 32))
+    problems.push("FIELD_ENCRYPTION_KEY(S) 32 bayt (base64) olmalı");
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   if (!/^https:\/\//.test(site) && !/^http:\/\/localhost(:\d+)?$/.test(site))
     problems.push("NEXT_PUBLIC_SITE_URL https olmalı");

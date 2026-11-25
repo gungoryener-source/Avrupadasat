@@ -60,7 +60,7 @@ export async function waitingList(tenantId: string) {
 
 export async function overview(tenantId: string) {
   const t = forTenant(db(), tenantId);
-  const [stock, activeShipments, shipments, reg, lowStock] = await Promise.all([
+  const [stock, activeShipments, shipments, reg, lowStock, sales] = await Promise.all([
     t.stockItem.aggregate({ _sum: { quantity: true }, _count: true }),
     t.shipment.count({ where: { stage: { not: "DEPO_KABUL" } } }),
     t.shipment.findMany({
@@ -74,6 +74,7 @@ export async function overview(tenantId: string) {
       take: 5,
       orderBy: { quantity: "asc" },
     }),
+    salesSummary(tenantId),
   ]);
   const missing = shipments
     .map((s) => ({
@@ -90,5 +91,44 @@ export async function overview(tenantId: string) {
     salesLocked: reg.salesLocked,
     missingDocs: missing,
     lowStock,
+    sales,
+  };
+}
+
+/** Ciro özeti: son N gün ve önceki N gün (iptaller hariç), kanala göre */
+export async function salesSummary(tenantId: string, days = 30, now = new Date()) {
+  const t = forTenant(db(), tenantId);
+  const from = new Date(now.getTime() - days * 86_400_000);
+  const prevFrom = new Date(from.getTime() - days * 86_400_000);
+  const notCancelled = { status: { not: "CANCELLED" as const } };
+  const [cur, prev] = await Promise.all([
+    t.order.groupBy({
+      by: ["channel"],
+      where: { ...notCancelled, orderedAt: { gte: from, lt: now } },
+      _sum: { itemsCents: true },
+      _count: true,
+      orderBy: { channel: "asc" },
+    }),
+    t.order.aggregate({
+      where: { ...notCancelled, orderedAt: { gte: prevFrom, lt: from } },
+      _sum: { itemsCents: true },
+    }),
+  ]);
+  const revenueCents = cur.reduce((s, c) => s + (c._sum.itemsCents ?? 0), 0);
+  const prevRevenueCents = prev._sum.itemsCents ?? 0;
+  return {
+    days,
+    revenueCents,
+    orders: cur.reduce((s, c) => s + c._count, 0),
+    prevRevenueCents,
+    changePct:
+      prevRevenueCents > 0
+        ? Math.round(((revenueCents - prevRevenueCents) / prevRevenueCents) * 1000) / 10
+        : null,
+    byChannel: cur.map((c) => ({
+      channel: c.channel,
+      revenueCents: c._sum.itemsCents ?? 0,
+      orders: c._count,
+    })),
   };
 }

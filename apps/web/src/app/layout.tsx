@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { brand } from "@avrupadasat/core/brand.config";
 import { JsonLd, organizationLd } from "@/components/site/JsonLd";
 import "./globals.css";
@@ -17,11 +18,13 @@ export const metadata: Metadata = {
   openGraph: { type: "website", locale: "tr_TR", siteName: brand.name },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Nonce okumak sayfayı istek anında üretir (nonce'lı CSP'nin gereği)
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="tr">
       <body>
-        <JsonLd data={organizationLd()} />
+        <JsonLd data={organizationLd()} nonce={nonce} />
         {children}
       </body>
     </html>

@@ -80,7 +80,7 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 
 - [x] Sipariş, fulfillment iş emri, iade ve hasar kaydı
 - [x] Maliyet yansıtma kuralları ve aylık müşteri faturası
-- [x] Amazon/eBay adaptör arayüzü + demo modu (canlı bağlantı: kimlik bilgileri ve sandbox doğrulaması bekliyor) — Almanca web mağaza: ⏳ sonraki iş
+- [x] Amazon/eBay adaptör arayüzü + demo modu; canlı Amazon adaptörü Aşama 6'da (sandbox doğrulaması bekliyor) — Almanca web mağaza: ⏳ sonraki iş
 - [x] Partner performans skor kartı
 
 ### Aşama 5 — Otomasyon ve mobil
@@ -122,11 +122,19 @@ Strateji: kuruluşu rakibe yakın fiyatla verip asıl geliri aylık operasyon ve
 - Her aşama sonunda: ✅ yapılanlar · ⚠️ eksikler · ❓ karar bekleyenler · ▶️ sonraki adım
 - Demo verisi canlıya çıkmaz; gerçek vaka ve yorumlar yalnızca izinle
 
-## Kod tarafında kalan işler (25.11.2026)
+## Aşama 6 — sağlamlaştırma (25.11.2026) ✅
 
-- Canlı Amazon SP-API / eBay bağlantısı (kimlik bilgileri + sandbox)
-- Gerçek e-posta gönderimi (SMTP/Postmark/SES adaptörü)
+- [x] Gerçek e-posta gönderimi (SMTP, Türkçe şablonlar, mock modda log)
+- [x] Panelde ciro KPI'ı (kanal kırılımı, önceki döneme göre değişim) — web + mobil
+- [x] Şifreleme anahtarı rotasyonu (sürümlü anahtarlık + `db:rotate-keys`)
+- [x] S3 uyumlu belge depolama (SSE, üzerine yazma yok)
+- [x] Nonce tabanlı CSP (e2e'de doğrulandı)
+- [x] Canlı Amazon SP-API adaptörü (LWA, RDT, sayfalama, kargo onayı, stok) — sahte sunucuyla test edildi
+
+## Kod tarafında kalan işler
+
+- Amazon SP-API'nin gerçek hesap / sandbox ile doğrulanması; eBay canlı adaptörü
 - Ürüne özel Almanca web mağaza (Shopify/WooCommerce entegrasyonu veya kendi mağaza)
-- Nonce tabanlı CSP (GTM ile), S3 uyumlu belge depolama, şifreleme anahtarı rotasyonu
 - Mobil uygulama mağaza yayını (EAS), push bildirimleri
 - Yayın sonrası: Lighthouse, securityheaders.com, Tag Assistant, Meta Events Manager, bağımsız sızma testi
+- Hukuki metinler (avukat) ve KDV/DATEV eşlemesi (vergi danışmanı) doğrulaması

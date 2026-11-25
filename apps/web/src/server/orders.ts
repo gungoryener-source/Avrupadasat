@@ -1,5 +1,6 @@
 import { decryptField, encryptField } from "@avrupadasat/db/crypto";
 import { forTenant, Prisma, type ReturnCondition, type SalesChannel } from "@avrupadasat/db";
+import { amazonAdapter, type AmazonCredentials } from "./amazon";
 import { audit } from "./audit";
 import { db } from "./db";
 import {
@@ -41,8 +42,17 @@ async function adapterFor(
   tenantId: string,
   channel: SalesChannel,
   mode: string,
+  credentialsEnc?: string | null,
 ): Promise<MarketplaceAdapter> {
-  if (mode === "live") return liveAdapter(channel);
+  if (mode === "live") {
+    const clientId = process.env.AMAZON_SP_API_CLIENT_ID;
+    const clientSecret = process.env.AMAZON_SP_API_CLIENT_SECRET;
+    if (channel === "AMAZON" && clientId && clientSecret && credentialsEnc) {
+      const creds = JSON.parse(decryptField(credentialsEnc)) as AmazonCredentials;
+      return amazonAdapter(creds, { clientId, clientSecret });
+    }
+    return liveAdapter(channel);
+  }
   const skus = (
     await forTenant(db(), tenantId).stockItem.findMany({
       where: { quantity: { gt: 0 } },
@@ -51,6 +61,37 @@ async function adapterFor(
     })
   ).map((s) => s.sku);
   return mockAdapter(channel, skus);
+}
+
+/** Canlı Amazon bağlantısı: satıcının refresh token'ı ve sellerId'si şifreli saklanır */
+export async function connectAmazonLive(
+  tenantId: string,
+  creds: AmazonCredentials,
+  actorUserId: string,
+): Promise<OpResult> {
+  if (
+    !/^Atzr\|[A-Za-z0-9_\-|=+/]{20,}$/.test(creds.refreshToken) ||
+    !/^[A-Z0-9]{8,20}$/.test(creds.sellerId)
+  ) {
+    return { ok: false, reason: "Geçersiz Amazon kimlik bilgisi" };
+  }
+  const t = forTenant(db(), tenantId);
+  const existing = await t.marketplaceConnection.findFirst({ where: { channel: "AMAZON" } });
+  const data = {
+    mode: "live",
+    status: "ACTIVE",
+    credentialsEnc: encryptField(JSON.stringify(creds)),
+  };
+  if (existing) await t.marketplaceConnection.update({ where: { id: existing.id }, data });
+  else await t.marketplaceConnection.create({ data: { channel: "AMAZON", ...data } as never });
+  await audit({
+    actorUserId,
+    tenantId,
+    action: "tenant.updated",
+    entity: "MarketplaceConnection",
+    meta: { channel: "AMAZON", mode: "live" },
+  });
+  return { ok: true };
 }
 
 /** Siparişleri içe aktarır (idempotent) ve stoğu rezerve eder */
@@ -64,7 +105,7 @@ export async function syncOrders(
   if (!conn) return { ok: false, reason: "Kanal bağlı değil" };
   if ((await registrationState(tenantId)).salesLocked)
     return { ok: false, reason: "Satış kilitli" };
-  const a = adapter ?? (await adapterFor(tenantId, channel, conn.mode));
+  const a = adapter ?? (await adapterFor(tenantId, channel, conn.mode, conn.credentialsEnc));
   let external: ExternalOrder[];
   try {
     external = await a.fetchOrders(conn.lastSyncAt);
@@ -249,8 +290,27 @@ export async function shipOrder(
   });
   if (o.channel !== "MANUAL" && o.channel !== "WEBSHOP") {
     const conn = await t.marketplaceConnection.findFirst({ where: { channel: o.channel } });
-    const a = adapter ?? (conn ? await adapterFor(tenantId, o.channel, conn.mode) : null);
-    await a?.pushTracking(o.externalId, carrier, trackingNo).catch(() => undefined);
+    const a =
+      adapter ??
+      (conn ? await adapterFor(tenantId, o.channel, conn.mode, conn.credentialsEnc) : null);
+    // Takip bildirimi başarısız olursa kargo geri alınmaz; ekip görsün diye kaydedilir
+    await a
+      ?.pushTracking(
+        o.externalId,
+        carrier,
+        trackingNo,
+        o.lines.map((l) => ({ externalLineId: l.externalLineId, quantity: l.quantity })),
+      )
+      .catch(async (e: unknown) => {
+        await audit({
+          actorUserId,
+          tenantId,
+          action: "order.updated",
+          entity: "Order",
+          entityId: o.id,
+          meta: { trackingPushFailed: (e as Error).message.slice(0, 200) },
+        });
+      });
   }
   return { ok: true };
 }

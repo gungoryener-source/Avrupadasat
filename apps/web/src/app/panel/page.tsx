@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { formatEur } from "@avrupadasat/core/pricing";
+import { CHANNEL_LABEL } from "@/server/labels-ops";
 import { DOC_KIND_LABEL } from "@/server/documents";
 import { overview, waitingList } from "@/server/panel";
 import { requireClient } from "@/server/session";
@@ -19,6 +21,27 @@ export default async function PanelHome() {
         </div>
       )}
       <div className="kpis">
+        <div className="card kpi">
+          <div className="l">Son {o.sales.days} gün ciro</div>
+          <div className="v">{formatEur(o.sales.revenueCents)}</div>
+          <div className="muted" style={{ fontSize: 13 }}>
+            {o.sales.orders} sipariş
+            {o.sales.changePct !== null && (
+              <span
+                style={{ color: o.sales.changePct >= 0 ? "var(--ok)" : "var(--p)", marginLeft: 6 }}
+              >
+                {o.sales.changePct >= 0 ? "▲" : "▼"} %{Math.abs(o.sales.changePct)}
+              </span>
+            )}
+          </div>
+          {o.sales.byChannel.length > 1 && (
+            <div className="muted" style={{ fontSize: 12 }}>
+              {o.sales.byChannel
+                .map((c) => `${CHANNEL_LABEL[c.channel]} ${formatEur(c.revenueCents)}`)
+                .join(" · ")}
+            </div>
+          )}
+        </div>
         <div className="card kpi">
           <div className="l">Depodaki ürün</div>
           <div className="v">{o.units.toLocaleString("de-DE")}</div>

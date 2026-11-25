@@ -18,7 +18,8 @@
     "db:migrate": "pnpm --filter @avrupadasat/db migrate:dev",
     "db:seed": "pnpm --filter @avrupadasat/db seed",
     "e2e": "node e2e/run-all.mjs",
-    "db:seed:e2e": "pnpm --filter @avrupadasat/db seed:e2e"
+    "db:seed:e2e": "pnpm --filter @avrupadasat/db seed:e2e",
+    "db:rotate-keys": "pnpm --filter @avrupadasat/db rotate-keys"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

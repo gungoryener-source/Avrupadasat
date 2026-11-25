@@ -8,13 +8,18 @@ export interface ExternalOrder {
   externalId: string;
   orderedAt: Date;
   buyer: { name: string; street: string; zip: string; city: string; country: string };
-  lines: { sku: string; quantity: number; priceCents: number }[];
+  lines: { sku: string; quantity: number; priceCents: number; externalLineId?: string }[];
 }
 
 export interface MarketplaceAdapter {
   channel: SalesChannel;
   fetchOrders(since: Date | null): Promise<ExternalOrder[]>;
-  pushTracking(externalId: string, carrier: string, trackingNo: string): Promise<void>;
+  pushTracking(
+    externalId: string,
+    carrier: string,
+    trackingNo: string,
+    lines?: { externalLineId: string | null; quantity: number }[],
+  ): Promise<void>;
   pushStock(items: { sku: string; available: number }[]): Promise<void>;
 }
 
