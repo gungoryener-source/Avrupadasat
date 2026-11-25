@@ -1,6 +1,6 @@
 # Avrupadasat — Yazılım Geliştirme Planı
 
-Son güncelleme: 25.11.2026 — Aşama 0–6 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
+Son güncelleme: 25.11.2026 — Aşama 0–7 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
 
 ## Kararlar
 
@@ -80,7 +80,7 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 
 - [x] Sipariş, fulfillment iş emri, iade ve hasar kaydı
 - [x] Maliyet yansıtma kuralları ve aylık müşteri faturası
-- [x] Amazon/eBay adaptör arayüzü + demo modu; canlı Amazon adaptörü Aşama 6'da (sandbox doğrulaması bekliyor) — Almanca web mağaza: ⏳ sonraki iş
+- [x] Amazon/eBay adaptör arayüzü + demo modu; canlı Amazon adaptörü Aşama 6'da (sandbox doğrulaması bekliyor) — Almanca web mağaza: Aşama 7’de Shopify kanalı olarak
 - [x] Partner performans skor kartı
 
 ### Aşama 5 — Otomasyon ve mobil
@@ -88,7 +88,7 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 - [x] AI destekli müşteri mesajı yanıtı (Almanca mesaj, Türkçe çeviriyle onay)
 - [x] Ürün içeriğinin Almancaya AI ile hazırlanması (insan onaylı)
 - [x] DATEV aktarımı, KDV/OSS raporu
-- [x] iOS / Android müşteri uygulaması (Expo / React Native, aynı API) — mağaza yayını (EAS build) bekliyor
+- [x] iOS / Android müşteri uygulaması (Expo / React Native, aynı API) — yayın ayarları hazır, mağaza hesapları bekliyor
 
 ## Paket kurgusu (taslak, rakip analizinden)
 
@@ -131,10 +131,18 @@ Strateji: kuruluşu rakibe yakın fiyatla verip asıl geliri aylık operasyon ve
 - [x] Nonce tabanlı CSP (e2e'de doğrulandı)
 - [x] Canlı Amazon SP-API adaptörü (LWA, RDT, sayfalama, kargo onayı, stok) — sahte sunucuyla test edildi
 
-## Kod tarafında kalan işler
+## Aşama 7 — kanallar ve mobil yayın (25.11.2026) ✅
 
-- Amazon SP-API'nin gerçek hesap / sandbox ile doğrulanması; eBay canlı adaptörü
-- Ürüne özel Almanca web mağaza (Shopify/WooCommerce entegrasyonu veya kendi mağaza)
-- Mobil uygulama mağaza yayını (EAS), push bildirimleri
-- Yayın sonrası: Lighthouse, securityheaders.com, Tag Assistant, Meta Events Manager, bağımsız sızma testi
+- [x] Canlı eBay adaptörü (OAuth, Fulfillment API, kargo bildirimi, Inventory API stok)
+- [x] Almanca web mağaza kanalı: Shopify Admin GraphQL adaptörü + imzalı webhook (firma kendi mağazasını işletir)
+- [x] Amazon/eBay sandbox modu (`INTEGRATIONS_SANDBOX=1`); panelden canlı kimlik bilgisi girişi (şifreli)
+- [x] Mobil: anlık bildirimler (Expo), EAS derleme profilleri, simgeler, iOS gizlilik manifesti, mağaza kontrol listesi
+- [x] Yerel Lighthouse ölçümü ve bulunan sorunların düzeltilmesi
+
+## Kalan işler (kod dışı / hesap gerektiren)
+
+- Amazon, eBay, Shopify: gerçek hesap veya sandbox ile ilk doğrulama
+- Mobil: Apple/Google geliştirici hesapları, `eas init`, mağaza kayıtları ve inceleme için demo hesabı
+- Kendi (Shopify'sız) Almanca mağaza istenirse: ödeme sağlayıcısı + hukuki metinlerle ayrı proje
+- Yayın sonrası: securityheaders.com, Tag Assistant, Meta Events Manager, bağımsız sızma testi
 - Hukuki metinler (avukat) ve KDV/DATEV eşlemesi (vergi danışmanı) doğrulaması

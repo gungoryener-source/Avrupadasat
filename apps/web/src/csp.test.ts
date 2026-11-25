@@ -23,6 +23,11 @@ describe("CSP", () => {
     expect(c).toContain("https://www.googletagmanager.com");
     expect(c).toContain("https://connect.facebook.net");
     expect(c).not.toContain("challenges.cloudflare.com");
+    // 'none' başka kaynakla aynı yönergede olmamalı
+    expect(c.split("; ").find((d) => d.startsWith("frame-src"))).toBe(
+      "frame-src https://www.googletagmanager.com",
+    );
+    expect(buildCsp("n", prod)).toContain("frame-src 'none'");
   });
 
   it("geliştirmede eval (HMR) açık", () => {

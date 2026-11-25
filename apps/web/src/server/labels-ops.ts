@@ -10,7 +10,7 @@ export const ORDER_STATUS = {
 export const CHANNEL_LABEL = {
   AMAZON: "Amazon.de",
   EBAY: "eBay.de",
-  WEBSHOP: "Web mağaza",
+  WEBSHOP: "Web mağaza (Shopify)",
   MANUAL: "Manuel",
 } as const;
 

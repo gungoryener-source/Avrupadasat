@@ -1,7 +1,7 @@
 "use client";
 import Script from "next/script";
 import { useActionState, useEffect, useState } from "react";
-import { productCategories } from "@avrupadasat/core/events";
+import { productCategories } from "@avrupadasat/core/categories";
 import { submitLeadAction } from "@/app/(site)/lead-action";
 import { adsConsentGiven, track } from "@/components/consent";
 import { Submit } from "./Submit";

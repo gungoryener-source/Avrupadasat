@@ -1,6 +1,7 @@
 import { encryptField } from "@avrupadasat/db/crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GET as meGET } from "@/app/api/v1/me/route";
+import { DELETE as pushDELETE, PUT as pushPUT } from "@/app/api/v1/push/route";
 import { GET as ordersGET } from "@/app/api/v1/orders/route";
 import { GET as shipGET } from "@/app/api/v1/shipments/[id]/route";
 import { POST as authPOST } from "@/app/api/v1/auth/route";
@@ -234,6 +235,30 @@ describe.skipIf(!process.env.DATABASE_URL)("otomasyon ve mobil API", () => {
       externalId: "302-1",
       trackingNo: "00340434161234567890",
     });
+    // Anlık bildirim anahtarı oturuma bağlanır; biçim doğrulanır; çıkışla birlikte kalkar
+    const put = (t: string, h = auth.headers) =>
+      pushPUT(
+        new Request("http://x/api/v1/push", {
+          method: "PUT",
+          headers: h,
+          body: JSON.stringify({ token: t }),
+        }),
+      );
+    const pt = `ExponentPushToken[${run}abcdef]`;
+    expect((await put("javascript:alert(1)")).status).toBe(400);
+    expect((await put(pt, {} as typeof auth.headers)).status).toBe(401);
+    expect((await put(pt)).status).toBe(204);
+    expect(await db().apiToken.count({ where: { pushToken: pt } })).toBe(1);
+    expect(
+      (
+        await pushDELETE(
+          new Request("http://x/api/v1/push", { method: "DELETE", headers: auth.headers }),
+        )
+      ).status,
+    ).toBe(204);
+    expect(await db().apiToken.count({ where: { pushToken: pt } })).toBe(0);
+    expect((await put(pt)).status).toBe(204);
+
     expect((await meGET(new Request("http://x/api/v1/me"))).status).toBe(401);
     expect(
       (

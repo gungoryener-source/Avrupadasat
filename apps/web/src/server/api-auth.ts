@@ -77,7 +77,7 @@ export async function apiLogin(
 
 export async function apiActor(
   req: Request,
-): Promise<(Actor & { tenantId: string; name: string }) | null> {
+): Promise<(Actor & { tenantId: string; name: string; apiTokenId: string }) | null> {
   const h = req.headers.get("authorization") ?? "";
   const m = /^Bearer (as_[A-Za-z0-9_-]{20,80})$/.exec(h);
   if (!m) return null;
@@ -94,7 +94,13 @@ export async function apiActor(
       .apiToken.update({ where: { id: t.id }, data: { lastUsedAt: new Date() } })
       .catch(() => undefined);
   }
-  return { userId: user.id, role: mem.role as Role, tenantId: mem.tenantId, name: user.name };
+  return {
+    userId: user.id,
+    role: mem.role as Role,
+    tenantId: mem.tenantId,
+    name: user.name,
+    apiTokenId: t.id,
+  };
 }
 
 export async function apiLogout(req: Request) {
@@ -104,4 +110,21 @@ export async function apiLogout(req: Request) {
 
 export function json(data: unknown, status = 200) {
   return Response.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
+}
+
+export const PUSH_TOKEN_RE = /^Expo(nent)?PushToken\[[A-Za-z0-9_-]{10,100}\]$/;
+
+/** Cihazın bildirim anahtarını bu oturuma bağlar; aynı cihaz başka oturumdaysa oradan alınır */
+export async function setPushToken(apiTokenId: string, pushToken: string | null) {
+  if (pushToken === null) {
+    await db().apiToken.update({ where: { id: apiTokenId }, data: { pushToken: null } });
+    return;
+  }
+  await db().$transaction([
+    db().apiToken.updateMany({
+      where: { pushToken, NOT: { id: apiTokenId } },
+      data: { pushToken: null },
+    }),
+    db().apiToken.update({ where: { id: apiTokenId }, data: { pushToken } }),
+  ]);
 }

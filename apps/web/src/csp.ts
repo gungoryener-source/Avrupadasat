@@ -16,7 +16,8 @@ export function buildCsp(nonce: string, env: NodeJS.ProcessEnv = process.env): s
     `img-src ${src("'self' data: blob:", gtm && "https://www.googletagmanager.com https://*.google-analytics.com https://www.google.com https://googleads.g.doubleclick.net", meta && "https://www.facebook.com")}`,
     "font-src 'self'",
     `connect-src ${src("'self'", isDev && "ws:", gtm && "https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.google.com", meta && "https://www.facebook.com https://connect.facebook.net")}`,
-    `frame-src ${src(turnstile ? "https://challenges.cloudflare.com" : "'none'", gtm && "https://www.googletagmanager.com")}`,
+    // 'none' başka kaynakla birlikte yazılırsa tarayıcı yok sayar → yalnız hiç kaynak yoksa
+    `frame-src ${src(turnstile && "https://challenges.cloudflare.com", gtm && "https://www.googletagmanager.com") || "'none'"}`,
     "frame-ancestors 'none'",
     "form-action 'self'",
     "base-uri 'self'",

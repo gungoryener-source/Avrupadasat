@@ -3,6 +3,9 @@
  * Adlandırma: <alan>.<geçmiş zaman fiil>.v<sürüm>  — şema değişirse yeni sürüm açılır.
  */
 import { z } from "zod";
+import { productCategories } from "./categories";
+
+export { productCategories };
 
 export const attribution = z.object({
   utmSource: z.string().max(100).optional(),
@@ -12,16 +15,6 @@ export const attribution = z.object({
   fbclid: z.string().max(200).optional(),
   landingPath: z.string().max(300).optional(),
 });
-
-export const productCategories = [
-  "tekstil",
-  "mobilya",
-  "gida",
-  "kozmetik",
-  "ev-mutfak",
-  "elektronik",
-  "diger",
-] as const;
 
 /** Ücretsiz uygunluk raporu / ön değerlendirme formu */
 export const leadSubmittedV1 = z.object({

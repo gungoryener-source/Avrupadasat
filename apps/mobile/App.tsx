@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -20,6 +21,7 @@ import {
   DOC_LABEL,
   eur,
   ORDER_LABEL,
+  screenFromNotification,
   STAGE_LABEL,
   trDate,
   type Api,
@@ -29,10 +31,13 @@ import {
   type ShipmentRow,
   type StockItem,
 } from "./src/api";
+import { registerForPush } from "./src/notifications";
 
 const TOKEN_KEY = "as_token";
 const API_URL =
-  (Constants.expoConfig?.extra?.apiUrl as string | undefined) ?? "https://avrupadasat.com";
+  process.env.EXPO_PUBLIC_API_URL ??
+  (Constants.expoConfig?.extra?.apiUrl as string | undefined) ??
+  "https://avrupadasat.com";
 const C = {
   p: "#c8102e",
   ink: "#0b1324",
@@ -156,6 +161,18 @@ function Login({ api, onToken }: { api: Api; onToken: (t: string) => void }) {
 function Main({ api, onUnauthorized }: { api: Api; onUnauthorized: () => void }) {
   const [tab, setTab] = useState<Tab>("home");
   const [detail, setDetail] = useState<string | null>(null);
+  useEffect(() => {
+    registerForPush(api).catch(() => undefined);
+    // Bildirime dokununca ilgili sekme açılır
+    const sub = Notifications.addNotificationResponseReceivedListener((r) => {
+      const screen = screenFromNotification(r.notification.request.content.data);
+      if (screen) {
+        setDetail(null);
+        setTab(screen);
+      }
+    });
+    return () => sub.remove();
+  }, [api]);
   const guard = useCallback(
     async <T,>(p: Promise<T>): Promise<T | null> => {
       try {

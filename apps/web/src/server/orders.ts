@@ -1,6 +1,8 @@
 import { decryptField, encryptField } from "@avrupadasat/db/crypto";
 import { forTenant, Prisma, type ReturnCondition, type SalesChannel } from "@avrupadasat/db";
-import { amazonAdapter, type AmazonCredentials } from "./amazon";
+import { amazonAdapter, SPAPI_EU_SANDBOX, type AmazonCredentials } from "./amazon";
+import { EBAY_SANDBOX_API, ebayAdapter, type EbayCredentials } from "./ebay";
+import { SHOP_DOMAIN_RE, shopifyAdapter, type ShopifyCredentials } from "./shopify";
 import { audit } from "./audit";
 import { db } from "./db";
 import {
@@ -38,21 +40,41 @@ export async function connectChannel(
   return { ok: true };
 }
 
+const sandbox = () => process.env.INTEGRATIONS_SANDBOX === "1";
+
+/** Kanal + şifreli kimlik bilgisinden canlı adaptör; eksik yapılandırmada açık hata veren adaptör */
+export function liveAdapterFor(
+  channel: SalesChannel,
+  credentialsEnc: string | null | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): MarketplaceAdapter {
+  if (!credentialsEnc) return liveAdapter(channel);
+  const creds = JSON.parse(decryptField(credentialsEnc)) as Record<string, string>;
+  if (channel === "AMAZON" && env.AMAZON_SP_API_CLIENT_ID && env.AMAZON_SP_API_CLIENT_SECRET) {
+    return amazonAdapter(creds as unknown as AmazonCredentials, {
+      clientId: env.AMAZON_SP_API_CLIENT_ID,
+      clientSecret: env.AMAZON_SP_API_CLIENT_SECRET,
+      endpoint: sandbox() ? SPAPI_EU_SANDBOX : undefined,
+    });
+  }
+  if (channel === "EBAY" && env.EBAY_CLIENT_ID && env.EBAY_CLIENT_SECRET) {
+    return ebayAdapter(creds as unknown as EbayCredentials, {
+      clientId: env.EBAY_CLIENT_ID,
+      clientSecret: env.EBAY_CLIENT_SECRET,
+      endpoint: sandbox() ? EBAY_SANDBOX_API : undefined,
+    });
+  }
+  if (channel === "WEBSHOP") return shopifyAdapter(creds as unknown as ShopifyCredentials);
+  return liveAdapter(channel);
+}
+
 async function adapterFor(
   tenantId: string,
   channel: SalesChannel,
   mode: string,
   credentialsEnc?: string | null,
 ): Promise<MarketplaceAdapter> {
-  if (mode === "live") {
-    const clientId = process.env.AMAZON_SP_API_CLIENT_ID;
-    const clientSecret = process.env.AMAZON_SP_API_CLIENT_SECRET;
-    if (channel === "AMAZON" && clientId && clientSecret && credentialsEnc) {
-      const creds = JSON.parse(decryptField(credentialsEnc)) as AmazonCredentials;
-      return amazonAdapter(creds, { clientId, clientSecret });
-    }
-    return liveAdapter(channel);
-  }
+  if (mode === "live") return liveAdapterFor(channel, credentialsEnc);
   const skus = (
     await forTenant(db(), tenantId).stockItem.findMany({
       where: { quantity: { gt: 0 } },
@@ -63,35 +85,107 @@ async function adapterFor(
   return mockAdapter(channel, skus);
 }
 
-/** Canlı Amazon bağlantısı: satıcının refresh token'ı ve sellerId'si şifreli saklanır */
-export async function connectAmazonLive(
+/** Panelde gösterilebilecek bağlantı hataları (URL'den gelen metin yalnız bu listedeyse gösterilir) */
+export const LIVE_CONNECT_ERRORS: ReadonlySet<string> = new Set([
+  "Satış kanalları vergi numaraları tamamlanınca açılır",
+  "Geçersiz Amazon kimlik bilgisi",
+  "Geçersiz eBay refresh token",
+  "Mağaza alan adı ornek.myshopify.com biçiminde olmalı",
+  "Geçersiz Shopify erişim anahtarı",
+  "Geçersiz depo konumu (gid://shopify/Location/…)",
+]);
+
+export type LiveCredentialInput =
+  | { channel: "AMAZON"; refreshToken: string; sellerId: string }
+  | { channel: "EBAY"; refreshToken: string }
+  | {
+      channel: "WEBSHOP";
+      shop: string;
+      accessToken: string;
+      locationId: string;
+      webhookSecret?: string;
+    };
+
+/** Girdiyi doğrular; geçerliyse saklanacak kimlik bilgisi ve gizli olmayan hesap tanımını döner */
+export function validateLiveCredentials(
+  input: LiveCredentialInput,
+):
+  | { ok: true; creds: Record<string, string>; account: string | null }
+  | { ok: false; reason: string } {
+  const bad = (reason: string) => ({ ok: false as const, reason });
+  switch (input.channel) {
+    case "AMAZON":
+      if (
+        !/^Atzr\|[A-Za-z0-9_\-|=+/]{20,}$/.test(input.refreshToken) ||
+        !/^[A-Z0-9]{8,20}$/.test(input.sellerId)
+      )
+        return bad("Geçersiz Amazon kimlik bilgisi");
+      return {
+        ok: true,
+        creds: { refreshToken: input.refreshToken, sellerId: input.sellerId },
+        account: input.sellerId,
+      };
+    case "EBAY":
+      if (!/^v\^1\.1#[\x21-\x7e]{20,}$/.test(input.refreshToken))
+        return bad("Geçersiz eBay refresh token");
+      return { ok: true, creds: { refreshToken: input.refreshToken }, account: null };
+    case "WEBSHOP": {
+      const shop = input.shop
+        .trim()
+        .toLowerCase()
+        .replace(/^https?:\/\//, "")
+        .replace(/\/.*$/, "");
+      if (!SHOP_DOMAIN_RE.test(shop))
+        return bad("Mağaza alan adı ornek.myshopify.com biçiminde olmalı");
+      if (!/^shpat_[a-f0-9]{32}$/.test(input.accessToken))
+        return bad("Geçersiz Shopify erişim anahtarı");
+      if (!/^gid:\/\/shopify\/Location\/\d+$/.test(input.locationId))
+        return bad("Geçersiz depo konumu (gid://shopify/Location/…)");
+      const creds: Record<string, string> = {
+        shop,
+        accessToken: input.accessToken,
+        locationId: input.locationId,
+      };
+      if (input.webhookSecret) creds.webhookSecret = input.webhookSecret;
+      return { ok: true, creds, account: shop };
+    }
+  }
+}
+
+/** Canlı kanal bağlantısı: kimlik bilgileri şifreli saklanır, düz metin hiçbir yerde tutulmaz */
+export async function connectLive(
   tenantId: string,
-  creds: AmazonCredentials,
+  input: LiveCredentialInput,
   actorUserId: string,
 ): Promise<OpResult> {
-  if (
-    !/^Atzr\|[A-Za-z0-9_\-|=+/]{20,}$/.test(creds.refreshToken) ||
-    !/^[A-Z0-9]{8,20}$/.test(creds.sellerId)
-  ) {
-    return { ok: false, reason: "Geçersiz Amazon kimlik bilgisi" };
+  if ((await registrationState(tenantId)).salesLocked) {
+    return { ok: false, reason: "Satış kanalları vergi numaraları tamamlanınca açılır" };
   }
+  const v = validateLiveCredentials(input);
+  if (!v.ok) return v;
   const t = forTenant(db(), tenantId);
-  const existing = await t.marketplaceConnection.findFirst({ where: { channel: "AMAZON" } });
+  const existing = await t.marketplaceConnection.findFirst({ where: { channel: input.channel } });
   const data = {
     mode: "live",
     status: "ACTIVE",
-    credentialsEnc: encryptField(JSON.stringify(creds)),
+    credentialsEnc: encryptField(JSON.stringify(v.creds)),
+    externalAccount: v.account,
   };
   if (existing) await t.marketplaceConnection.update({ where: { id: existing.id }, data });
-  else await t.marketplaceConnection.create({ data: { channel: "AMAZON", ...data } as never });
+  else await t.marketplaceConnection.create({ data: { channel: input.channel, ...data } as never });
   await audit({
     actorUserId,
     tenantId,
     action: "tenant.updated",
     entity: "MarketplaceConnection",
-    meta: { channel: "AMAZON", mode: "live" },
+    meta: { channel: input.channel, mode: "live" },
   });
   return { ok: true };
+}
+
+/** Geriye dönük uyumluluk */
+export function connectAmazonLive(tenantId: string, creds: AmazonCredentials, actorUserId: string) {
+  return connectLive(tenantId, { channel: "AMAZON", ...creds }, actorUserId);
 }
 
 /** Siparişleri içe aktarır (idempotent) ve stoğu rezerve eder */

@@ -142,6 +142,29 @@ try {
   assert(cron.status() === 401, `cron ${cron.status()}`);
   s.ok();
 
+  s = step("Web mağaza (Shopify, demo) bağlanıyor ve siparişler çekiliyor; imzasız webhook 401");
+  await op.goto(`${BASE}/panel/siparisler`);
+  await op
+    .locator('form:has(input[value="WEBSHOP"])')
+    .getByRole("button", { name: "Bağla" })
+    .click();
+  await op.locator("#kanal-WEBSHOP").getByText("Bağlı (demo)").waitFor();
+  await op
+    .locator('form:has(input[value="WEBSHOP"])')
+    .getByRole("button", { name: "Siparişleri şimdi çek" })
+    .click();
+  await op.locator("tbody tr", { hasText: "Web mağaza (Shopify)" }).first().waitFor();
+  const wh = await op.request.post(`${BASE}/api/webhooks/shopify`, {
+    data: { id: 1 },
+    headers: {
+      "x-shopify-shop-domain": "ornek.myshopify.com",
+      "x-shopify-topic": "orders/create",
+      "x-shopify-hmac-sha256": "AAAA",
+    },
+  });
+  assert(wh.status() === 401, `webhook ${wh.status()}`);
+  s.ok();
+
   console.log("\nAşama 4 uçtan uca: TÜMÜ GEÇTİ");
 } finally {
   await b.close();

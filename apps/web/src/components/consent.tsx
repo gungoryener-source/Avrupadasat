@@ -249,8 +249,9 @@ export function ConsentSettingsLink() {
         border: 0,
         color: "inherit",
         cursor: "pointer",
-        padding: 0,
+        padding: "3px 0",
         font: "inherit",
+        textAlign: "left",
         textDecoration: "underline",
       }}
     >
