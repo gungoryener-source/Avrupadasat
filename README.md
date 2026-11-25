@@ -48,11 +48,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3100 GTM_ID=GTM-TEST123 META_PIXEL_ID=1234
 pnpm e2e
 ```
 
-| Katman                 | Kapsam                                                                                                                                                                                                                                             |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Birim/entegrasyon (96) | Fiyat ve fatura hesabı, RBAC, olay şemaları, TOTP (RFC vektörleri), Argon2, oturum, kilitleme, tenant izolasyonu, şifreleme, CSV, dosya türü tespiti, imzalı bağlantılar, sipariş/rezervasyon, iade, fatura, mobil API, yapay zekâ girdi güvenliği |
-| Uçtan uca (47 adım)    | Aşama 1 talep→teklif→onay→davet→panel · Aşama 2 SEO, çerez onayı, araçlar · Aşama 3 ASN, belgeler, mal kabul, partner kapsamı · Aşama 4 sipariş, kargo, iade, fatura · Aşama 5 içerik, mesajlar, mobil API, DATEV                                  |
+| Katman                  | Kapsam                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Birim/entegrasyon (118) | SMTP gönderimi, anahtar rotasyonu, S3 depolama, nonce CSP, Amazon SP-API (sahte sunucu), ciro KPI, fiyat ve fatura hesabı, RBAC, olay şemaları, TOTP (RFC vektörleri), Argon2, oturum, kilitleme, tenant izolasyonu, şifreleme, CSV, dosya türü tespiti, imzalı bağlantılar, sipariş/rezervasyon, iade, fatura, mobil API, yapay zekâ girdi güvenliği |
+| Uçtan uca (48 adım)     | Aşama 1 talep→teklif→onay→davet→panel · Aşama 2 nonce CSP, SEO, çerez onayı, araçlar · Aşama 3 ASN, belgeler, mal kabul, partner kapsamı · Aşama 4 sipariş, kargo, iade, fatura · Aşama 5 içerik, mesajlar, mobil API, DATEV                                                                                                                          |
 
 ## Demo (mock) modları
 
-Anahtar girilmeyen tüm dış servisler açıkça işaretli demo modunda çalışır: e-posta (konsola yazılır), Amazon/eBay (örnek siparişler), Turnstile, Meta CAPI, ClamAV, yapay zekâ (`[Demo]` etiketli metin — onaylanamaz).
+Anahtar girilmeyen tüm dış servisler açıkça işaretli demo modunda çalışır: e-posta (`SMTP_URL` yoksa konsola yazılır), Amazon/eBay (örnek siparişler; Amazon canlı adaptörü `INTEGRATIONS_MODE=live` ile), Turnstile, Meta CAPI, ClamAV, yapay zekâ (`[Demo]` etiketli metin — onaylanamaz).

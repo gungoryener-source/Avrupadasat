@@ -539,6 +539,8 @@ model OrderLine {
   id         String @id @default(cuid())
   tenantId   String
   orderId    String
+  /// Pazaryerindeki kalem kimliği (Amazon OrderItemId) — kargo onayında gerekir
+  externalLineId String?
   sku        String
   quantity   Int
   priceCents Int    @default(0)

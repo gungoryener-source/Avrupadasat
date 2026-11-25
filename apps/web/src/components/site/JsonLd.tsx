@@ -4,10 +4,17 @@ import type { ContentPage, Faq } from "@/content/types";
 export const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 /** JSON-LD: </script> kaçışı ile güvenli gömme */
-export function JsonLd({ data }: { data: Record<string, unknown> | Record<string, unknown>[] }) {
+export function JsonLd({
+  data,
+  nonce,
+}: {
+  data: Record<string, unknown> | Record<string, unknown>[];
+  nonce?: string;
+}) {
   return (
     <script
       type="application/ld+json"
+      nonce={nonce}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
     />
   );

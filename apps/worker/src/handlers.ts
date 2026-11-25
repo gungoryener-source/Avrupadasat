@@ -1,4 +1,7 @@
 import { eventSchemas, type EventType } from "@avrupadasat/core/events";
+import { STAGE_LABEL, STEP_LABEL, STEP_STATUS } from "@avrupadasat/core/labels";
+import { formatEur } from "@avrupadasat/core/pricing";
+import { templates, type Mail } from "./templates";
 
 export interface OutboxRow {
   id: string;
@@ -9,62 +12,97 @@ export interface OutboxRow {
 }
 
 export interface Ports {
-  /** E-posta, bildirim vb. — mock modunda yalnız kaydeder */
-  notify(channel: "email" | "crm", subject: string, body: Record<string, unknown>): Promise<void>;
-  /** Kişiye özel bağlantı içeren e-posta; bağlantı loglanmaz */
-  sendLinkEmail?(to: string, subject: string, link: string): Promise<void>;
-  decrypt?(tokenEnc: string): string;
-  appUrl?: string;
+  appUrl: string;
+  /** Tek alıcıya e-posta (gerçek SMTP veya mock) */
+  sendMail(to: string, mail: Mail): Promise<void>;
+  /** Firma sahiplerinin e-postaları (bildirimler için) */
+  tenantRecipients(tenantId: string): Promise<string[]>;
+  /** Ekip bildirim adresleri (OPS_EMAIL) */
+  opsRecipients: string[];
+  decrypt(tokenEnc: string): string;
 }
 
 export const MAX_ATTEMPTS = 5;
 
 type Handler = (payload: unknown, row: OutboxRow, ports: Ports) => Promise<void>;
 
+async function toTenant(ports: Ports, tenantId: string | null, mail: Mail) {
+  if (!tenantId) return;
+  for (const to of await ports.tenantRecipients(tenantId)) await ports.sendMail(to, mail);
+}
+
+async function toOps(ports: Ports, subject: string, lines: string[]) {
+  const mail = templates.ops(subject, lines, `${ports.appUrl}/admin`);
+  for (const to of ports.opsRecipients) await ports.sendMail(to, mail);
+}
+
 const handlers: Partial<Record<EventType, Handler>> = {
-  "lead.submitted.v1": async (payload, row, ports) => {
+  "lead.submitted.v1": async (payload, _row, ports) => {
     const p = eventSchemas["lead.submitted.v1"].parse(payload);
-    // Kişisel veri loglanmaz; yalnızca kimlik ve kategori
-    await ports.notify("crm", "Yeni uygunluk raporu talebi", {
-      eventId: row.id,
-      category: p.category,
-    });
-    await ports.notify("email", "Talebiniz alındı", { eventId: row.id });
+    await ports.sendMail(p.email, templates.leadReceived(p.companyName));
+    // Ekip bildiriminde kişisel veri yok: firma adı ve kategori
+    await toOps(ports, "Yeni uygunluk raporu talebi", [
+      `Firma: ${p.companyName}`,
+      `Kategori: ${p.category}`,
+      `Kaynak: ${p.attribution.gclid ? "Google Ads" : (p.attribution.utmSource ?? "doğrudan")}`,
+    ]);
   },
   "user.invited.v1": async (payload, _row, ports) => {
     const p = eventSchemas["user.invited.v1"].parse(payload);
-    if (!ports.sendLinkEmail || !ports.decrypt) throw new Error("E-posta portu yok");
     const link = `${ports.appUrl}/sifre/${ports.decrypt(p.tokenEnc)}`;
-    await ports.sendLinkEmail(
+    await ports.sendMail(
       p.email,
-      p.purpose === "INVITE" ? "Müşteri panelinize davet edildiniz" : "Şifre sıfırlama bağlantınız",
-      link,
+      p.purpose === "INVITE" ? templates.invite(link) : templates.reset(link),
     );
   },
   "quote.sent.v1": async (payload, _row, ports) => {
     const p = eventSchemas["quote.sent.v1"].parse(payload);
-    if (!ports.sendLinkEmail || !ports.decrypt) throw new Error("E-posta portu yok");
-    await ports.sendLinkEmail(
+    await ports.sendMail(
       p.email,
-      `Teklifiniz hazır: ${p.number}`,
-      `${ports.appUrl}/teklif/${ports.decrypt(p.tokenEnc)}`,
+      templates.quote(p.number, `${ports.appUrl}/teklif/${ports.decrypt(p.tokenEnc)}`),
     );
   },
-  "quote.accepted.v1": async (payload, row, ports) => {
+  "quote.accepted.v1": async (payload, _row, ports) => {
     const p = eventSchemas["quote.accepted.v1"].parse(payload);
-    await ports.notify("crm", "Teklif onaylandı — onboarding başlat", {
-      tenantId: row.tenantId,
-      package: p.packageCode,
-    });
+    await toOps(ports, "Teklif onaylandı — onboarding başlat", [`Paket: ${p.packageCode}`]);
   },
   "registration.status_changed.v1": async (payload, row, ports) => {
     const p = eventSchemas["registration.status_changed.v1"].parse(payload);
-    await ports.notify("email", "Kayıt adımınız güncellendi", {
-      tenantId: row.tenantId,
-      step: p.step,
-      status: p.status,
-    });
+    await toTenant(
+      ports,
+      row.tenantId,
+      templates.registration(
+        STEP_LABEL[p.step],
+        STEP_STATUS[p.status],
+        p.note,
+        `${ports.appUrl}/panel/sirket`,
+      ),
+    );
   },
+  "shipment.status_changed.v1": async (payload, row, ports) => {
+    const p = eventSchemas["shipment.status_changed.v1"].parse(payload);
+    await toTenant(
+      ports,
+      row.tenantId,
+      templates.shipment(STAGE_LABEL[p.stage], `${ports.appUrl}/panel/sevkiyatlar/${p.shipmentId}`),
+    );
+  },
+  "invoice.issued.v1": async (payload, row, ports) => {
+    const p = eventSchemas["invoice.issued.v1"].parse(payload);
+    await toTenant(
+      ports,
+      row.tenantId,
+      templates.invoice(
+        p.number,
+        formatEur(p.grossCents, { decimals: true }),
+        `${ports.appUrl}/panel/faturalar`,
+      ),
+    );
+  },
+  // Yalnız kayıt amaçlı olaylar: bildirim yok
+  "order.created.v1": async () => undefined,
+  "order.shipped.v1": async () => undefined,
+  "return.processed.v1": async () => undefined,
 };
 
 export type Outcome =

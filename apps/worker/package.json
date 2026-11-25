@@ -13,10 +13,14 @@
   "dependencies": {
     "@avrupadasat/core": "workspace:*",
     "@avrupadasat/db": "workspace:*",
-    "dotenv": "18.0.10"
+    "dotenv": "18.0.10",
+    "nodemailer": "10.6.1"
   },
   "devDependencies": {
     "@types/node": "22.20.6",
+    "@types/nodemailer": "8.0.2",
+    "@types/smtp-server": "3.5.13",
+    "smtp-server": "3.21.7",
     "tsx": "4.23.15",
     "vitest": "5.1.1"
   }

@@ -238,6 +238,11 @@ function HomeScreen({ api, guard, onSignOut }: { api: Api; guard: Guard; onSignO
         <Text style={s.note}>Satış adımları vergi kayıtları tamamlanınca açılacak.</Text>
       )}
       <View style={s.grid}>
+        <Kpi
+          label={`Son ${data?.sales.days ?? 30} gün ciro`}
+          value={data ? eur(data.sales.revenueCents).replace(/,\d\d$/, "") : "—"}
+        />
+        <Kpi label="Sipariş" value={String(data?.sales.orders ?? "—")} />
         <Kpi label="Depodaki ürün" value={String(data?.units ?? "—")} />
         <Kpi label="Yoldaki sevkiyat" value={String(data?.activeShipments ?? "—")} />
         <Kpi label="Bekleyen kayıt" value={String(data?.pendingSteps ?? "—")} />

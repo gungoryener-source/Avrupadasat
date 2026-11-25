@@ -6,7 +6,41 @@ try {
   const ctx = await b.newContext({ locale: "tr-TR" });
   const page = await ctx.newPage();
 
-  let s = step(
+  let s = step("CSP: istek başına nonce, unsafe-inline yok; API'de default-src 'none'");
+  {
+    const r1 = await page.goto(`${BASE}/`);
+    const csp = r1.headers()["content-security-policy"] ?? "";
+    const nonce = /'nonce-([^']+)'/.exec(csp)?.[1];
+    assert(nonce, `script-src nonce yok: ${csp}`);
+    const scriptSrc = csp.split(";").find((d) => d.trim().startsWith("script-src")) ?? "";
+    assert(!scriptSrc.includes("unsafe-inline"), "script-src unsafe-inline içeriyor");
+    const bad = await page.$$eval(
+      "script:not([type='application/ld+json'])",
+      (els, n) => els.filter((e) => e.nonce !== n).length,
+      nonce,
+    );
+    assert(bad === 0, `${bad} betikte nonce eksik`);
+    const r2 = await page.request.get(`${BASE}/`);
+    const n2 = /'nonce-([^']+)'/.exec(r2.headers()["content-security-policy"] ?? "")?.[1];
+    assert(n2 && n2 !== nonce, "nonce istekler arasında değişmiyor");
+    const api = await page.request.get(`${BASE}/api/health`);
+    assert(
+      (api.headers()["content-security-policy"] ?? "").startsWith("default-src 'none'"),
+      "API CSP'si kısıtlı değil",
+    );
+    const errors = [];
+    page.on(
+      "console",
+      (m) =>
+        m.type() === "error" && /Content Security Policy/i.test(m.text()) && errors.push(m.text()),
+    );
+    await page.goto(`${BASE}/`);
+    await page.waitForLoadState("networkidle");
+    assert(errors.length === 0, `CSP ihlali: ${errors[0]}`);
+  }
+  s.ok();
+
+  s = step(
     "Site haritasındaki tüm sayfalar 200, benzersiz başlık, açıklama, canonical, tek H1, geçerli JSON-LD",
   );
   const xml = await (await page.request.get(`${BASE}/sitemap.xml`)).text();
