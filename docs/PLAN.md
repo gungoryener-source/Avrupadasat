@@ -1,6 +1,6 @@
 # Avrupadasat — Yazılım Geliştirme Planı
 
-Son güncelleme: 25.11.2026 — Aşama 0–5 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
+Son güncelleme: 25.11.2026 — Aşama 0–6 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
 
 ## Kararlar
 
@@ -68,7 +68,7 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 
 ### Aşama 3 — Müşteri paneli (2–3 hafta)
 
-- [x] Genel bakış: stok, yoldaki sevkiyat, kayıt adımları, eksik belge ve düşük stok uyarıları — ciro göstergesi ⏳ (sipariş verisi canlı kanallardan gelince)
+- [x] Genel bakış: stok, yoldaki sevkiyat, kayıt adımları, eksik belge ve düşük stok uyarıları — ciro göstergesi Aşama 6’da eklendi
 - [x] Sevkiyat kaydı ve adım adım takip (manuel giriş): fabrika → TR çıkış → AB giriş → gümrük → depo
 - [x] Belgeler: ticari fatura, A.TR, çeki listesi, CMR; eksik belge uyarısı
 - [x] Partner depoya gelen sevkiyat bildirimi (ASN), stok listesi (CSV içe aktarma)
