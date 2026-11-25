@@ -11,6 +11,7 @@
 import type { ExternalOrder, MarketplaceAdapter } from "./marketplace";
 
 export const SPAPI_EU = "https://sellingpartnerapi-eu.amazon.com";
+export const SPAPI_EU_SANDBOX = "https://sandbox.sellingpartnerapi-eu.amazon.com";
 export const LWA_URL = "https://api.amazon.com/auth/o2/token";
 export const MARKETPLACE_DE = "A1PA6795UKMFR9";
 

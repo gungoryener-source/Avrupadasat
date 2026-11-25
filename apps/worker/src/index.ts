@@ -6,6 +6,9 @@ import "dotenv/config";
 import { decryptField, getPrisma } from "@avrupadasat/db";
 import { processRow, type OutboxRow, type Ports } from "./handlers";
 import { createMailer } from "./mailer";
+import { createPusher } from "./push";
+
+const push = createPusher();
 
 const POLL_MS = Number(process.env.WORKER_POLL_MS ?? 2000);
 const BATCH = 20;
@@ -24,6 +27,30 @@ const ports: Ports = {
       select: { user: { select: { email: true } } },
     });
     return owners.map((o) => o.user.email);
+  },
+  async sendPush(tenantId, msg) {
+    const prisma = getPrisma();
+    const members = await prisma.membership.findMany({
+      where: { tenantId, user: { disabledAt: null } },
+      select: { userId: true },
+    });
+    const rows = await prisma.apiToken.findMany({
+      where: {
+        userId: { in: members.map((m) => m.userId) },
+        pushToken: { not: null },
+        expiresAt: { gt: new Date() },
+      },
+      select: { pushToken: true },
+    });
+    const { invalid } = await push(
+      rows.map((r) => r.pushToken!),
+      msg,
+    );
+    if (invalid.length)
+      await prisma.apiToken.updateMany({
+        where: { pushToken: { in: invalid } },
+        data: { pushToken: null },
+      });
   },
 };
 

@@ -105,6 +105,13 @@ footer {
   margin-top: 40px;
   font-size: 14px;
 }
+/* Dokunma hedefi en az 24px (WCAG 2.2 — 2.5.8) */
+footer a,
+footer button {
+  display: inline-block;
+  min-height: 24px;
+  padding: 3px 0;
+}
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -719,7 +726,8 @@ footer {
 .foot > div {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 2px;
 }
 .foot a {
   color: #c9cfdb;

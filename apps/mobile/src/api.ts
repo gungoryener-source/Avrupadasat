@@ -94,6 +94,8 @@ export function createApi(
         body: JSON.stringify({ email, password, code: code || undefined }),
       }),
     logout: () => call<void>("/api/v1/auth", { method: "DELETE" }),
+    registerPush: (token: string) =>
+      call<void>("/api/v1/push", { method: "PUT", body: JSON.stringify({ token }) }),
     me: () => call<{ name: string; role: string; tenant: { name: string } }>("/api/v1/me"),
     overview: () => call<Overview>("/api/v1/overview"),
     shipments: () =>
@@ -138,4 +140,13 @@ export function trDate(iso: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
   return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+}
+
+const SCREENS = ["home", "shipments", "stock", "orders"] as const;
+export type Screen = (typeof SCREENS)[number];
+
+/** Bildirimdeki ekran adını doğrular (bilinmeyen değer yok sayılır) */
+export function screenFromNotification(data: unknown): Screen | null {
+  const s = (data as { screen?: unknown } | null)?.screen;
+  return typeof s === "string" && (SCREENS as readonly string[]).includes(s) ? (s as Screen) : null;
 }

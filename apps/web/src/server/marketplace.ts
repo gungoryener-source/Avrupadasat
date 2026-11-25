@@ -58,7 +58,7 @@ export function mockAdapter(
         if (skus.length > 1 && n % 3 === 0)
           lines.push({ sku: skus[(n + 1) % skus.length]!, quantity: 1, priceCents: 2490 });
         return {
-          externalId: `${channel === "AMAZON" ? "302" : "EB"}-${seed}-${i}`,
+          externalId: `${channel === "AMAZON" ? "302" : channel === "WEBSHOP" ? "SH" : "EB"}-${seed}-${i}`,
           orderedAt: new Date(),
           buyer: {
             name: NAMES[n % NAMES.length]!,
@@ -82,12 +82,16 @@ export function mockAdapter(
 
 export function liveAdapter(channel: SalesChannel): MarketplaceAdapter {
   const missing =
-    channel === "AMAZON" ? !process.env.AMAZON_SP_API_CLIENT_ID : !process.env.EBAY_CLIENT_ID;
+    channel === "AMAZON"
+      ? !process.env.AMAZON_SP_API_CLIENT_ID
+      : channel === "EBAY"
+        ? !process.env.EBAY_CLIENT_ID
+        : false;
   const fail = async (): Promise<never> => {
     throw new Error(
       missing
         ? `${channel} canlı bağlantısı için API kimlik bilgileri tanımlı değil`
-        : `${channel} canlı bağlantısı henüz etkin değil (sandbox doğrulaması bekleniyor)`,
+        : `${channel} canlı bağlantısı için firma kimlik bilgileri girilmemiş`,
     );
   };
   return { channel, fetchOrders: fail, pushTracking: fail, pushStock: fail };

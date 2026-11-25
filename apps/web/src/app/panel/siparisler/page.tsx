@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { can } from "@avrupadasat/core/roles";
 import { forTenant } from "@avrupadasat/db";
 import { formatEur } from "@avrupadasat/core/pricing";
@@ -6,17 +7,75 @@ import { fmtDate } from "@/components/AppShell";
 import { Submit } from "@/components/Submit";
 import { db } from "@/server/db";
 import { CHANNEL_LABEL, ORDER_STATUS, RETURN_CONDITION } from "@/server/labels-ops";
-import { connectChannel, shipTo, syncOrders } from "@/server/orders";
+import {
+  connectChannel,
+  connectLive,
+  LIVE_CONNECT_ERRORS,
+  shipTo,
+  syncOrders,
+  type LiveCredentialInput,
+} from "@/server/orders";
 import { registrationState } from "@/server/panel";
 import { requireClient } from "@/server/session";
 
 export const metadata = { title: "Siparişler ve iadeler" };
 
+const CHANNELS = ["AMAZON", "EBAY", "WEBSHOP"] as const;
+type Ch = (typeof CHANNELS)[number];
+const isCh = (v: string): v is Ch => (CHANNELS as readonly string[]).includes(v);
+const live = () => process.env.INTEGRATIONS_MODE === "live";
+
+const LIVE_FIELDS: Record<
+  Ch,
+  { name: string; label: string; secret?: boolean; optional?: boolean }[]
+> = {
+  AMAZON: [
+    { name: "sellerId", label: "Seller ID" },
+    { name: "refreshToken", label: "Refresh token (Atzr|…)", secret: true },
+  ],
+  EBAY: [{ name: "refreshToken", label: "Refresh token (v^1.1#…)", secret: true }],
+  WEBSHOP: [
+    { name: "shop", label: "Mağaza (ornek.myshopify.com)" },
+    { name: "accessToken", label: "Admin API erişim anahtarı (shpat_…)", secret: true },
+    { name: "locationId", label: "Depo konumu (gid://shopify/Location/…)" },
+    {
+      name: "webhookSecret",
+      label: "Webhook gizli anahtarı (isteğe bağlı)",
+      secret: true,
+      optional: true,
+    },
+  ],
+};
+
+async function connectLiveAction(fd: FormData) {
+  "use server";
+  const s = await requireClient("user.manage");
+  const ch = String(fd.get("channel"));
+  if (!isCh(ch)) return;
+  const v = (k: string) => String(fd.get(k) ?? "").trim();
+  const input: LiveCredentialInput =
+    ch === "AMAZON"
+      ? { channel: ch, refreshToken: v("refreshToken"), sellerId: v("sellerId") }
+      : ch === "EBAY"
+        ? { channel: ch, refreshToken: v("refreshToken") }
+        : {
+            channel: ch,
+            shop: v("shop"),
+            accessToken: v("accessToken"),
+            locationId: v("locationId"),
+            webhookSecret: v("webhookSecret") || undefined,
+          };
+  const r = await connectLive(s.actor.tenantId, input, s.userId);
+  revalidatePath("/panel/siparisler");
+  if (!r.ok) redirect(`/panel/siparisler?hata=${encodeURIComponent(r.reason)}#kanal-${ch}`);
+  redirect("/panel/siparisler");
+}
+
 async function connectAction(fd: FormData) {
   "use server";
   const s = await requireClient("user.manage");
   const ch = String(fd.get("channel"));
-  if (ch !== "AMAZON" && ch !== "EBAY") return;
+  if (!isCh(ch)) return;
   await connectChannel(s.actor.tenantId, ch, s.userId);
   revalidatePath("/panel/siparisler");
 }
@@ -25,12 +84,18 @@ async function syncAction(fd: FormData) {
   "use server";
   const s = await requireClient("order.read");
   const ch = String(fd.get("channel"));
-  if (ch !== "AMAZON" && ch !== "EBAY") return;
+  if (!isCh(ch)) return;
   await syncOrders(s.actor.tenantId, ch);
   revalidatePath("/panel/siparisler");
 }
 
-export default async function OrdersPage() {
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ hata?: string }>;
+}) {
+  const raw = (await searchParams).hata;
+  const hata = raw && LIVE_CONNECT_ERRORS.has(raw) ? raw : null;
   const s = await requireClient("order.read");
   const t = forTenant(db(), s.actor.tenantId);
   const [orders, returns, conns, reg] = await Promise.all([
@@ -45,6 +110,11 @@ export default async function OrdersPage() {
       <h1>Siparişler ve iadeler</h1>
       <div className="card" style={{ marginBottom: 18 }}>
         <h2 style={{ marginTop: 0, fontSize: 19 }}>Satış kanalları</h2>
+        {hata ? (
+          <p className="note" role="alert" style={{ color: "var(--red, #b42318)" }}>
+            {hata}
+          </p>
+        ) : null}
         {reg.salesLocked ? (
           <p className="note">
             Satış kanalları vergi numaraları tamamlanınca bağlanabilir. Bu arada ürün kartlarınızı
@@ -52,10 +122,16 @@ export default async function OrdersPage() {
           </p>
         ) : (
           <div className="row">
-            {(["AMAZON", "EBAY"] as const).map((ch) => {
+            {CHANNELS.map((ch) => {
               const c = conns.find((x) => x.channel === ch);
+              const needsCreds = live() && owner && (!c || c.mode !== "live" || !c.credentialsEnc);
               return (
-                <div key={ch} className="card" style={{ padding: 14, minWidth: 240 }}>
+                <div
+                  key={ch}
+                  id={`kanal-${ch}`}
+                  className="card"
+                  style={{ padding: 14, minWidth: 240 }}
+                >
                   <b>{CHANNEL_LABEL[ch]}</b>{" "}
                   {c ? (
                     <span className="tag ok">Bağlı{c.mode === "mock" ? " (demo)" : ""}</span>
@@ -65,7 +141,31 @@ export default async function OrdersPage() {
                   <div className="muted" style={{ fontSize: 12, margin: "6px 0" }}>
                     {c?.lastSyncAt ? `Son senkron: ${fmtDate(c.lastSyncAt, true)}` : ""}
                   </div>
-                  {c ? (
+                  {needsCreds ? (
+                    <form
+                      action={connectLiveAction}
+                      autoComplete="off"
+                      className="stack"
+                      style={{ gap: 6 }}
+                    >
+                      <input type="hidden" name="channel" value={ch} />
+                      {LIVE_FIELDS[ch].map((f) => (
+                        <label key={f.name} style={{ fontSize: 13 }}>
+                          {f.label}
+                          <input
+                            name={f.name}
+                            type={f.secret ? "password" : "text"}
+                            required={!f.optional}
+                            autoComplete="off"
+                            spellCheck={false}
+                          />
+                        </label>
+                      ))}
+                      <Submit className="btn btn-sm" pendingText="…">
+                        Canlı bağla
+                      </Submit>
+                    </form>
+                  ) : c ? (
                     <form action={syncAction}>
                       <input type="hidden" name="channel" value={ch} />
                       <Submit className="btn btn-o btn-sm" pendingText="…">

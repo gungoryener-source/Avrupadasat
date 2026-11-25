@@ -74,60 +74,60 @@ enum ShipmentStage {
 
 /// Müşteri firma (kiracı)
 model Tenant {
-  id            String       @id @default(cuid())
-  name          String
-  slug          String       @unique
-  city          String?
-  status        TenantStatus @default(ONBOARDING)
-  packageCode   PackageCode?
+  id           String       @id @default(cuid())
+  name         String
+  slug         String       @unique
+  city         String?
+  status       TenantStatus @default(ONBOARDING)
+  packageCode  PackageCode?
   /// Depoda kullanılan palet (depo bildirir; faturalama günlük anlık görüntülerden ortalar)
-  palletsInUse  Int          @default(0)
+  palletsInUse Int          @default(0)
   /// Fatura KDV oranı (%). TODO(verify): müşteri tipine göre (Alman şirketi / yurt dışı B2B) vergi danışmanıyla
-  vatRatePct    Int          @default(19)
+  vatRatePct   Int          @default(19)
   /// AES-256-GCM ile şifreli (src/crypto.ts)
-  taxNumberEnc  String?
-  ibanEnc       String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  taxNumberEnc String?
+  ibanEnc      String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
-  memberships   Membership[]
-  partners      PartnerAssignment[]
-  shipments     Shipment[]
-  stockItems    StockItem[]
-  documents     Document[]
-  registration  RegistrationTask[]
-  leads         Lead[]
-  quotes        Quote[]
-  contracts     Contract[]
-  contacts      TenantContact[]
-  orders        Order[]
-  invoices      Invoice[]
-  connections   MarketplaceConnection[]
+  memberships  Membership[]
+  partners     PartnerAssignment[]
+  shipments    Shipment[]
+  stockItems   StockItem[]
+  documents    Document[]
+  registration RegistrationTask[]
+  leads        Lead[]
+  quotes       Quote[]
+  contracts    Contract[]
+  contacts     TenantContact[]
+  orders       Order[]
+  invoices     Invoice[]
+  connections  MarketplaceConnection[]
 }
 
 model User {
-  id               String     @id @default(cuid())
-  email            String     @unique
-  name             String
+  id                 String     @id @default(cuid())
+  email              String     @unique
+  name               String
   /// Argon2id hash (Aşama 1)
-  passwordHash     String?
+  passwordHash       String?
   /// TOTP sırrı, AES-256-GCM ile şifreli
   twoFactorSecretEnc String?
   twoFactorEnabledAt DateTime?
   /// Son kabul edilen TOTP zaman adımı (aynı kodun tekrar kullanımını engeller)
-  lastTotpStep     Int?
-  failedLogins     Int        @default(0)
-  lockedUntil      DateTime?
-  lastLoginAt      DateTime?
+  lastTotpStep       Int?
+  failedLogins       Int        @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
   /// Ekip rolü; müşteri kullanıcılarında boş, rolü Membership belirler
-  staffRole        StaffRole?
-  disabledAt       DateTime?
-  createdAt        DateTime   @default(now())
+  staffRole          StaffRole?
+  disabledAt         DateTime?
+  createdAt          DateTime   @default(now())
 
-  memberships      Membership[]
-  partnerOf        PartnerAssignment[]
-  sessions         Session[]
-  tokens           AuthToken[]
+  memberships Membership[]
+  partnerOf   PartnerAssignment[]
+  sessions    Session[]
+  tokens      AuthToken[]
 }
 
 model Session {
@@ -142,7 +142,7 @@ model Session {
   lastSeenAt      DateTime @default(now())
   expiresAt       DateTime
 
-  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -161,7 +161,7 @@ model AuthToken {
   usedAt    DateTime?
   createdAt DateTime     @default(now())
 
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// Basit sabit pencereli hız sınırı (çoklu sunucuda da çalışır)
@@ -186,30 +186,30 @@ enum CompanyForm {
 }
 
 model Quote {
-  id             String      @id @default(cuid())
-  number         String      @unique
-  leadId         String?
-  tenantId       String?
-  packageCode    PackageCode
-  companyForm    CompanyForm @default(UG)
+  id               String      @id @default(cuid())
+  number           String      @unique
+  leadId           String?
+  tenantId         String?
+  packageCode      PackageCode
+  companyForm      CompanyForm @default(UG)
   /// [{ code, description, quantity, unitCents, recurring }]
-  lines          Json
-  oneTimeCents   Int
-  monthlyCents   Int
-  status         QuoteStatus @default(DRAFT)
-  publicTokenHash String?    @unique
+  lines            Json
+  oneTimeCents     Int
+  monthlyCents     Int
+  status           QuoteStatus @default(DRAFT)
+  publicTokenHash  String?     @unique
   priceListVersion String
-  validUntil     DateTime
-  sentAt         DateTime?
-  acceptedAt     DateTime?
-  acceptedByName String?
-  acceptedIp     String?
-  createdById    String?
-  createdAt      DateTime    @default(now())
+  validUntil       DateTime
+  sentAt           DateTime?
+  acceptedAt       DateTime?
+  acceptedByName   String?
+  acceptedIp       String?
+  createdById      String?
+  createdAt        DateTime    @default(now())
 
-  lead           Lead?    @relation(fields: [leadId], references: [id])
-  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
-  contract       Contract?
+  lead     Lead?     @relation(fields: [leadId], references: [id])
+  tenant   Tenant?   @relation(fields: [tenantId], references: [id])
+  contract Contract?
 
   @@index([status, createdAt])
 }
@@ -225,8 +225,8 @@ model Contract {
   signerIp     String?
   signedAt     DateTime @default(now())
 
-  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  quote        Quote  @relation(fields: [quoteId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  quote  Quote  @relation(fields: [quoteId], references: [id])
 
   @@index([tenantId])
 }
@@ -240,7 +240,7 @@ model TenantContact {
   phone     String?
   isPrimary Boolean @default(false)
 
-  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
 }
@@ -252,8 +252,8 @@ model Membership {
   role      ClientRole
   createdAt DateTime   @default(now())
 
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([userId, tenantId])
   @@index([tenantId])
@@ -261,34 +261,34 @@ model Membership {
 
 /// Partner (ör. depo) kullanıcısının hizmet verdiği firmalar
 model PartnerAssignment {
-  id        String @id @default(cuid())
-  userId    String
-  tenantId  String
+  id       String @id @default(cuid())
+  userId   String
+  tenantId String
 
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([userId, tenantId])
 }
 
 /// Ücretsiz uygunluk raporu / ön değerlendirme talebi
 model Lead {
-  id              String     @id @default(cuid())
-  companyName     String
-  email           String
-  phone           String
-  category        String
-  status          LeadStatus @default(NEW)
-  consentKvkk     Boolean
-  marketingConsent Boolean   @default(false)
-  attribution     Json       @default("{}")
+  id               String     @id @default(cuid())
+  companyName      String
+  email            String
+  phone            String
+  category         String
+  status           LeadStatus @default(NEW)
+  consentKvkk      Boolean
+  marketingConsent Boolean    @default(false)
+  attribution      Json       @default("{}")
   /// Müşteriye dönüşünce bağlanır
-  tenantId        String?
-  createdAt       DateTime   @default(now())
+  tenantId         String?
+  createdAt        DateTime   @default(now())
 
-  notes           String?
-  tenant          Tenant?    @relation(fields: [tenantId], references: [id])
-  quotes          Quote[]
+  notes  String?
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+  quotes Quote[]
 
   @@index([status, createdAt])
 }
@@ -301,7 +301,7 @@ model RegistrationTask {
   note      String?
   updatedAt DateTime         @updatedAt
 
-  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, step])
 }
@@ -321,28 +321,28 @@ model Shipment {
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
-  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  events     ShipmentEvent[]
-  lines      AsnLine[]
-  documents  Document[]
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  events    ShipmentEvent[]
+  lines     AsnLine[]
+  documents Document[]
 
   @@unique([tenantId, reference])
   @@index([tenantId, stage])
 }
 
 model StockItem {
-  id        String   @id @default(cuid())
-  tenantId  String
-  sku       String
-  name      String
-  ean       String?
-  quantity  Int      @default(0)
-  reserved  Int      @default(0)
+  id                String    @id @default(cuid())
+  tenantId          String
+  sku               String
+  name              String
+  ean               String?
+  quantity          Int       @default(0)
+  reserved          Int       @default(0)
   /// Almanca ürün içeriği onaylandı mı (Aşama 5'te içerik üretimiyle dolar)
   contentApprovedAt DateTime?
-  updatedAt DateTime @updatedAt
+  updatedAt         DateTime  @updatedAt
 
-  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, sku])
 }
@@ -401,30 +401,30 @@ model ConsentRecord {
 }
 
 model ShipmentEvent {
-  id         String        @id @default(cuid())
-  tenantId   String
-  shipmentId String
-  stage      ShipmentStage
-  note       String?
-  at         DateTime      @default(now())
+  id          String        @id @default(cuid())
+  tenantId    String
+  shipmentId  String
+  stage       ShipmentStage
+  note        String?
+  at          DateTime      @default(now())
   actorUserId String?
 
-  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, shipmentId, at])
 }
 
 /// ASN (gelen sevkiyat bildirimi) satırı
 model AsnLine {
-  id          String  @id @default(cuid())
+  id          String @id @default(cuid())
   tenantId    String
   shipmentId  String
   sku         String
   quantity    Int
   receivedQty Int?
-  damagedQty  Int     @default(0)
+  damagedQty  Int    @default(0)
 
-  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
   @@unique([shipmentId, sku])
   @@index([tenantId])
@@ -455,22 +455,22 @@ model Document {
   uploadedById String?
   createdAt    DateTime     @default(now())
 
-  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  shipment     Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, createdAt])
 }
 
 model StockMovement {
-  id        String   @id @default(cuid())
-  tenantId  String
-  sku       String
-  delta     Int
+  id          String   @id @default(cuid())
+  tenantId    String
+  sku         String
+  delta       Int
   /// RECEIVE, ORDER, RETURN, ADJUST, DAMAGE
-  reason    String
-  refId     String?
+  reason      String
+  refId       String?
   actorUserId String?
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   @@index([tenantId, sku, createdAt])
 }
@@ -483,20 +483,23 @@ enum SalesChannel {
 }
 
 model MarketplaceConnection {
-  id             String       @id @default(cuid())
-  tenantId       String
-  channel        SalesChannel
+  id              String       @id @default(cuid())
+  tenantId        String
+  channel         SalesChannel
   /// mock | live
-  mode           String       @default("mock")
-  status         String       @default("ACTIVE")
+  mode            String       @default("mock")
+  status          String       @default("ACTIVE")
   /// Pazaryeri kimlik bilgileri (şifreli JSON)
-  credentialsEnc String?
-  lastSyncAt     DateTime?
-  createdAt      DateTime     @default(now())
+  credentialsEnc  String?
+  /// Gizli olmayan hesap tanımı (Shopify mağaza alan adı, Amazon Seller ID) — webhook eşlemesi için
+  externalAccount String?
+  lastSyncAt      DateTime?
+  createdAt       DateTime     @default(now())
 
-  tenant         Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, channel])
+  @@index([channel, externalAccount])
 }
 
 enum OrderStatus {
@@ -509,43 +512,43 @@ enum OrderStatus {
 }
 
 model Order {
-  id          String       @id @default(cuid())
-  tenantId    String
-  channel     SalesChannel
-  externalId  String
-  status      OrderStatus  @default(NEW)
+  id         String       @id @default(cuid())
+  tenantId   String
+  channel    SalesChannel
+  externalId String
+  status     OrderStatus  @default(NEW)
   /// Alıcı adı + adres (kişisel veri): şifreli JSON
-  shipToEnc   String
-  country     String       @default("DE")
-  itemsCents  Int          @default(0)
-  currency    String       @default("EUR")
-  carrier     String?
-  trackingNo  String?
-  holdReason  String?
-  orderedAt   DateTime
-  shippedAt   DateTime?
-  createdAt   DateTime     @default(now())
+  shipToEnc  String
+  country    String       @default("DE")
+  itemsCents Int          @default(0)
+  currency   String       @default("EUR")
+  carrier    String?
+  trackingNo String?
+  holdReason String?
+  orderedAt  DateTime
+  shippedAt  DateTime?
+  createdAt  DateTime     @default(now())
 
-  tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  lines       OrderLine[]
-  workOrders  WorkOrder[]
-  returns     ReturnItem[]
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lines      OrderLine[]
+  workOrders WorkOrder[]
+  returns    ReturnItem[]
 
   @@unique([tenantId, channel, externalId])
   @@index([tenantId, status, orderedAt])
 }
 
 model OrderLine {
-  id         String @id @default(cuid())
-  tenantId   String
-  orderId    String
+  id             String  @id @default(cuid())
+  tenantId       String
+  orderId        String
   /// Pazaryerindeki kalem kimliği (Amazon OrderItemId) — kargo onayında gerekir
   externalLineId String?
-  sku        String
-  quantity   Int
-  priceCents Int    @default(0)
+  sku            String
+  quantity       Int
+  priceCents     Int     @default(0)
 
-  order      Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, sku])
 }
@@ -556,17 +559,17 @@ enum WorkOrderType {
 }
 
 model WorkOrder {
-  id          String        @id @default(cuid())
-  tenantId    String
-  orderId     String?
-  type        WorkOrderType
-  cartons     Int           @default(0)
-  status      String        @default("OPEN")
-  completedAt DateTime?
+  id            String        @id @default(cuid())
+  tenantId      String
+  orderId       String?
+  type          WorkOrderType
+  cartons       Int           @default(0)
+  status        String        @default("OPEN")
+  completedAt   DateTime?
   completedById String?
-  createdAt   DateTime      @default(now())
+  createdAt     DateTime      @default(now())
 
-  order       Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, status])
 }
@@ -589,7 +592,7 @@ model ReturnItem {
   processedAt DateTime?
   createdAt   DateTime         @default(now())
 
-  order       Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, status])
 }
@@ -641,7 +644,7 @@ model Invoice {
   paidAt     DateTime?
   createdAt  DateTime      @default(now())
 
-  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, period])
 }
@@ -655,22 +658,22 @@ enum MessageStatus {
 
 /// Pazaryeri alıcı mesajı. Yapay zekâ yalnız TASLAK üretir; gönderim insan onayıyla.
 model CustomerMessage {
-  id          String        @id @default(cuid())
-  tenantId    String
-  channel     SalesChannel
-  externalId  String
-  orderRef    String?
-  buyerName   String
-  subject     String
-  bodyDe      String
-  bodyTr      String?
-  draftDe     String?
-  draftTr     String?
-  status      MessageStatus @default(NEW)
-  aiModel     String?
-  sentAt      DateTime?
-  sentById    String?
-  receivedAt  DateTime      @default(now())
+  id         String        @id @default(cuid())
+  tenantId   String
+  channel    SalesChannel
+  externalId String
+  orderRef   String?
+  buyerName  String
+  subject    String
+  bodyDe     String
+  bodyTr     String?
+  draftDe    String?
+  draftTr    String?
+  status     MessageStatus @default(NEW)
+  aiModel    String?
+  sentAt     DateTime?
+  sentById   String?
+  receivedAt DateTime      @default(now())
 
   @@unique([tenantId, channel, externalId])
   @@index([tenantId, status, receivedAt])
@@ -701,6 +704,8 @@ model ApiToken {
   userId     String
   tokenHash  String    @unique
   name       String
+  /// Expo anlık bildirim anahtarı (cihaz). Oturum silinince bildirim de durur.
+  pushToken  String?   @unique
   lastUsedAt DateTime?
   expiresAt  DateTime
   createdAt  DateTime  @default(now())
