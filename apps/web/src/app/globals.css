@@ -118,3 +118,255 @@ footer {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
 }
+
+/* ---------- Formlar ---------- */
+.form {
+  display: grid;
+  gap: 14px;
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.field label {
+  font-size: 14px;
+  font-weight: 600;
+}
+.field input,
+.field select,
+.field textarea {
+  font: inherit;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+}
+.field .err,
+.alert-err {
+  color: var(--p);
+  font-size: 13px;
+}
+.alert-err,
+.alert-ok,
+.alert-info {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.alert-err {
+  background: #fff1f3;
+}
+.alert-ok {
+  background: #eaf7ef;
+  color: var(--ok);
+}
+.alert-info {
+  background: #eef2fb;
+  color: var(--navy);
+  word-break: break-all;
+}
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--mute);
+}
+.btn {
+  font: inherit;
+  font-weight: 700;
+  padding: 11px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--p);
+  background: var(--p);
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  justify-content: center;
+}
+.btn:disabled {
+  opacity: 0.6;
+}
+.btn-o {
+  background: #fff;
+  color: var(--ink);
+  border-color: var(--line);
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+.auth-box {
+  max-width: 420px;
+  margin: 60px auto;
+  padding: 0 20px;
+}
+
+/* ---------- Paneller ---------- */
+.app {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 100vh;
+}
+.side {
+  background: var(--ink);
+  color: #c9cfdb;
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.side a {
+  text-decoration: none;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.side a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.side .sep {
+  margin-top: auto;
+  font-size: 12px;
+  padding: 0 12px;
+}
+.main {
+  padding: 28px 32px;
+  min-width: 0;
+}
+.main h1 {
+  margin: 0 0 18px;
+  font-size: 26px;
+}
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.kpi .l {
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 600;
+}
+.kpi .v {
+  font-size: 26px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.tbl th,
+.tbl td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.tbl th {
+  background: #f8f9fc;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mute);
+}
+.tbl tr:last-child td {
+  border-bottom: 0;
+}
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #eef2fb;
+  color: var(--navy);
+}
+.tag.ok {
+  background: #eaf7ef;
+  color: var(--ok);
+}
+.tag.warn {
+  background: #fff6e5;
+  color: var(--warn);
+}
+.tag.red {
+  background: #fff1f3;
+  color: var(--p);
+}
+.g2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+}
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+}
+.inline-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+@media (max-width: 800px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+  .side {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .side .sep {
+    display: none;
+  }
+  .main {
+    padding: 20px 16px;
+  }
+}
+
+/* ---------- Çerez onayı ---------- */
+.consent {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  max-width: 560px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(11, 19, 36, 0.18);
+  padding: 20px;
+  z-index: 50;
+  font-size: 14px;
+}
+.consent h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+.consent p {
+  margin: 0 0 12px;
+  color: var(--mute);
+}
+.consent-opts {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.consent-btns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}

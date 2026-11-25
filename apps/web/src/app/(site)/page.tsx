@@ -1,5 +1,6 @@
 import { brand, formatEur, operations, packages } from "@avrupadasat/core";
 import { ButtonLink, Logo } from "@avrupadasat/ui";
+import { LeadForm } from "@/components/LeadForm";
 
 /**
  * Aşama 0 iskelet ana sayfa. Tam site (önizlemedeki tüm bölümler) Aşama 2'de.
@@ -55,6 +56,10 @@ export default function HomePage() {
                 </li>
               ))}
             </ol>
+            <div className="card" style={{ maxWidth: 560 }}>
+              <h3>Ücretsiz uygunluk raporunuzu alın</h3>
+              <LeadForm />
+            </div>
           </div>
         </section>
 

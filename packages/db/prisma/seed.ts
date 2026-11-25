@@ -1,8 +1,9 @@
 /**
  * Demo verisi — YALNIZCA yerel/staging. Canlıya çıkmaz.
- * Parola hash'i Aşama 1'de (Argon2id) eklenecek; şimdilik kullanıcılar parolasız.
+ * Demo şifre: SEED_PASSWORD (varsayılan yalnız yerel geliştirme içindir).
  */
 import "dotenv/config";
+import { hash } from "@node-rs/argon2";
 import { createPrismaClient } from "../src/client";
 
 if (process.env.NODE_ENV === "production") {
@@ -17,11 +18,24 @@ const firms = [
   { name: "Ege Kozmetik", slug: "ege-kozmetik", city: "İzmir" },
 ];
 
+const SEED_PASSWORD = process.env.SEED_PASSWORD ?? "Demo sifre 2026";
+
 async function main() {
+  const passwordHash = await hash(SEED_PASSWORD, {
+    memoryCost: 19456,
+    timeCost: 2,
+    parallelism: 1,
+    algorithm: 2,
+  });
   await prisma.user.upsert({
     where: { email: "admin@avrupadasat.local" },
     update: {},
-    create: { email: "admin@avrupadasat.local", name: "Demo Yönetici", staffRole: "ADMIN" },
+    create: {
+      email: "admin@avrupadasat.local",
+      name: "Demo Yönetici",
+      staffRole: "ADMIN",
+      passwordHash,
+    },
   });
 
   for (const f of firms) {
@@ -48,7 +62,20 @@ async function main() {
       },
     });
   }
-  console.info(`Seed tamam: ${firms.length} firma, 1 yönetici`);
+  const first = await prisma.tenant.findUniqueOrThrow({ where: { slug: firms[0]!.slug } });
+  const owner = await prisma.user.upsert({
+    where: { email: "musteri@yildiz.local" },
+    update: {},
+    create: { email: "musteri@yildiz.local", name: "Demo Müşteri", passwordHash },
+  });
+  await prisma.membership.upsert({
+    where: { userId_tenantId: { userId: owner.id, tenantId: first.id } },
+    update: {},
+    create: { userId: owner.id, tenantId: first.id, role: "CLIENT_USER" },
+  });
+  console.info(
+    `Seed tamam: ${firms.length} firma, demo yönetici ve müşteri (şifre: SEED_PASSWORD)`,
+  );
 }
 
 main()

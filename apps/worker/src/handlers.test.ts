@@ -41,6 +41,29 @@ describe("outbox işleyici", () => {
     expect(notify).not.toHaveBeenCalled();
   });
 
+  it("davet e-postası çözülmüş bağlantıyla gönderilir", async () => {
+    const sendLinkEmail = vi.fn<NonNullable<Ports["sendLinkEmail"]>>().mockResolvedValue();
+    const ports: Ports = {
+      notify: vi.fn(),
+      sendLinkEmail,
+      decrypt: (t) => t.toUpperCase(),
+      appUrl: "https://x.test",
+    };
+    const r = await processRow(
+      row({
+        type: "user.invited.v1",
+        payload: { userId: "u", email: "a@b.co", purpose: "INVITE", tokenEnc: "abc" },
+      }),
+      ports,
+    );
+    expect(r).toEqual({ kind: "done" });
+    expect(sendLinkEmail).toHaveBeenCalledWith(
+      "a@b.co",
+      "Müşteri panelinize davet edildiniz",
+      "https://x.test/sifre/ABC",
+    );
+  });
+
   it("bilinmeyen türü doğrudan bırakır", async () => {
     const notify = vi.fn<Ports["notify"]>();
     expect((await processRow(row({ type: "x.y.v1" }), { notify })).kind).toBe("dead");

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estimateMonthly, formatEur, pickPackRate } from "./pricing";
+import { buildQuoteLines, estimateMonthly, formatEur, pickPackRate, quoteTotals } from "./pricing";
 
 const base = { skus: 40, marketplace: true, customerService: false, accounting: false };
 
@@ -44,6 +44,30 @@ describe("aylık tahmin (sitedeki hesaplayıcı ile aynı)", () => {
 
   it("negatif değer reddedilir", () => {
     expect(() => estimateMonthly({ ...base, pallets: -1, ordersPerMonth: 1 })).toThrow(RangeError);
+  });
+});
+
+describe("teklif kalemleri", () => {
+  it("Başlangıç + UG: yalnız tek seferlik kuruluş", () => {
+    const l = buildQuoteLines("BASLANGIC", "UG");
+    expect(quoteTotals(l)).toEqual({ oneTimeCents: 125_000, monthlyCents: 0 });
+  });
+
+  it("Pazara Giriş + GmbH: kuruluş %30 indirimli, aylık 499", () => {
+    const l = buildQuoteLines("PAZARA_GIRIS", "GMBH", 10);
+    expect(quoteTotals(l)).toEqual({ oneTimeCents: 210_000, monthlyCents: 49_900 });
+  });
+
+  it("Pazara Giriş büyük hacim ve şirketsiz", () => {
+    const l = buildQuoteLines("PAZARA_GIRIS", "NONE", 40);
+    expect(quoteTotals(l)).toEqual({ oneTimeCents: 0, monthlyCents: 79_900 });
+  });
+
+  it("Operasyon + UG", () => {
+    expect(quoteTotals(buildQuoteLines("OPERASYON", "UG"))).toEqual({
+      oneTimeCents: 125_000,
+      monthlyCents: 34_900,
+    });
   });
 });
 
