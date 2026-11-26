@@ -21,8 +21,12 @@ import {
 import { hashPassword } from "../src/server/password";
 import { advanceStage, createAsn, importCatalog, receiveShipment } from "../src/server/shipments";
 
-if (process.env.NODE_ENV === "production") throw new Error("Demo verisi üretimde çalıştırılamaz");
-if (!/avrupadasat_demo/.test(process.env.DATABASE_URL ?? ""))
+// Yalnız demo veritabanı: adı avrupadasat_demo olan ya da açıkça demo ortamı olarak işaretlenmiş
+// (DEMO_ENVIRONMENT=1, ör. Vercel demo projesi). Gerçek müşteri veritabanında asla çalışmaz.
+const demoEnv = process.env.DEMO_ENVIRONMENT === "1";
+if (process.env.NODE_ENV === "production" && !demoEnv)
+  throw new Error("Demo verisi üretimde çalıştırılamaz");
+if (!demoEnv && !/avrupadasat_demo/.test(process.env.DATABASE_URL ?? ""))
   throw new Error("Yalnız avrupadasat_demo veritabanında çalışır");
 
 /** Rastgele base32 TOTP anahtarı (20 bayt) */
@@ -63,6 +67,10 @@ async function user(email: string, name: string, staffRole: "ADMIN" | null, secr
 }
 
 async function main() {
+  if (await db().tenant.findUnique({ where: { slug: "yildiz-tekstil" } })) {
+    console.info("Demo verisi zaten yüklü, atlanıyor");
+    return;
+  }
   const admin = await user(DEMO.admin, "Elif Kaya", "ADMIN", DEMO.adminSecret);
   const T = (
     await db().tenant.create({

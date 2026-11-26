@@ -31,7 +31,13 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: { "/**": ["./assets/fonts/**"] },
   async headers() {
     return [
-      { source: "/:path*", headers: securityHeaders },
+      {
+        source: "/:path*",
+        headers:
+          process.env.DEMO_ENVIRONMENT === "1"
+            ? [...securityHeaders, { key: "X-Robots-Tag", value: "noindex, nofollow" }]
+            : securityHeaders,
+      },
       {
         source: "/(panel|admin)/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
