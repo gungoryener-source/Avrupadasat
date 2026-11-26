@@ -9,7 +9,7 @@ Son güncelleme: 25.11.2026 — Aşama 0–9 kodlandı ve test edildi (ayrıntı
 | Çalışma adı  | **Avrupadasat**. Marka adı kodda tek bir ayar dosyasında (`brand.config.ts`); değişirse tek yerden güncellenir                                                                                |
 | Kapsam       | **Yalnızca TR hattı**: Türk üretici ve ihracatçılara Avrupa'da (Almanya merkezli) satış, taşıma, depo ve operasyon. Almanya'daki işletmelere dijital müşteri kazanımı hattı plandan çıkarıldı |
 | Teknik temel | **Sıfırdan Next.js** (TypeScript). WordPress/Starter Kit kullanılmıyor                                                                                                                        |
-| Repo         | **Yeni GitHub reposu**: önerilen ad `gungoryener-source/avrupadasat` (private)                                                                                                                |
+| Repo         | **GitHub**: `gungoryener-source/Avrupadasat` (private)                                                                                                                                        |
 
 ## Mimari (özet)
 
@@ -31,7 +31,7 @@ packages/i18n   Metinler (site Türkçe; Avrupalı son müşteriye giden içerik
 
 ### Aşama 0 — Kurulum (1–2 gün)
 
-- [ ] GitHub reposunun açılması (kullanıcı) ve bağlanması — kod hazır (git geçmişiyle arşiv), repo bekleniyor
+- [x] GitHub reposu: `gungoryener-source/Avrupadasat` (private), 26.11.2026 — CI'ın dört işi yeşil
 - [x] Monorepo iskeleti (pnpm + Turborepo), lint, format, test altyapısı, GitHub Actions
 - [x] `CLAUDE.md`, `brand.config.ts`, `.env.example`
 - [x] Veri modeli taslağı (ERD) ve olay kataloğu → `docs/architecture/`

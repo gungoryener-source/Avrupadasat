@@ -2,6 +2,18 @@
 import { assert, BASE, browser, login, seedE2E, SHOTS, step } from "./lib.mjs";
 
 const E = seedE2E();
+
+// Test dosyaları bellekte üretilir (diske/ortama bağımlılık yok)
+const FAKE_PDF_EXE = {
+  name: "fatura.pdf",
+  mimeType: "application/pdf",
+  buffer: Buffer.from([0x4d, 0x5a, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00]), // "MZ": Windows çalıştırılabilir başlığı
+};
+const REAL_PDF = {
+  name: "atr.pdf",
+  mimeType: "application/pdf",
+  buffer: Buffer.from("%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n"),
+};
 const b = await browser();
 try {
   const oc = await b.newContext({ locale: "tr-TR", acceptDownloads: true });
@@ -37,11 +49,11 @@ try {
 
   s = step("Belge yükleme: sahte PDF (EXE) reddediliyor, gerçek PDF kabul ediliyor");
   await op.getByLabel("Belge türü").selectOption("TICARI_FATURA");
-  await op.locator('input[name="file"]').setInputFiles("/tmp/e2e/files/fatura.pdf");
+  await op.locator('input[name="file"]').setInputFiles(FAKE_PDF_EXE);
   await op.getByRole("button", { name: "Yükle" }).click();
   await op.getByText(/Desteklenmeyen dosya türü/).waitFor();
   await op.getByLabel("Belge türü").selectOption("ATR");
-  await op.locator('input[name="file"]').setInputFiles("/tmp/e2e/files/atr.pdf");
+  await op.locator('input[name="file"]').setInputFiles(REAL_PDF);
   await op.getByRole("button", { name: "Yükle" }).click();
   await op.getByText("Belge yüklendi.").waitFor();
   await op.reload();
