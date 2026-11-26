@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 /**
  * Demo verisi — uygulamanın gerçek iş fonksiyonlarıyla üretilir. YALNIZ ayrı bir demo veritabanında çalıştırın.
  *   DATABASE_URL=postgresql://…/avrupadasat_demo npx tsx scripts/demo-data.ts
@@ -24,10 +25,17 @@ if (process.env.NODE_ENV === "production") throw new Error("Demo verisi üretimd
 if (!/avrupadasat_demo/.test(process.env.DATABASE_URL ?? ""))
   throw new Error("Yalnız avrupadasat_demo veritabanında çalışır");
 
+/** Rastgele base32 TOTP anahtarı (20 bayt) */
+function randomTotpSecret() {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  return Array.from(randomBytes(32), (b) => alphabet[b % 32]).join("");
+}
+
+// Giriş bilgileri depoya yazılmaz: .env'den okunur ya da her çalıştırmada üretilip ekrana basılır.
 export const DEMO = {
-  password: "Demo-Sifre-2026!",
-  adminSecret: "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
-  ownerSecret: "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+  password: process.env.DEMO_PASSWORD ?? `Demo-${randomBytes(6).toString("hex")}!`,
+  adminSecret: process.env.DEMO_ADMIN_TOTP ?? randomTotpSecret(),
+  ownerSecret: process.env.DEMO_OWNER_TOTP ?? randomTotpSecret(),
   admin: "demo-yonetici@avrupadasat.local",
   owner: "zeynep@yildiztekstil.demo",
 };
@@ -237,6 +245,9 @@ async function main() {
   }
   console.info(
     `Demo hazır: ${orders.length} sipariş (${n} kargolandı), 2 sevkiyat, ${ids.length} talep`,
+  );
+  console.info(
+    `Giriş: ${DEMO.admin} / ${DEMO.owner} · şifre ${DEMO.password} · TOTP yönetici ${DEMO.adminSecret}, sahip ${DEMO.ownerSecret}`,
   );
 }
 
