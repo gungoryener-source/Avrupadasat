@@ -142,24 +142,20 @@ export default async function OrdersPage({
                     {c?.lastSyncAt ? `Son senkron: ${fmtDate(c.lastSyncAt, true)}` : ""}
                   </div>
                   {needsCreds ? (
-                    <form
-                      action={connectLiveAction}
-                      autoComplete="off"
-                      className="stack"
-                      style={{ gap: 6 }}
-                    >
+                    <form action={connectLiveAction} autoComplete="off" className="form">
                       <input type="hidden" name="channel" value={ch} />
                       {LIVE_FIELDS[ch].map((f) => (
-                        <label key={f.name} style={{ fontSize: 13 }}>
-                          {f.label}
+                        <div key={f.name} className="field">
+                          <label htmlFor={`live-${ch}-${f.name}`}>{f.label}</label>
                           <input
+                            id={`live-${ch}-${f.name}`}
                             name={f.name}
                             type={f.secret ? "password" : "text"}
                             required={!f.optional}
                             autoComplete="off"
                             spellCheck={false}
                           />
-                        </label>
+                        </div>
                       ))}
                       <Submit className="btn btn-sm" pendingText="…">
                         Canlı bağla

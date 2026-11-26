@@ -44,68 +44,100 @@ export function EuPartyForm({
           )}
         </div>
       )}
-      <fieldset disabled={!canEdit} style={{ border: 0, padding: 0, margin: 0 }} className="stack">
-        <div className="field">
-          <span id="model-l">İthalatçı modeli</span>
+      <fieldset disabled={!canEdit} className="form" style={{ border: 0, padding: 0, margin: 0 }}>
+        <div className="field" role="radiogroup" aria-labelledby="eu-model-l">
+          <label id="eu-model-l">İthalatçı modeli</label>
           {IMPORTER_MODELS.map((m) => (
-            <label key={m} className="check">
+            <label key={m} className="check" style={{ fontWeight: 400 }}>
               <input
                 type="radio"
                 name="importerModel"
                 value={m}
                 defaultChecked={d?.importerModel === m}
                 required
+                style={{ width: "auto" }}
               />
               <span>{IMPORTER_MODEL_LABEL[m]}</span>
             </label>
           ))}
         </div>
-        <label>
-          AB&apos;deki ürün sorumlusu (kişi veya şirket adı)
-          <input name="responsibleName" defaultValue={d?.responsibleName ?? ""} required />
-        </label>
-        <label>
-          Sorumlunun AB&apos;deki posta adresi
+        <div className="field">
+          <label htmlFor="eu-name">AB&apos;deki ürün sorumlusu (kişi veya şirket adı)</label>
+          <input
+            id="eu-name"
+            name="responsibleName"
+            defaultValue={d?.responsibleName ?? ""}
+            required
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="eu-address">Sorumlunun AB&apos;deki posta adresi</label>
           <textarea
+            id="eu-address"
             name="responsibleAddress"
             rows={2}
             defaultValue={d?.responsibleAddress ?? ""}
             required
           />
-        </label>
-        <label>
-          Sorumlunun e-posta adresi
+        </div>
+        <div className="field">
+          <label htmlFor="eu-email">Sorumlunun e-posta adresi</label>
           <input
+            id="eu-email"
             name="responsibleEmail"
             type="email"
             defaultValue={d?.responsibleEmail ?? ""}
             required
           />
-        </label>
-        <label>
-          LUCID ambalaj kayıt numarası (başvuru sürüyorsa boş bırakın)
-          <input name="lucidNumber" defaultValue={d?.lucidNumber ?? ""} placeholder="DE…" />
-        </label>
-        <label>
-          Ambalaj için Almanya&apos;daki yetkili temsilci (Almanya&apos;da şirketiniz yoksa zorunlu)
-          <input name="packagingRepresentative" defaultValue={d?.packagingRepresentative ?? ""} />
-        </label>
+        </div>
+        <div className="field">
+          <label htmlFor="eu-lucid">
+            LUCID ambalaj kayıt numarası (başvuru sürüyorsa boş bırakın)
+          </label>
+          <input
+            id="eu-lucid"
+            name="lucidNumber"
+            defaultValue={d?.lucidNumber ?? ""}
+            placeholder="DE…"
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="eu-prep">
+            Ambalaj için Almanya&apos;daki yetkili temsilci (Almanya&apos;da şirketiniz yoksa
+            zorunlu)
+          </label>
+          <input
+            id="eu-prep"
+            name="packagingRepresentative"
+            defaultValue={d?.packagingRepresentative ?? ""}
+          />
+        </div>
         <label className="check">
           <input
             name="sellsElectrical"
             type="checkbox"
             defaultChecked={d?.sellsElectrical ?? false}
+            style={{ width: "auto" }}
           />
           <span>Elektrikli veya elektronik ürün satıyoruz</span>
         </label>
-        <label>
-          WEEE (stiftung ear) kayıt numarası
-          <input name="weeeNumber" defaultValue={d?.weeeNumber ?? ""} placeholder="DE 12345678" />
-        </label>
-        <label>
-          WEEE için Almanya&apos;daki yetkili temsilci
-          <input name="weeeRepresentative" defaultValue={d?.weeeRepresentative ?? ""} />
-        </label>
+        <div className="field">
+          <label htmlFor="eu-weee">WEEE (stiftung ear) kayıt numarası</label>
+          <input
+            id="eu-weee"
+            name="weeeNumber"
+            defaultValue={d?.weeeNumber ?? ""}
+            placeholder="DE 12345678"
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="eu-wrep">WEEE için Almanya&apos;daki yetkili temsilci</label>
+          <input
+            id="eu-wrep"
+            name="weeeRepresentative"
+            defaultValue={d?.weeeRepresentative ?? ""}
+          />
+        </div>
         {canEdit && (
           <Submit className="btn" pendingText="Kaydediliyor…">
             Kaydet
