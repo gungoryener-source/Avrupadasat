@@ -48,6 +48,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Test gizli anahtarları (her çalışmada rastgele)
+        run: |
+          echo "AUTH_SECRET=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
+          echo "FIELD_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
+          echo "CRON_SECRET=$(openssl rand -base64 48)" >> "$GITHUB_ENV"
       - run: pnpm format:check
       - run: pnpm db:generate
       - run: pnpm --filter @avrupadasat/db migrate:deploy
