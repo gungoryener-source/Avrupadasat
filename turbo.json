@@ -7,7 +7,8 @@
     },
     "build": {
       "dependsOn": ["^build", "^generate"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": ["NEXT_PUBLIC_*", "NEXT_OUTPUT"]
     },
     "dev": {
       "dependsOn": ["^generate"],
@@ -21,7 +22,15 @@
       "dependsOn": ["^generate"]
     },
     "test": {
-      "dependsOn": ["^generate"]
+      "dependsOn": ["^generate"],
+      "passThroughEnv": [
+        "AUTH_SECRET",
+        "FIELD_ENCRYPTION_KEY",
+        "FIELD_ENCRYPTION_KEYS",
+        "CRON_SECRET",
+        "HEALTH_TOKEN",
+        "CI"
+      ]
     }
   }
 }
