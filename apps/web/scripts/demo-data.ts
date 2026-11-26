@@ -79,7 +79,16 @@ async function main() {
   await db().membership.create({ data: { userId: owner.id, tenantId: T, role: "CLIENT_OWNER" } });
   await db().registrationTask.createMany({
     data: (
-      ["VEKALETNAME", "APOSTIL", "NOTER", "TICARET_SICILI", "VERGI_NO", "UST_ID", "EORI", "LUCID"] as const
+      [
+        "VEKALETNAME",
+        "APOSTIL",
+        "NOTER",
+        "TICARET_SICILI",
+        "VERGI_NO",
+        "UST_ID",
+        "EORI",
+        "LUCID",
+      ] as const
     ).map((step) => ({ tenantId: T, step, status: "TAMAM" as const, note: "Tamamlandı" })),
   });
   await saveEuParty(
@@ -201,13 +210,21 @@ async function main() {
     const t = await db().tenant.create({
       data: { name, slug, city, status: "ONBOARDING", packageCode: "OPERASYON" },
     });
-    const steps = ["VEKALETNAME", "APOSTIL", "NOTER", "TICARET_SICILI", "VERGI_NO", "UST_ID"] as const;
+    const steps = [
+      "VEKALETNAME",
+      "APOSTIL",
+      "NOTER",
+      "TICARET_SICILI",
+      "VERGI_NO",
+      "UST_ID",
+    ] as const;
     const idx = steps.indexOf(pending);
     await db().registrationTask.createMany({
       data: steps.map((step, i) => ({
         tenantId: t.id,
         step,
-        status: i < idx ? ("TAMAM" as const) : i === idx ? ("SURUYOR" as const) : ("BEKLIYOR" as const),
+        status:
+          i < idx ? ("TAMAM" as const) : i === idx ? ("SURUYOR" as const) : ("BEKLIYOR" as const),
       })),
     });
   }
