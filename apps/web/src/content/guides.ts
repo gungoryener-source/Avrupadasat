@@ -23,8 +23,8 @@ export const guides: ContentPage[] = [
       {
         h2: "2. Üçüncü taraf masrafları",
         bullets: [
-          "Alman noteri ve ticaret sicili ücretleri (sözleşme türüne ve sermayeye göre değişir)",
-          "Türk noterinde vekâletname, apostil şerhi ve yeminli tercüme",
+          "Alman noteri ve ticaret sicili ücretleri: yasal tarifeye (GNotKG) göre sermayeye ve sözleşme türüne bağlıdır. IHK tablosuna göre tek ortaklı, 25.000 € sermayeli GmbH'de yaklaşık 550 € (örnek tutanak) ile 730 € (bireysel sözleşme) arası, notere %19 KDV hariç",
+          "Türk noterinde vekâletname (2026 tarifesiyle yaklaşık 1.500–2.500 TL), apostil şerhi (kaymakamlık veya valilikte ücretsiz) ve yeminli Almanca tercüme",
           "Gerekirse banka hesabı açılış belgeleri",
         ],
         paragraphs: [
@@ -52,7 +52,7 @@ export const guides: ContentPage[] = [
       text: "Ücretsiz uygunluk raporunda kuruluş ve ilk yıl giderlerini ürününüze ve hacminize göre çıkarıyoruz.",
     },
     schema: "Article",
-    verify: ["Noter ve sicil ücret aralıkları", "IHK aidatı"],
+    verify: ["Partner noterin yazılı teklifi", "IHK aidatı"],
     updated: U,
   },
   {

@@ -127,6 +127,22 @@ try {
   assert((await row.textContent()).includes("196"), `stok: ${await row.textContent()}`);
   const csv = await op.request.get(`${BASE}/panel/stok/csv`);
   assert((await csv.text()).includes("HV-50;Havlu 50x90 beyaz;8690000000011;196"), "CSV içeriği");
+  // KTÜN (GTIN) bazlı aylık rapor: bu ayın mal kabulü görünür; oturumsuz erişim yok; dönem doğrulanır
+  const month = new Date().toISOString().slice(0, 7);
+  const ktun = await op.request.get(`${BASE}/panel/stok/ktun?donem=${month}`);
+  const ktunText = await ktun.text();
+  assert(ktun.status() === 200 && ktunText.includes("KTÜN (GTIN)"), `KTÜN raporu ${ktun.status()}`);
+  assert(/8690000000011;(evet|hayır);HV-50;Havlu 50x90 beyaz;/.test(ktunText), "KTÜN satırı");
+  assert(
+    (await op.request.get(`${BASE}/panel/stok/ktun?donem=2026-13`)).status() === 400,
+    "geçersiz dönem",
+  );
+  const anonKtun = await (
+    await b.newContext()
+  ).request.get(`${BASE}/panel/stok/ktun?donem=${month}`, {
+    maxRedirects: 0,
+  });
+  assert([303, 307, 308].includes(anonKtun.status()), `oturumsuz KTÜN ${anonKtun.status()}`);
   await op.screenshot({ path: `${SHOTS}/21-panel-stock.png`, fullPage: true });
   s.ok();
 

@@ -24,7 +24,7 @@ export const generalFaq: Faq[] = [
   },
   {
     q: "Paket paket mi göndermeliyim, toplu mu?",
-    a: "AB, 1 Temmuz 2026'dan itibaren düşük değerli AB dışı e-ticaret paketlerine ek gümrük vergisi uyguluyor ve e-ticaret beyannamesinde A.TR kullanımı henüz netleşmiş değil. Bu nedenle çoğu üretici için daha öngörülebilir yol, malı A.TR ile toplu olarak Almanya deposuna getirmek, Alman KDV kaydıyla satmak ve iadeleri yerelde yönetmektir. Ürününüze uygun modeli uygunluk raporunda karşılaştırıyoruz.",
+    a: "Tüketiciye tek tek paket gönderiyorsanız AB, 1 Temmuz 2026'dan beri 150 €'ya kadar gönderilerde kalem başına 3 € gümrük vergisi, 1 Kasım 2026'dan beri de kalem başına 2 € işlem ücreti alıyor; IOSS ile gönderide A.TR dikkate alınmıyor. Malı A.TR ile toplu olarak Almanya deposuna getirip Alman KDV kaydıyla satmak bu ücretlere tabi değildir ve iadeler yerelde yönetilir. Ürününüze uygun modeli uygunluk raporunda karşılaştırıyoruz.",
   },
   {
     q: "Devlet desteklerinden yararlanabilir miyim?",

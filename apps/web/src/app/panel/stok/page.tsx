@@ -39,6 +39,14 @@ export default async function StockPage({
         <a className="btn btn-o btn-sm" href="/panel/stok/csv" download>
           CSV indir
         </a>
+        <a
+          className="btn btn-o btn-sm"
+          href={`/panel/stok/ktun?donem=${new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 1, 1)).toISOString().slice(0, 7)}`}
+          download
+          title="Geçen ayın KTÜN (GTIN) bazlı sipariş karşılama raporu — e-ihracat destek başvurusu için"
+        >
+          KTÜN raporu (geçen ay)
+        </a>
       </form>
       <table className="tbl" style={{ marginBottom: 22 }}>
         <thead>

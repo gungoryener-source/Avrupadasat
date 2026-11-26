@@ -146,6 +146,13 @@ docker build --target migrate -t avrupadasat-migrate .
 - `pnpm audit --prod`: 26.11.2026 itibarıyla bilinen açık yok. Expo derleme aracındaki `minimatch` (GHSA-g3hv-75wg-m249) `pnpm-workspace.yaml` içindeki override ile 11.x'e yükseltildi; Expo export ve parmak izi doğrulandı.
 - Dependabot haftalık güncelleme PR'ları açar (npm, GitHub Actions, Docker). CI'da yüksek seviye açık derlemeyi durdurur.
 
+## KTÜN (GTIN) bazlı aylık rapor
+
+- Firma: Stok sayfası → "KTÜN raporu (geçen ay)" (`/panel/stok/ktun?donem=YYYY-AA`). Ekip: Dışa aktarım → firma ve dönem seçerek.
+- İçerik: ürün başına KTÜN/GTIN (kontrol hanesi doğrulanır), dönem başı/sonu stok, mal kabul, gönderim, iade, hasar, düzeltme, karşılanan sipariş sayısı; o dönemin faturasından sipariş karşılama (pick & pack, iade) ve depolama giderleri ayrı (Genelge Md. 15/4).
+- Barkodu eksik veya geçersiz ürünler "hayır" olarak işaretlenir; destek başvurusunda KTÜN aranır, ürün kartlarında `ean` doldurulmalı.
+- Bakanlığın kesin şablonu E-İhracat Sekretaryası'ndan alındığında sütunlar ona göre uyarlanır.
+
 ## Hesap silme
 
 - Kullanıcı kendi hesabını panelde Hesabım sayfasından veya mobil uygulamada Hesap ekranından siler. Parola ve 2FA açıksa doğrulama kodu istenir; deneme sınırı saatte 5.

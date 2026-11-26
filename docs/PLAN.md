@@ -1,6 +1,6 @@
 # Avrupadasat — Yazılım Geliştirme Planı
 
-Son güncelleme: 25.11.2026 — Aşama 0–9 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
+Son güncelleme: 25.11.2026 — Aşama 0–10 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
 
 ## Kararlar
 
@@ -104,17 +104,17 @@ Strateji: kuruluşu rakibe yakın fiyatla verip asıl geliri aylık operasyon ve
 
 - [ ] Marka adı kesinleştirme + TÜRKPATENT / DPMA / EUIPO sorgusu, alan adları
 - [ ] Almanya'daki avukat, noter ve Steuerberater iş ortağı; kuruluş maliyetinin netleşmesi
-- [ ] Gerçek noter ve sicil harç aralıkları (hesaplayıcı ve teklif şablonu için)
-- [ ] Türk noterinde vekâletname + apostil sürecinin süre ve maliyetle doğrulanması
-- [ ] Ticaret vergisi asgari çarpanının 2027'de %280'e çıkacağı bilgisinin resmî kaynaktan teyidi
+- [x] Noter ve sicil harç aralıkları IHK tablosundan (Mart 2026) doğrulandı; hesaplayıcı güncellendi — partner noter teklifi bekleniyor (`docs/mevzuat-dogrulama-2026-11.md`)
+- [~] Vekâletname + apostil: apostil ücretsiz, vekâletname ~1.500–2.500 TL (2026 tarifesi) — süre partner noterle teyit edilecek
+- [x] Ticaret vergisi asgari çarpanı %280 (2027): BGBl. 2026 I Nr. 197 ile doğrulandı
 - [ ] Partner depo, nakliyeci, gümrük temsilcisi görüşmeleri; fiyat listesindeki taslak rakamların (€13/palet, €2,10→1,60 pick, €4 iade) partner maliyetiyle teyidi
 - [ ] Mali temsilci ve AB sorumlu kişi (GPSR) iş ortağı
-- [ ] 13.04.2026 E-İhracat Genelgesi, 10881 sonrası 5986 sayılı Karar, YLDA (10962) okunması; Md. 15 oranı/tavanı, Almanya statüsü, onaylı sağlayıcı listesi için müşavir görüşü
-- [ ] Stratejik hedef: Bakanlık onaylı fulfillment sağlayıcı listesine girmek (girmeden "Bakanlık onaylı" ifadesi kullanılmaz)
-- [ ] GPSR, WEEE (stiftung ear), PPWR/VerpackG maddelerinin resmî kaynaktan doğrulanması; H7/A.TR durumu için gümrük müşaviri
+- [~] E-İhracat Genelgesi (13.04.2026) ve 10881 sonrası Karar okundu: Md. 15 (%50, ülke başına 3 yıl, %10 sınırı, liste/ön onay), depo kira desteği mülga, hedef ülkede +20 puan. Açık: Almanya'nın resmî ek listede yer alması, YLDA (10962), müşavir görüşü
+- [ ] Stratejik hedef: Bakanlığın sipariş karşılama hizmeti sunan firma listesine girmek (girmeden "Bakanlık onaylı" ifadesi kullanılmaz). Md. 15/6 şartlarından KTÜN bazlı aylık rapor kodlandı; başvuru partner depo ile birlikte
+- [x] GPSR, WEEE, PPWR/VerpackDG (12.08.2026'dan beri) ve 3 € vergi/A.TR durumu resmî kaynaklarla kontrol edildi; site güncellendi. Açık: H1'de A.TR tercihinin pratik uygulaması (gümrük müşaviri)
 - [ ] Google Keyword Planner + Ads Transparency Center + Meta Ad Library ile hacim ve rakip reklam kontrolü (tarayıcı gerekli)
 - [ ] İlk 1–3 pilot üretici
-- [ ] Kapı 0 karar belgeleri (ithalatçı sorumluluğu, sözleşme modeli, SLA …)
+- [~] Kapı 0 karar belgeleri taslağı hazır (`docs/kapi-0-karar-belgeleri.md`): ithalatçı modeli, sözleşme yapısı, SLA — avukat ve müşavir onayı bekliyor
 
 ## Çalışma düzeni
 
@@ -151,6 +151,13 @@ Strateji: kuruluşu rakibe yakın fiyatla verip asıl geliri aylık operasyon ve
 - [x] Derin sağlık ucu + worker nabzı (izleme servisi için)
 - [x] Bağımlılık taraması temiz; Dependabot; CI'da imaj derleme
 - [x] Örnek dağıtım dosyası (`deploy/compose.example.yml`)
+
+## Aşama 10 — mevzuat doğrulama ve destek raporu (26.11.2026) ✅
+
+- [x] Resmî kaynak kontrolü: 3 € vergi + 2 € işlem ücreti, A.TR, GPSR, PPWR/VerpackDG, WEEE, ticaret vergisi, kuruluş masrafları, e-ihracat genelgesi
+- [x] Site içerikleri ve hesaplayıcı güncellendi
+- [x] KTÜN (GTIN) bazlı aylık sipariş karşılama raporu (panel + ekip CSV) — Bakanlık listesi şartı
+- [x] Kapı 0 karar belgeleri taslağı
 
 ## Kalan işler (kod dışı / hesap gerektiren)
 

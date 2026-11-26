@@ -1,3 +1,4 @@
+import { db } from "@/server/db";
 import { DATEV_DEFAULTS } from "@/server/exports";
 import { requireStaff } from "@/server/session";
 
@@ -8,6 +9,11 @@ export default async function ExportPage() {
   const prev = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth() - 1, 1))
     .toISOString()
     .slice(0, 7);
+  const tenants = await db().tenant.findMany({
+    where: { status: { in: ["ACTIVE", "ONBOARDING"] } },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
   return (
     <>
       <h1>Muhasebe dışa aktarımı</h1>
@@ -27,6 +33,35 @@ export default async function ExportPage() {
         <div className="field">
           <label htmlFor="donem">Dönem</label>
           <input id="donem" name="donem" defaultValue={prev} pattern="\d{4}-\d{2}" required />
+        </div>
+        <button className="btn" type="submit">
+          CSV indir
+        </button>
+      </form>
+      <form
+        action="/admin/disa-aktar/ktun"
+        method="get"
+        className="card form"
+        style={{ maxWidth: 560, marginTop: 24 }}
+      >
+        <h2 style={{ margin: 0, fontSize: 19 }}>KTÜN bazlı aylık rapor (e-ihracat)</h2>
+        <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+          Ürün (GTIN) bazında mal kabul, gönderim, iade ve stok; faturadan sipariş karşılama ve
+          depolama giderleri. E-İhracat Genelgesi Madde 15/6.
+        </p>
+        <div className="field">
+          <label htmlFor="firma">Firma</label>
+          <select id="firma" name="firma" required>
+            {tenants.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="ktun-donem">Dönem</label>
+          <input id="ktun-donem" name="donem" defaultValue={prev} pattern="\d{4}-\d{2}" required />
         </div>
         <button className="btn" type="submit">
           CSV indir

@@ -1,7 +1,8 @@
 /**
  * "Ürünüm Avrupa'ya uygun mu?" ön kontrol kuralları — saf fonksiyon (test edilebilir).
  * Sonuçlar ön bilgilendirmedir; kesin değerlendirme uygunluk raporunda yapılır.
- * TODO(verify): GPSR, WEEE, BattG, VerpackG ve gıda kuralları resmî kaynaklardan teyit edilecek.
+ * GPSR, WEEE (ElektroG) ve ambalaj (PPWR/VerpackDG) maddeleri 26.11.2026'da resmî kaynaklarla kontrol edildi.
+ * TODO(verify): BattG ve gıda kuralları resmî kaynaklardan teyit edilecek.
  */
 export interface WizardAnswers {
   category:
@@ -32,7 +33,7 @@ export function evaluate(a: WizardAnswers): CheckItem[] {
     add(
       "lucid",
       "LUCID ambalaj kaydı",
-      "Tüketiciye ulaşan ambalajlı ürün satanlar ambalaj kaydı ve sistem katılımı yapar.",
+      "Tüketiciye ulaşan ambalajlı ürün satanlar ambalaj kaydı ve sistem katılımı yapar. Almanya'da şirketiniz yoksa 12 Ağustos 2026'dan beri yetkili temsilci (Bevollmächtigter) atamanız gerekir.",
       "gerekli",
     );
     add(
@@ -67,7 +68,7 @@ export function evaluate(a: WizardAnswers): CheckItem[] {
     add(
       "weee",
       "Elektrikli ürün (WEEE) kaydı",
-      "Elektrikli ve elektronik ürünler Almanya'da satıştan önce kayıt gerektirir.",
+      "Elektrikli ve elektronik ürünler satıştan önce stiftung ear'e kaydedilir; Almanya'da şirketiniz yoksa yetkili temsilci gerekir. Pazaryerleri ve depolar kaydı kontrol eder.",
       "gerekli",
     );
   }

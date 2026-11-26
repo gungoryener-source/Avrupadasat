@@ -91,6 +91,6 @@ describe("kuruluş toplam tahmini", () => {
     const e = estimateFormation("UG", "PAZARA_GIRIS");
     expect(e.serviceCents).toBe(87_500);
     expect(e.totalMinCents).toBe(132_500);
-    expect(e.totalMaxCents).toBe(177_500);
+    expect(e.totalMaxCents).toBe(197_500);
   });
 });

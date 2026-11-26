@@ -47,18 +47,24 @@ export const operations = {
 } as const;
 
 /**
- * Kuruluşta üçüncü taraf masrafları (noter, ticaret sicili, apostil/tercüme) — TAHMİNİ aralık.
- * TODO(verify): Alman noter ücret tarifesi (GNotKG) ve partner noter teklifiyle doğrulanacak.
+ * Kuruluşta üçüncü taraf masrafları (noter, ticaret sicili, Türkiye'de vekâletname/tercüme) — TAHMİNİ aralık.
+ * Dayanak (26.11.2026 kontrolü): IHK "Gebühren des Handelsregisterverfahrens" (Stand März 2026) —
+ * tek ortaklı GmbH, 25.000 € sermaye: noter + sicil ≈ 730 € net (bireysel sözleşme), ≈ 550 € (Musterprotokoll);
+ * UG'de Musterprotokoll ile noter ücreti sermayeye göre hesaplanır (daha düşük), bireysel sözleşmede
+ * asgari 30.000 € işlem değeri GmbH ile aynı ücreti doğurur. Notere %19 KDV eklenir.
+ * Türkiye tarafı: vekâletname (2026 noter tarifesi ~1.500–2.500 TL), apostil ücretsiz (kaymakamlık/valilik),
+ * yeminli Almanca tercüme sayfa başına. Üst sınır: iki dilli tutanak/tercüman, çok ortaklı yapı, ek belgeler.
+ * TODO(verify): Partner noterin yazılı teklifiyle kesinleştirilecek.
  * Sermaye: UG en az 1 € (pratikte daha fazlası önerilir), GmbH 25.000 € (kuruluşta en az 12.500 € yatırılır).
  */
 export const formationThirdPartyEstimate = {
   UG: {
     minCents: 45_000,
-    maxCents: 90_000,
+    maxCents: 110_000,
     capitalNote: "Sermaye en az 1 €; pratikte en az birkaç bin € önerilir",
   },
   GMBH: {
-    minCents: 90_000,
+    minCents: 75_000,
     maxCents: 180_000,
     capitalNote: "Sermaye 25.000 €; kuruluşta en az 12.500 € yatırılır",
   },

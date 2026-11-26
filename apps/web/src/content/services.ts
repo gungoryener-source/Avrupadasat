@@ -191,42 +191,50 @@ export const services: ContentPage[] = [
   },
   {
     slug: "gumruk-atr-ve-3-euro-vergisi",
-    title: "Almanya'ya İhracat: Gümrük, A.TR ve 2026 Paket Vergisi",
+    title: "Almanya'ya İhracat: Gümrük, A.TR, 3 € Vergi ve 2 € İşlem Ücreti",
     description:
-      "Türkiye'den Almanya'ya ürün gönderirken gümrük, A.TR, ithalat KDV'si ve 2026'da düşük değerli paketlere gelen ek vergi. Paket mi, toplu ithalat mı?",
+      "Türkiye'den Almanya'ya ürün gönderirken gümrük, A.TR, ithalat KDV'si, Temmuz 2026'dan beri kalem başına 3 € vergi ve Kasım 2026'dan beri 2 € işlem ücreti. Paket mi, toplu ithalat mı?",
     kicker: "Gümrük ve lojistik",
-    h1: "Gümrük, A.TR ve 2026 paket vergisi: hangi model size uygun?",
+    h1: "Gümrük, A.TR ve 2026 paket kuralları: hangi model size uygun?",
     intro:
-      "Türkiye ile AB arasındaki gümrük birliği sayesinde sanayi ürünlerinde A.TR dolaşım belgesiyle gümrük vergisi genellikle sıfırdır; ithalat KDV'si ise ödenir ve KDV kaydınız varsa geri alınabilir. 2026'daki değişiklikler, tek tek paket göndermek ile toplu ithalat arasındaki farkı büyüttü.",
+      "Türkiye ile AB arasındaki gümrük birliği sayesinde sanayi ürünlerinde A.TR dolaşım belgesiyle gümrük vergisi sıfırdır; ithalat KDV'si ise ödenir ve Alman KDV kaydınız varsa indirilebilir. AB, 1 Temmuz 2026'dan itibaren tüketiciye mesafeli satışta 150 €'ya kadar gönderilerde kalem başına 3 € gümrük vergisi, 1 Kasım 2026'dan itibaren de kalem başına 2 € işlem ücreti alıyor. Bu kuralların hangi gönderim yolunda nasıl işlediği, tek tek paket ile toplu ithalat arasındaki farkı belirliyor.",
     sections: [
       {
-        h2: "Paket mi, toplu ithalat mı?",
+        h2: "Üç gönderim yolu",
         table: {
-          head: ["", "Tek tek paket (e-ticaret)", "Toplu ithalat + Almanya deposu"],
+          head: [
+            "",
+            "Tek tek paket, IOSS ile",
+            "Tek tek paket, tam beyanname (H1) ile",
+            "Toplu ithalat + Almanya deposu",
+          ],
           rows: [
             [
-              "2026 ek vergisi",
-              "1 Temmuz 2026'dan itibaren düşük değerli paketlere ek vergi",
-              "Uygulanmaz (ticari yük)",
+              "3 € gümrük vergisi (150 €'ya kadar)",
+              "Kalem başına uygulanır",
+              "A.TR ile tercihli oran (sanayi ürününde 0) uygulanabilir",
+              "Uygulanmaz (mesafeli satış değil, ticari ithalat)",
             ],
+            ["2 € işlem ücreti (1.11.2026'dan beri)", "Kalem başına", "Kalem başına", "Uygulanmaz"],
+            ["A.TR", "Kullanılamaz", "Kullanılır", "Ticari beyannamede kullanılır"],
+            ["Teslim süresi", "Günler–haftalar", "Günler–haftalar", "Almanya içi 1–2 gün"],
             [
-              "A.TR",
-              "E-ticaret beyannamesinde kullanımı henüz netleşmedi",
-              "Ticari beyannamede kullanılır",
+              "İade",
+              "Türkiye'ye dönüş pahalı",
+              "Türkiye'ye dönüş pahalı",
+              "Almanya'da işlenir, yeniden satılır",
             ],
-            ["Teslim süresi", "Günler–haftalar", "Almanya içi 1–2 gün"],
-            ["İade", "Türkiye'ye dönüş pahalı", "Almanya'da işlenir, yeniden satılır"],
-            ["Gerekenler", "Daha az kayıt", "Alman KDV kaydı, EORI"],
+            ["Gerekenler", "IOSS kaydı", "Her gönderi için tam beyanname", "Alman KDV kaydı, EORI"],
           ],
         },
-        note: "Kurallar değişiyor; teklifinizde güncel durumu gümrük müşaviri iş ortağımızla birlikte teyit ediyoruz.",
+        note: "“Kalem”, aynı tarife pozisyonundaki ürünlerin bir beyan satırıdır: iki tişört ve bir telefon kılıfı iki kalemdir. Kurallar AB Komisyonu'nun 3 € vergi uygulama kılavuzuna dayanır; 3 € vergi en az 1 Temmuz 2028'e kadar geçici bir uygulamadır. Ürününüz için gümrük müşaviri iş ortağımızla birlikte teyit ediyoruz.",
       },
       {
         h2: "Gerekli belgeler",
         bullets: [
           "Ticari fatura (GTİP kodlarıyla)",
           "Çeki listesi (koli ve palet bazında)",
-          "A.TR dolaşım belgesi",
+          "A.TR dolaşım belgesi (tarım ürünleri ve bazı demir-çelik ürünleri gümrük birliği dışındadır)",
           "Karayolu taşımalarında CMR",
           "Ürüne göre: CE uygunluk beyanı, test raporları, etiket örnekleri",
         ],
@@ -240,8 +248,12 @@ export const services: ContentPage[] = [
     ],
     faq: [
       {
-        q: "Gümrüksüz satış yapabilir miyim?",
-        a: "Gümrük vergisi ürüne ve beyan türüne göre değişir; A.TR ile sanayi ürünlerinde çoğunlukla sıfırdır ancak ithalat KDV'si ödenir. Kesin durumu ürününüzün GTİP koduna göre raporda belirtiyoruz.",
+        q: "Gümrük vergisi ödeyecek miyim?",
+        a: "A.TR ile gönderilen sanayi ürünlerinde ticari ithalatta gümrük vergisi sıfırdır; ithalat KDV'si ödenir. Tüketiciye tek tek paket gönderiyorsanız durum değişir: IOSS kullanırsanız kalem başına 3 € vergi ve 2 € işlem ücreti ödenir, A.TR dikkate alınmaz. Kesin durumu ürününüzün GTİP koduna göre raporda belirtiyoruz.",
+      },
+      {
+        q: "IOSS kullanmazsam 3 €'dan kurtulur muyum?",
+        a: "Tam beyanname (H1) ile A.TR'ye dayalı tercihli oran 3 €'nun yerine geçebilir, ancak 2 € işlem ücreti yine alınır ve her paket için ayrı beyanname maliyeti doğar. Düzenli satış için toplu ithalat ve Almanya deposu genellikle daha öngörülebilirdir.",
       },
     ],
     cta: {
@@ -250,8 +262,7 @@ export const services: ContentPage[] = [
     },
     schema: "Service",
     verify: [
-      "2026 ek vergisinin tutarı ve kapsamı (resmî kaynak)",
-      "H7 beyannamesinde A.TR durumu",
+      "Tam beyanname (H1) ile A.TR tercihinin mesafeli satışta uygulaması (gümrük müşaviri)",
     ],
     updated: U,
   },
@@ -296,9 +307,9 @@ export const services: ContentPage[] = [
   },
   {
     slug: "uyum-paketi",
-    title: "Uyum Paketi: KDV Kaydı, Mali Temsilci, LUCID, GPSR",
+    title: "Uyum Paketi: KDV Kaydı, Mali Temsilci, LUCID, GPSR, WEEE",
     description:
-      "Almanya'da satış için gereken kayıtlar tek pakette: Alman KDV kaydı, mali temsilci koordinasyonu, LUCID ambalaj kaydı ve ürün güvenliği sorumlu kişisi.",
+      "Almanya'da satış için gereken kayıtlar tek pakette: Alman KDV kaydı, mali temsilci, LUCID ambalaj kaydı (PPWR/VerpackDG), ürün güvenliği sorumlu kişisi ve WEEE kaydı.",
     kicker: "Uyum paketi",
     h1: "Almanya'da satış için gereken kayıtlar, tek pakette",
     intro:
@@ -309,16 +320,22 @@ export const services: ContentPage[] = [
         bullets: [
           "Alman KDV kaydı ve dönemsel beyanların vergi danışmanı iş ortağıyla takibi",
           "Gerekiyorsa mali temsilci (Fiskalvertretung) koordinasyonu",
-          "LUCID ambalaj kaydı ve ambalaj sistemi katılımı",
-          "Ürün güvenliği için AB sorumlu kişi bilgileri",
-          "Elektrikli ve elektronik ürünlerde WEEE kaydı yönlendirmesi",
+          "LUCID ambalaj kaydı ve ambalaj sistemi katılımı (12 Ağustos 2026'dan beri AB Ambalaj Yönetmeliği PPWR ve Alman VerpackDG)",
+          "Ürün güvenliği (GPSR): AB dışındaki üretici için AB'de yerleşik sorumlu kişi; adı ve iletişim bilgisi ürün veya ambalajda ve satış sayfasında",
+          "Elektrikli ve elektronik ürünlerde stiftung ear kaydı (WEEE numarası)",
           "Web mağaza için Impressum, gizlilik ve cayma hakkı metinleri",
+        ],
+      },
+      {
+        h2: "Almanya'da şirketiniz yoksa: yetkili temsilci",
+        paragraphs: [
+          "Almanya'da şubesi veya şirketi olmayan bir üretici, ambalaj (LUCID) ve elektrikli ürün (stiftung ear) yükümlülükleri için Almanya'da yerleşik bir yetkili temsilci (Bevollmächtigter) atamak zorundadır; ambalajda bu zorunluluk 12 Ağustos 2026'da başladı. Almanya'da kendi şirketinizle ithalat yapıyorsanız bu yükümlülükleri şirketiniz üstlenir.",
         ],
       },
       {
         h2: "Neden önemli?",
         paragraphs: [
-          "Eksik kayıtlar pazaryerlerinde ürünlerin kaldırılmasına, hesap askıya alınmasına veya ihtarnamelere yol açabilir. Kayıt durumunuz panelde görünür; yenileme ve beyan tarihleri için hatırlatma alırsınız.",
+          "Pazaryerleri ve fulfillment sağlayıcıları, satıcının WEEE ve ambalaj kayıtlarını kontrol etmekle yükümlüdür; kaydı eksik ürünler satıştan kaldırılır. Eksik kayıtlar hesap askıya alınmasına veya ihtarnamelere de yol açabilir. Kayıt durumunuz panelde görünür; yenileme ve beyan tarihleri için hatırlatma alırsınız.",
         ],
       },
     ],
@@ -327,10 +344,7 @@ export const services: ContentPage[] = [
       text: "Ürününüze ve satış modelinize göre gereken kayıtları uygunluk raporunda listeliyoruz.",
     },
     schema: "Service",
-    verify: [
-      "GPSR, WEEE ve VerpackG yükümlülüklerinin resmî kaynaklardan teyidi",
-      "Mali temsilci gerekliliğinin koşulları",
-    ],
+    verify: ["Mali temsilci gerekliliğinin koşulları (vergi danışmanı)"],
     updated: U,
   },
   {
@@ -373,42 +387,56 @@ export const services: ContentPage[] = [
     slug: "e-ihracat-destek-rehberi",
     title: "E-İhracat Destekleri 2026: Neler Değişti? Dürüst Rehber",
     description:
-      "2026'da e-ihracat destek kuralları değişti. Yurt dışı depo kira desteği, sipariş karşılama desteği ve şartlar hakkında dürüst bir özet ve ön kontrol.",
+      "2026'da e-ihracat destek kuralları değişti: yurt dışı depo kira desteği kaldırıldı, sipariş karşılama (fulfillment) desteği listedeki sağlayıcılarla sürüyor. Oranlar, şartlar ve ön kontrol.",
     kicker: "Destek rehberi",
     h1: "E-ihracat destekleri 2026: neler değişti?",
     intro:
-      "Ticaret Bakanlığı'nın e-ihracat destek düzenlemeleri 2026'da güncellendi. İnternette hâlâ eski oranları ve kaldırılmış destekleri anlatan içerikler var. Bu sayfada bildiklerimizi ve henüz netleşmeyenleri açıkça yazıyoruz.",
+      "E-ihracat destekleri 5986 sayılı Cumhurbaşkanı Kararı ve Ticaret Bakanlığı'nın E-İhracat Desteklerine İlişkin Genelgesi ile düzenlenir; Karar 17 Ocak 2026'da (10881 sayılı Karar) değişti, Genelge 13 Nisan 2026'da yenilendi. İnternette hâlâ kaldırılmış destekleri anlatan içerikler var. Bu sayfada güncel metinlere göre bildiklerimizi ve teyit edilmesi gerekenleri açıkça yazıyoruz.",
     sections: [
       {
         h2: "Kısaca",
         bullets: [
-          "Yurt dışı depo kira desteği yeni başvurular için kaldırılmış görünüyor; mevcut onaylar süreleri bitene kadar devam ediyor.",
-          "Ağırlık, Bakanlık onaylı sağlayıcılar üzerinden sipariş karşılama (fulfillment) giderlerine verilen desteğe kaydı.",
-          "Pazaryeri tanıtımı, e-ihracat tanıtımı ve pazaryeri komisyonu destekleri farklı şartlarla sürüyor.",
-          "Destekler harcamadan önce ön onaya ve firmanın uygunluğuna bağlı.",
+          "Yurt dışı depo kira desteği Genelge'de kaldırıldı (Madde 16 mülga). Daha önce onay almış olanlar süreleri bitene kadar desteklenmeye devam ediyor.",
+          "Sipariş karşılama (fulfillment) desteği sürüyor: yurt dışındaki birim başına sipariş karşılama (iade kabulü dâhil) ve depolama giderlerinin %50'si, ülke başına en fazla 3 yıl (Madde 15).",
+          "Desteklenen gider, o ülkedeki toplam e-ticaret satışınızın %10'unu aşamaz.",
+          "Hizmet, Bakanlığın sipariş karşılama hizmeti sunan firma listesindeki bir sağlayıcıdan veya doğrudan pazaryerinden alınmalı; harcamadan önce ön onay gerekir.",
+          "Hedef ülkelerde oran 20 puan artar (%70'e kadar). Bakanlık yetkilileri Almanya'nın e-ihracat hedef ülkeleri arasına alındığını açıkladı.",
         ],
       },
       {
         h2: "Genel şartlar",
         bullets: [
-          "İlgili ihracatçı birliği üyeliği ve sistem kayıtları",
-          "Türk menşeli ürün",
-          "Bazı desteklerde markanın uluslararası tescil başvurusu",
-          "Giderlerin belirlenen oranlar ve üst sınırlar içinde kalması",
+          "İhracatçı birliği üyeliği ve Destek Yönetim Sistemi (DYS) kaydı",
+          "Türk ürünü: üretimin tamamı veya bir kısmı Türkiye'de",
+          "Üründe ve satış platformunda barkod numarası (KTÜN/GTIN) ve Türkiye'deki üretim yeri bilgisi",
+          "Yurt içinde tescilli marka ve en az bir yurt dışı tescil başvurusu",
+          "Satışların e-ticaret olarak beyan edilmesi (gümrük beyannamesinde e-ihracat beyanı)",
+        ],
+      },
+      {
+        h2: "Desteklenmeyenler",
+        bullets: [
+          "Komisyon, üyelik ve dolaylı vergi dışındaki vergiler",
+          "Ürünün ülkeden geri çekilmesi veya imhası",
+          "Ön onaydan önce yapılan harcamalar",
         ],
       },
       {
         h2: "Biz ne yapıyoruz, ne yapmıyoruz?",
         paragraphs: [
-          "Uygun firmalara destek başvurularında belge ve süreç rehberliği yapıyoruz. Destek alacağınızı garanti etmiyoruz ve “devlet depo kiranızı öder” gibi vaatlerde bulunmuyoruz. Yanıltıcı beyan, desteklerin geri alınmasına ve yasaklara yol açabilir.",
+          "Uygun firmalara destek başvurularında belge ve süreç rehberliği yapıyoruz; panelimiz Genelge'nin sağlayıcılardan beklediği barkod (KTÜN) bazlı aylık raporu üretebiliyor. Destek alacağınızı garanti etmiyoruz; depo kiranızın devlet tarafından karşılanacağı gibi vaatlerde bulunmuyoruz. Yanıltıcı beyan, desteklerin geri alınmasına ve yasaklara yol açabilir.",
         ],
-        note: "Bakanlık onaylı sağlayıcı listesinde yer aldığımızda bunu bu sayfada açıkça duyuracağız.",
+        note: "Bakanlığın sipariş karşılama hizmeti sunan firma listesinde henüz yer almıyoruz. Listeye girdiğimizde bunu bu sayfada açıkça duyuracağız.",
       },
     ],
     faq: [
       {
         q: "Yurt dışı depo kira desteği alabilir miyim?",
-        a: "Güncel düzenlemeye göre bu destek yeni başvurular için kaldırılmış görünüyor. Mevcut onayınız varsa süresi bitene kadar devam eder. Firmanıza özel durumu ön kontrolde birlikte değerlendiriyoruz.",
+        a: "Yeni başvurular için hayır: bu destek 13 Nisan 2026 tarihli Genelge'de kaldırıldı. Mevcut onayınız varsa süresi bitene kadar devam eder. Bunun yerine sipariş karşılama desteğinin şartlarını ön kontrolde birlikte değerlendiriyoruz.",
+      },
+      {
+        q: "Sipariş karşılama desteği ne kadar?",
+        a: "Uygun giderlerin %50'si, hedef ülkelerde 20 puan fazlası. Desteklenen gider, o ülkedeki e-ticaret satışlarınızın %10'unu aşamaz ve yıllık bir üst limiti vardır (her yıl güncellenir). Destek, ön onayı izleyen aydan başlar.",
       },
     ],
     cta: {
@@ -417,8 +445,8 @@ export const services: ContentPage[] = [
     },
     schema: "Article",
     verify: [
-      "13.04.2026 E-İhracat Genelgesi ve 10881 sayılı Karar sonrası konsolide metin",
-      "Destek oranları, üst sınırlar ve Almanya'nın hedef ülke statüsü",
+      "Almanya'nın Genelge ekindeki hedef ülkeler listesinde yer alması (resmî ek)",
+      "2026 yıllık destek üst limitleri (Genelge ekleri)",
     ],
     updated: U,
   },
