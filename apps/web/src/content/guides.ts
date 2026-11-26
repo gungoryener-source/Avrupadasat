@@ -1,3 +1,4 @@
+import { formatEur, packages } from "@avrupadasat/core/pricing";
 import type { ContentPage } from "./types";
 
 const U = "2026-11-25";
@@ -34,7 +35,7 @@ export const guides: ContentPage[] = [
       {
         h2: "3. Hizmet bedeli",
         paragraphs: [
-          "Avrupadasat'ta UG kuruluş koordinasyonu €1.250'dan, GmbH €3.000'dan başlar. Pazara Giriş paketinde kuruluş bedeli indirimlidir.",
+          `Kuruluş koordinasyonu hizmet bedelimiz UG için ${formatEur(packages.BASLANGIC.oneTime.UG)}, GmbH için ${formatEur(packages.BASLANGIC.oneTime.GMBH)} tutarından başlar. Pazara Giriş paketinde kuruluş bedeli indirimlidir.`,
         ],
       },
       {

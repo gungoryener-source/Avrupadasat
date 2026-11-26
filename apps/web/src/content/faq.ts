@@ -1,3 +1,4 @@
+import { brand } from "@avrupadasat/core/brand.config";
 import type { Faq } from "./types";
 
 /** Genel SSS — /sss sayfası, ana sayfa ve FAQPage JSON-LD bu listeyi kullanır */
@@ -8,7 +9,7 @@ export const generalFaq: Faq[] = [
   },
   {
     q: "Resmî bir kurum musunuz?",
-    a: "Hayır. Avrupadasat bağımsız bir hizmet sağlayıcıdır. Şirket kuruluşu, vergi kaydı ve gümrük beyanı gibi hukuki ve vergisel işlemler lisanslı iş ortaklarımız tarafından yürütülür; biz süreci sizin adınıza koordine eder ve panelde takip ederiz.",
+    a: `Hayır. ${brand.name} bağımsız bir hizmet sağlayıcıdır. Şirket kuruluşu, vergi kaydı ve gümrük beyanı gibi hukuki ve vergisel işlemler lisanslı iş ortaklarımız tarafından yürütülür; biz süreci sizin adınıza koordine eder ve panelde takip ederiz.`,
   },
   {
     q: "Şirket kurmak için Almanya'ya gitmem gerekir mi?",

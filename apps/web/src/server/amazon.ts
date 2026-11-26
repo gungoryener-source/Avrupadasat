@@ -8,6 +8,7 @@
  * TODO(verify): SP-API uygulama kaydı, gerekli roller (Inventory & Order Tracking, Direct-to-Consumer
  * Shipping — PII için) ve sandbox testi.
  */
+import { brand } from "@avrupadasat/core/brand.config";
 import type { ExternalOrder, MarketplaceAdapter } from "./marketplace";
 
 export const SPAPI_EU = "https://sellingpartnerapi-eu.amazon.com";
@@ -103,7 +104,7 @@ export function amazonAdapter(creds: AmazonCredentials, app: AmazonAppConfig): M
         headers: {
           "x-amz-access-token": opts.rdt ?? (await accessToken()),
           "Content-Type": "application/json",
-          "user-agent": "Avrupadasat/1.0 (Language=TypeScript)",
+          "user-agent": `${brand.name}/1.0 (Language=TypeScript)`,
         },
         ...(opts.body !== undefined ? { body: JSON.stringify(opts.body) } : {}),
       });

@@ -1,3 +1,4 @@
+import { brand } from "@avrupadasat/core/brand.config";
 import {
   formatEur,
   operations,
@@ -42,7 +43,7 @@ export default function PricesPage() {
         data={{
           "@context": "https://schema.org",
           "@type": "OfferCatalog",
-          name: "Avrupadasat fiyat listesi",
+          name: `${brand.name} fiyat listesi`,
           url: `${SITE}/fiyatlar`,
           itemListElement: [
             {

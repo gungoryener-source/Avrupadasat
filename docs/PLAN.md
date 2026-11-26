@@ -1,6 +1,6 @@
 # Avrupadasat — Yazılım Geliştirme Planı
 
-Son güncelleme: 25.11.2026 — Aşama 0–10 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
+Son güncelleme: 25.11.2026 — Aşama 0–11 kodlandı ve test edildi (ayrıntı: README, docs/RUNBOOK.md)
 
 ## Kararlar
 
@@ -158,6 +158,12 @@ Strateji: kuruluşu rakibe yakın fiyatla verip asıl geliri aylık operasyon ve
 - [x] Site içerikleri ve hesaplayıcı güncellendi
 - [x] KTÜN (GTIN) bazlı aylık sipariş karşılama raporu (panel + ekip CSV) — Bakanlık listesi şartı
 - [x] Kapı 0 karar belgeleri taslağı
+
+## Aşama 11 — Kapı 0 kodu ve kurallara uyum (26.11.2026) ✅
+
+- [x] AB sorumlu taraf adımı (ithalatçı modeli, GPSR sorumlusu, LUCID/WEEE temsilci ve numaraları); kayıt yokken mal kabul bildirimi açılmaz (`EU_PARTY_GATE=0` ile kapatılabilir)
+- [x] Panelde SLA göstergeleri: gümrükten mal kabule, zamanında gönderim (14:00 kesim, Berlin saati), iade işleme
+- [x] Marka adı ve kuruluş fiyatları içerikte sabit değil; `brand.config.ts` ve `pricing.ts`'den
 
 ## Kalan işler (kod dışı / hesap gerektiren)
 

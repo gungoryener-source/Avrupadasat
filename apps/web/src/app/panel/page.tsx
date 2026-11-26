@@ -1,15 +1,49 @@
 import Link from "next/link";
 import { formatEur } from "@avrupadasat/core/pricing";
+import { SLA_TARGETS, type SlaMetric } from "@avrupadasat/core/sla";
 import { CHANNEL_LABEL } from "@/server/labels-ops";
 import { DOC_KIND_LABEL } from "@/server/documents";
 import { overview, waitingList } from "@/server/panel";
 import { requireClient } from "@/server/session";
+import { slaSummary } from "@/server/sla";
+
+function SlaRow({
+  label,
+  target,
+  m,
+  unit,
+}: {
+  label: string;
+  target: string;
+  m: SlaMetric;
+  unit?: string;
+}) {
+  const ok = m.pct === null || m.pct >= SLA_TARGETS.onTimeTargetPct;
+  return (
+    <tr>
+      <td>{label}</td>
+      <td className="muted">{target}</td>
+      <td>
+        {m.count === 0 ? (
+          <span className="muted">Kayıt yok</span>
+        ) : (
+          <span className={`tag ${ok ? "ok" : "warn"}`}>%{m.pct}</span>
+        )}
+      </td>
+      <td className="muted">
+        {m.count ? `${m.met}/${m.count}` : "–"}
+        {m.avgDays !== null && unit ? ` · ort. ${m.avgDays} ${unit}` : ""}
+      </td>
+    </tr>
+  );
+}
 
 export default async function PanelHome() {
   const s = await requireClient();
-  const [o, waiting] = await Promise.all([
+  const [o, waiting, sla] = await Promise.all([
     overview(s.actor.tenantId),
     waitingList(s.actor.tenantId),
+    slaSummary(s.actor.tenantId),
   ]);
   return (
     <>
@@ -96,6 +130,42 @@ export default async function PanelHome() {
             </p>
           ))}
         </div>
+      </div>
+      <div className="card" style={{ marginTop: 22 }}>
+        <h2 style={{ marginTop: 0, fontSize: 19 }}>Hizmet seviyesi (son {sla.days} gün)</h2>
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th>Ölçü</th>
+              <th>Hedef</th>
+              <th>Hedefte</th>
+              <th>Ayrıntı</th>
+            </tr>
+          </thead>
+          <tbody>
+            <SlaRow
+              label="Gümrükten mal kabule"
+              target={`En fazla ${SLA_TARGETS.inboundBusinessDays} iş günü`}
+              m={sla.inbound}
+              unit="iş günü"
+            />
+            <SlaRow
+              label="Zamanında gönderim"
+              target={`${SLA_TARGETS.cutoffHour}:00'e kadar gelen sipariş aynı iş günü`}
+              m={sla.onTimeShipping}
+              unit="iş günü"
+            />
+            <SlaRow
+              label="İade işleme"
+              target={`En fazla ${SLA_TARGETS.returnsBusinessDays} iş günü`}
+              m={sla.returns}
+              unit="iş günü"
+            />
+          </tbody>
+        </table>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
+          Saatler depo saatine (Almanya) göre; hafta sonları iş günü sayılmaz.
+        </p>
       </div>
     </>
   );

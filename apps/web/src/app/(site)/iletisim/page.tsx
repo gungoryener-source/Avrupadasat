@@ -4,8 +4,7 @@ import { SitePage } from "@/components/site/SiteChrome";
 
 export const metadata = {
   title: "İletişim",
-  description:
-    "Avrupadasat ile iletişime geçin: e-posta, WhatsApp ve ücretsiz uygunluk raporu formu.",
+  description: `${brand.name} ile iletişime geçin: e-posta, WhatsApp ve ücretsiz uygunluk raporu formu.`,
   alternates: { canonical: "/iletisim" },
 };
 

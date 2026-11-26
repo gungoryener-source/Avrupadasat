@@ -1,3 +1,4 @@
+import { brand } from "@avrupadasat/core/brand.config";
 import type { ContentPage } from "./types";
 
 /**
@@ -19,7 +20,7 @@ export const legal: ContentPage[] = [
     sections: [
       {
         h2: "Veri sorumlusu",
-        paragraphs: ["[Şirket unvanı], [adres], [e-posta] (“Avrupadasat”)."],
+        paragraphs: [`[Şirket unvanı], [adres], [e-posta] (“${brand.name}”).`],
       },
       {
         h2: "İşlenen veriler ve amaçlar",
@@ -134,8 +135,7 @@ export const legal: ContentPage[] = [
   {
     slug: "hizmet-sartlari",
     title: "Hizmet Şartları",
-    description:
-      "Avrupadasat hizmet şartları: kapsam, ücretler, süre ve fesih, sorumluluk ve ürün uygunluğu (taslak).",
+    description: `${brand.name} hizmet şartları: kapsam, ücretler, süre ve fesih, sorumluluk ve ürün uygunluğu (taslak).`,
     kicker: "Hukuki",
     h1: "Hizmet şartları",
     intro: DRAFT,
@@ -149,7 +149,7 @@ export const legal: ContentPage[] = [
       {
         h2: "Bağımsızlık",
         paragraphs: [
-          "Avrupadasat resmî bir kurum değildir. Hukuki ve vergisel işlemler lisanslı iş ortakları tarafından yürütülür.",
+          `${brand.name} resmî bir kurum değildir. Hukuki ve vergisel işlemler lisanslı iş ortakları tarafından yürütülür.`,
         ],
       },
       {
@@ -173,7 +173,7 @@ export const legal: ContentPage[] = [
       {
         h2: "Ürün sorumluluğu",
         paragraphs: [
-          "Ürünlerin AB mevzuatına uygunluğundan üretici/satıcı sorumludur; Avrupadasat koordinasyon ve kontrol listesi desteği verir. [İthalatçı sorumluluğu modeli — Kapı 0 kararı]",
+          `Ürünlerin AB mevzuatına uygunluğundan üretici/satıcı sorumludur; ${brand.name} koordinasyon ve kontrol listesi desteği verir. [İthalatçı sorumluluğu modeli — Kapı 0 kararı]`,
         ],
       },
       { h2: "Uygulanacak hukuk", paragraphs: ["[Belirlenecek]"] },
@@ -208,8 +208,7 @@ export const legal: ContentPage[] = [
   {
     slug: "hesap-silme",
     title: "Hesap silme",
-    description:
-      "Avrupadasat müşteri hesabınızı web panelinden veya mobil uygulamadan nasıl silebileceğiniz ve hangi verilerin saklandığı.",
+    description: `${brand.name} müşteri hesabınızı web panelinden veya mobil uygulamadan nasıl silebileceğiniz ve hangi verilerin saklandığı.`,
     kicker: "Hukuki",
     h1: "Hesabınızı silme",
     intro: DRAFT,

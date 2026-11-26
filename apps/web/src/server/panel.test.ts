@@ -7,6 +7,7 @@ import { db } from "./db";
 import { uploadDocument } from "./documents";
 import { detectType, sanitizeFilename, signDownload, verifyDownload } from "./files";
 import { inviteMember, removeMember } from "./members";
+import { EU_PARTY_REQUIRED, saveEuParty } from "./eu-party";
 import { overview, registrationState, waitingList } from "./panel";
 import {
   advanceStage,
@@ -84,6 +85,16 @@ describe.skipIf(!process.env.DATABASE_URL)("müşteri paneli servisleri", () => 
         { tenantId: A, step: "UST_ID", status: "BEKLIYOR" },
       ],
     });
+    await saveEuParty(
+      A,
+      {
+        importerModel: "OWN_DE_COMPANY",
+        responsibleName: "Test GmbH",
+        responsibleAddress: "Musterstraße 1, 10115 Berlin",
+        responsibleEmail: "produkt@test.example.com",
+      },
+      owner,
+    );
   });
   afterAll(async () => {
     await db().stockMovement.deleteMany({ where: { tenantId: { in: [A, B] } } });
@@ -101,6 +112,28 @@ describe.skipIf(!process.env.DATABASE_URL)("müşteri paneli servisleri", () => 
     expect(r.errors).toHaveLength(3);
     const r2 = await importCatalog(A, "sku;ad\nHV-1;Havlu beyaz 50x90", owner);
     expect(r2).toMatchObject({ created: 0, updated: 1 });
+  });
+
+  it("AB sorumlu taraf girilmeden mal kabul bildirimi açılmaz", async () => {
+    await expect(
+      createAsn(
+        B,
+        { reference: `${run}-KAPI`, pallets: 1, cartons: 1, lines: [{ sku: "X", quantity: 1 }] },
+        owner,
+      ),
+    ).rejects.toThrow(EU_PARTY_REQUIRED);
+    process.env.EU_PARTY_GATE = "0";
+    try {
+      await expect(
+        createAsn(
+          B,
+          { reference: `${run}-KAPI`, pallets: 1, cartons: 1, lines: [{ sku: "X", quantity: 1 }] },
+          owner,
+        ),
+      ).resolves.toMatchObject({ reference: `${run}-KAPI` });
+    } finally {
+      delete process.env.EU_PARTY_GATE;
+    }
   });
 
   it("ASN → aşama ilerletme → mal kabul: stok hasar hariç artar, hareketler yazılır", async () => {

@@ -1,3 +1,4 @@
+import { assertEuPartyForInbound } from "./eu-party";
 import { shipmentStages } from "@avrupadasat/core/events";
 import { forTenant, type ShipmentStage } from "@avrupadasat/db";
 import { z } from "zod";
@@ -53,6 +54,7 @@ export function parseAsnLines(text: string): {
 
 export async function createAsn(tenantId: string, input: AsnInput, actorUserId: string) {
   const data = asnInput.parse(input);
+  await assertEuPartyForInbound(tenantId);
   const t = forTenant(db(), tenantId);
   if (await t.shipment.findFirst({ where: { reference: data.reference } })) {
     throw new Error("Bu referansla bir sevkiyat zaten var");

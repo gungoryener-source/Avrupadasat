@@ -103,6 +103,7 @@ model Tenant {
   orders       Order[]
   invoices     Invoice[]
   connections  MarketplaceConnection[]
+  euParty      EuResponsibleParty?
 }
 
 model User {
@@ -717,4 +718,35 @@ model ApiToken {
 model SystemHeartbeat {
   name   String   @id
   seenAt DateTime
+}
+
+/// İthalatçı modeli (Kapı 0 K0-1): A = müşterinin Alman şirketi, B = Türk şirketi + AB'de yetkili temsilci
+enum ImporterModel {
+  OWN_DE_COMPANY
+  TR_WITH_REPRESENTATIVE
+}
+
+/// AB'de ürün sorumlusu ve üretici sorumluluğu temsilcileri (GPSR, Yön. 2019/1020 Md. 4, PPWR/VerpackDG, ElektroG).
+/// Gizli veri değildir (ürün ve ilanda yayımlanır); mal kabul bildirimi bu kayıt tamamlanmadan açılmaz.
+model EuResponsibleParty {
+  id                      String        @id @default(cuid())
+  tenantId                String        @unique
+  importerModel           ImporterModel
+  responsibleName         String
+  responsibleAddress      String
+  responsibleEmail        String
+  /// LUCID ambalaj kaydı numarası (başvuru sürüyorsa boş)
+  lucidNumber             String?
+  /// Model B: ambalaj için Almanya'daki yetkili temsilci
+  packagingRepresentative String?
+  sellsElectrical         Boolean       @default(false)
+  /// stiftung ear WEEE kayıt numarası (DE + 8 hane)
+  weeeNumber              String?
+  /// Model B + elektrikli ürün: WEEE için Almanya'daki yetkili temsilci
+  weeeRepresentative      String?
+  updatedById             String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }

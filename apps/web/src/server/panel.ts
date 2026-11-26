@@ -17,12 +17,13 @@ export async function registrationState(tenantId: string) {
 /** "Numara beklerken hazırlayabilecekleriniz" — durum veriden türetilir */
 export async function waitingList(tenantId: string) {
   const t = forTenant(db(), tenantId);
-  const [items, approved, shipments, docs, users] = await Promise.all([
+  const [items, approved, shipments, docs, users, euParty] = await Promise.all([
     t.stockItem.count(),
     t.stockItem.count({ where: { contentApprovedAt: { not: null } } }),
     t.shipment.count(),
     t.document.count({ where: { kind: { in: ["CE_BEYAN", "SIRKET"] } } }),
     t.membership.count(),
+    t.euResponsibleParty.count(),
   ]);
   return [
     {
@@ -42,6 +43,12 @@ export async function waitingList(tenantId: string) {
       title: "Ürün belgelerini yükleyin (CE beyanı, test raporları)",
       done: docs > 0,
       href: "/panel/belgeler",
+    },
+    {
+      id: "eu-party",
+      title: "AB sorumlu taraf bilgilerini girin (mal kabul için gerekli)",
+      done: euParty > 0,
+      href: "/panel/sirket#ab-sorumlu",
     },
     {
       id: "asn",

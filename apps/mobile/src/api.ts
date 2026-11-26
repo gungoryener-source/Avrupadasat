@@ -1,4 +1,4 @@
-/** Avrupadasat mobil API istemcisi (web uygulamasındaki /api/v1 uç noktaları) */
+/** Mobil API istemcisi (web uygulamasındaki /api/v1 uç noktaları) */
 
 export type Stage = "FABRIKA" | "TR_CIKIS" | "AB_GIRIS" | "GUMRUK" | "DEPO_KABUL";
 

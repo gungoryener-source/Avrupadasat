@@ -68,6 +68,15 @@ async function main() {
   const other = await prisma.tenant.create({
     data: { name: "E2E Diğer Firma", slug: "e2e-diger" },
   });
+  await prisma.euResponsibleParty.create({
+    data: {
+      tenantId: tenant.id,
+      importerModel: "OWN_DE_COMPANY",
+      responsibleName: "E2E Tekstil GmbH",
+      responsibleAddress: "Musterstraße 1, 10115 Berlin",
+      responsibleEmail: "produkt@e2e-tekstil.test",
+    },
+  });
   const admin = await user("e2e-admin@avrupadasat.local", "E2E Yönetici", "ADMIN", SECRETS.admin);
   const owner = await user("e2e-owner@tekstil.test", "Zeynep Demir", null, SECRETS.owner);
   const partner = await user("e2e-partner@depo.test", "Depo Partner", "PARTNER", SECRETS.partner);

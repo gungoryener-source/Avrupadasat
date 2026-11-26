@@ -53,7 +53,7 @@ export const templates = {
     layout("Müşteri panelinize davet edildiniz", {
       title: "Panelinize hoş geldiniz",
       paragraphs: [
-        "Avrupadasat müşteri paneline davet edildiniz. Aşağıdaki bağlantıdan şifrenizi belirleyerek giriş yapabilirsiniz.",
+        `${brand.name} müşteri paneline davet edildiniz. Aşağıdaki bağlantıdan şifrenizi belirleyerek giriş yapabilirsiniz.`,
       ],
       button: { label: "Şifremi belirle", href: link },
       note: "Bağlantı 72 saat geçerlidir ve yalnız bir kez kullanılabilir. Bu daveti beklemiyorsanız e-postayı yok sayın.",

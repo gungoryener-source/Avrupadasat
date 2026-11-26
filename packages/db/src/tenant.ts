@@ -23,6 +23,7 @@ export const TENANT_SCOPED_MODELS = new Set([
   "Invoice",
   "CustomerMessage",
   "ProductContent",
+  "EuResponsibleParty",
 ]);
 
 const READ_OPS = new Set([
