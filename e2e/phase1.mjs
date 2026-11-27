@@ -163,7 +163,8 @@ try {
 
   s = step("Çıkış ve 2FA ile yeniden giriş");
   await cp.goto(`${BASE}/panel`);
-  await cp.getByRole("button", { name: "Çıkış" }).click();
+  await cp.locator(".sh-user summary").click();
+  await cp.getByRole("button", { name: "Çıkış yap" }).click();
   await cp.waitForURL(/\/giris/);
   await cp.getByLabel("E-posta").fill(email);
   await cp.getByLabel("Şifre").fill("Seramik ihracat 2027");

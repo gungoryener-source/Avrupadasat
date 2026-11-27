@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { forTenant } from "@avrupadasat/db";
 import { fmtDate } from "@/components/AppShell";
+import { PageHeader, Tabs } from "@/components/panel/ui";
 import { db } from "@/server/db";
 import { missingDocs } from "@/server/documents";
 import { STAGE_LABEL } from "@/server/labels";
@@ -18,7 +19,17 @@ export default async function ShipmentsPage() {
   });
   return (
     <>
-      <h1>Sevkiyatlar</h1>
+      <PageHeader
+        title="Depo ve Stok"
+        desc="Almanya deposundaki ürünleriniz, sevkiyatlar ve stok hareketleri."
+      />
+      <Tabs
+        active="sevkiyat"
+        items={[
+          { key: "stok", label: "Stok", href: "/panel/stok" },
+          { key: "sevkiyat", label: "Sevkiyatlar", href: "/panel/sevkiyatlar" },
+        ]}
+      />
       <table className="tbl" style={{ marginBottom: 22 }}>
         <thead>
           <tr>

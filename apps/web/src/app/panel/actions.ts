@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { DocumentKind } from "@avrupadasat/db";
-import { uploadDocument } from "@/server/documents";
+import { notifyDocumentUploaded, uploadDocument } from "@/server/documents";
 import { MAX_UPLOAD_BYTES } from "@/server/files";
 import { inviteMember, removeMember } from "@/server/members";
 import { clientIp, requireClient } from "@/server/session";
@@ -64,6 +64,9 @@ const kinds = [
   "CMR",
   "CE_BEYAN",
   "SIRKET",
+  "VERGI",
+  "MUHASEBE",
+  "SOZLESME",
   "DIGER",
 ] as const;
 
@@ -75,7 +78,10 @@ export async function uploadDocAction(_: PanelState, fd: FormData): Promise<Pane
   const kind = z.enum(kinds).safeParse(fd.get("kind"));
   if (!kind.success) return { error: "Belge türü seçin" };
   const shipmentId = String(fd.get("shipmentId") ?? "") || null;
+  const exp = String(fd.get("expiresAt") ?? "");
+  const expiresAt = exp && /^\d{4}-\d{2}-\d{2}$/.test(exp) ? new Date(`${exp}T12:00:00Z`) : null;
   const r = await uploadDocument({
+    expiresAt,
     tenantId: s.actor.tenantId,
     shipmentId,
     kind: kind.data as DocumentKind,
@@ -85,8 +91,9 @@ export async function uploadDocAction(_: PanelState, fd: FormData): Promise<Pane
     ip: await clientIp(),
   });
   if (!r.ok) return { error: r.reason };
+  await notifyDocumentUploaded(s.actor.tenantId, f.name);
   revalidatePath(shipmentId ? `/panel/sevkiyatlar/${shipmentId}` : "/panel/belgeler");
-  return { ok: "Belge yüklendi." };
+  return { ok: "Belge yüklendi; ekibimiz kontrol edip onaylayacak." };
 }
 
 export async function importCatalogAction(_: PanelState, fd: FormData): Promise<PanelState> {

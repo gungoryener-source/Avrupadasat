@@ -553,6 +553,9 @@ model MarketplaceConnection {
   /// Gizli olmayan hesap tanımı (Shopify mağaza alan adı, Amazon Seller ID) — webhook eşlemesi için
   externalAccount String?
   lastSyncAt      DateTime?
+  /// Son senkronizasyon hatası (başarılı senkronizasyonda temizlenir)
+  lastError       String?
+  lastErrorAt     DateTime?
   createdAt       DateTime     @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)

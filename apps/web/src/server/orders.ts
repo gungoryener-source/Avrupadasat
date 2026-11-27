@@ -5,6 +5,7 @@ import { EBAY_SANDBOX_API, ebayAdapter, type EbayCredentials } from "./ebay";
 import { SHOP_DOMAIN_RE, shopifyAdapter, type ShopifyCredentials } from "./shopify";
 import { audit } from "./audit";
 import { db } from "./db";
+import { notifyTenant } from "./notifications";
 import {
   liveAdapter,
   mockAdapter,
@@ -204,7 +205,21 @@ export async function syncOrders(
   try {
     external = await a.fetchOrders(conn.lastSyncAt);
   } catch (e) {
-    return { ok: false, reason: (e as Error).message };
+    const msg = (e as Error).message.slice(0, 300);
+    await t.marketplaceConnection.update({
+      where: { id: conn.id },
+      data: { lastError: msg, lastErrorAt: new Date() },
+    });
+    // Aynı hata için tekrar tekrar bildirim üretme: yalnız yeni hata mesajında
+    if (conn.lastError !== msg)
+      await notifyTenant(tenantId, {
+        type: "marketplace",
+        title: `${channel === "AMAZON" ? "Amazon.de" : channel === "EBAY" ? "eBay.de" : "Web mağaza"} senkronizasyon hatası`,
+        body: msg,
+        href: "/panel/pazaryerleri",
+        email: true,
+      });
+    return { ok: false, reason: msg };
   }
   let imported = 0;
   let held = 0;
@@ -218,7 +233,7 @@ export async function syncOrders(
   }
   await t.marketplaceConnection.update({
     where: { id: conn.id },
-    data: { lastSyncAt: new Date() },
+    data: { lastSyncAt: new Date(), lastError: null, lastErrorAt: null },
   });
   return { ok: true, imported, held };
 }

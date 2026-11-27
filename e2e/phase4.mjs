@@ -89,7 +89,7 @@ try {
     .getByRole("button", { name: "İşle" })
     .click();
   await ap.waitForTimeout(800);
-  await op.goto(`${BASE}/panel/siparisler`);
+  await op.goto(`${BASE}/panel/iadeler`);
   await op.getByText("Satılabilir").waitFor();
   s.ok();
 
