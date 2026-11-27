@@ -20,7 +20,7 @@ export function PageHeader({
     <div className="ph">
       <div>
         {crumbs && (
-          <nav className="ph-crumbs" aria-label="Konum">
+          <nav className="ph-crumbs" aria-label="Sayfa yolu">
             {crumbs.map((c) => (
               <Link key={c.href} href={c.href}>
                 {c.label}
@@ -125,10 +125,12 @@ export function Toolbar({
   placeholder = "Ara",
   filters = [],
   keep = {},
+  search = true,
 }: {
+  search?: boolean;
   q?: string;
   placeholder?: string;
-  filters?: { name: string; label: string; value?: string; options: Opt[] }[];
+  filters?: { name: string; label: string; value?: string; options: Opt[]; all?: string }[];
   keep?: Record<string, string | undefined>;
 }) {
   return (
@@ -136,16 +138,18 @@ export function Toolbar({
       {Object.entries(keep).map(([k, v]) =>
         v ? <input key={k} type="hidden" name={k} value={v} /> : null,
       )}
-      <label className="tb-q">
-        <IconSearch size={16} />
-        <span className="sr-only">{placeholder}</span>
-        <input name="q" defaultValue={q} placeholder={placeholder} type="search" />
-      </label>
+      {search && (
+        <label className="tb-q">
+          <IconSearch size={16} />
+          <span className="sr-only">{placeholder}</span>
+          <input name="q" defaultValue={q} placeholder={placeholder} type="search" />
+        </label>
+      )}
       {filters.map((f) => (
         <label key={f.name} className="tb-f">
           <span className="sr-only">{f.label}</span>
           <select name={f.name} defaultValue={f.value ?? ""} aria-label={f.label}>
-            <option value="">{f.label}: tümü</option>
+            <option value="">{f.all ?? `${f.label}: tümü`}</option>
             {f.options.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -276,4 +280,15 @@ export function sp(raw: Record<string, string | string[] | undefined>) {
 export function pageNum(v?: string) {
   const n = Number(v);
   return Number.isInteger(n) && n > 0 && n < 10000 ? n : 1;
+}
+
+/** Yönlendirme sonrası tek seferlik sonuç mesajı (?sonuc=) */
+export function Flash({ value, messages }: { value?: string; messages: Record<string, string> }) {
+  const m = value ? messages[value] : undefined;
+  if (!m) return null;
+  return (
+    <p className="alert-ok" role="status" style={{ marginBottom: 16 }}>
+      {m}
+    </p>
+  );
 }

@@ -266,10 +266,10 @@
   .app2 .sh-side {
     transform: translateX(-100%);
     transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-    box-shadow: 0 0 48px rgba(0, 0, 0, 0.3);
   }
   .app2 .sh-side[data-open="true"] {
     transform: none;
+    box-shadow: 0 0 48px rgba(0, 0, 0, 0.3);
   }
   .app2 .sh-scrim[data-open="true"] {
     display: block;
@@ -1049,4 +1049,100 @@
 .app2 .task-f .alert-ok,
 .app2 .task-f .alert-err {
   flex-basis: 100%;
+}
+
+/* Onay kutusu satırı */
+.app2 .chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.app2 .chk input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--p);
+}
+.app2 .form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.app2 .row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.app2 .row-actions .form {
+  display: contents;
+}
+.app2 details.drawer > summary {
+  cursor: pointer;
+  color: var(--p);
+  font-size: 13px;
+  font-weight: 500;
+  list-style: none;
+}
+.app2 details.drawer > summary::-webkit-details-marker {
+  display: none;
+}
+.app2 details.drawer[open] > summary {
+  margin-bottom: 10px;
+}
+
+/* Eski (kart dönüşümü olmayan) tablolar dar ekranda kendi içinde kayar; sayfa taşmaz */
+@media (max-width: 900px) {
+  .app2 .sh-main table.tbl:not(.tbl-stack) {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .app2 .sh-main {
+    min-width: 0;
+  }
+  .app2 .inline-form {
+    flex-wrap: wrap;
+  }
+}
+
+/* Kenar menüsü öğeleri sıkışmaz; menü uzunsa kayar */
+.app2 .sh-side > * {
+  flex-shrink: 0;
+}
+
+/* Satır içi formlar (tablo hücreleri, liste satırları) */
+.app2 .row-actions select,
+.app2 .row-actions input:not([type="checkbox"]):not([type="hidden"]) {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  min-width: 0;
+}
+.app2 .row-actions select:focus,
+.app2 .row-actions input:focus {
+  outline: none;
+  border-color: var(--p);
+  box-shadow: 0 0 0 3px rgba(36, 87, 232, 0.14);
+}
+.app2 .row-actions .field {
+  margin: 0;
+}
+.app2 form.form.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.app2 form.form.row-actions > .alert-ok,
+.app2 form.form.row-actions > .alert-err {
+  flex-basis: 100%;
+  margin: 0;
 }

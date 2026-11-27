@@ -55,7 +55,7 @@ try {
   await op.getByLabel("Belge türü").selectOption("ATR");
   await op.locator('input[name="file"]').setInputFiles(REAL_PDF);
   await op.getByRole("button", { name: "Yükle" }).click();
-  await op.getByText("Belge yüklendi.").waitFor();
+  await op.getByText(/Belge yüklendi/).waitFor();
   await op.reload();
   const missText = await op.locator(".alert-err").first().textContent();
   assert(

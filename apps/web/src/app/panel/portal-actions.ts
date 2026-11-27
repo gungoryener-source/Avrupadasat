@@ -76,9 +76,9 @@ export async function taskDoneAction(_: FormState, fd: FormData): Promise<FormSt
     await clientIp(),
   );
   if (!r.ok) return { error: r.error };
-  revalidatePath("/panel/gorevler");
   revalidatePath("/panel");
-  return { ok: "Ekibe iletildi." };
+  // Form görevden kalktığı için onay mesajı sayfada gösterilir
+  redirect("/panel/gorevler?bildirildi=1");
 }
 
 export async function readNotificationsAction(fd: FormData) {

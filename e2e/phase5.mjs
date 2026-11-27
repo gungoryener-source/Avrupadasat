@@ -36,10 +36,11 @@ try {
   s.ok();
 
   s = step("Hazırlık: kayıtlar tamam, stok sayımı, Amazon (demo) siparişleri");
-  await ap.goto(`${BASE}/admin/musteriler/${E.tenantId}`);
+  await ap.goto(`${BASE}/admin/musteriler/${E.tenantId}?sekme=depo`);
   await ap.getByLabel("Sayım CSV").fill("sku;miktar\nHV-50;30");
   await ap.getByRole("button", { name: "Sayımı işle" }).click();
   await ap.waitForTimeout(500);
+  await ap.goto(`${BASE}/admin/musteriler/${E.tenantId}?sekme=sirket`);
   for (const st of ["VERGI_NO", "UST_ID"]) {
     const f = ap.locator(`form:has(input[name="step"][value="${st}"])`);
     await f.locator('select[name="status"]').selectOption("TAMAM");
@@ -52,7 +53,7 @@ try {
     .getByRole("button", { name: "Bağla" })
     .click();
   await op.getByRole("button", { name: "Siparişleri şimdi çek" }).click();
-  await op.getByText("Hazırlanıyor").first().waitFor();
+  await op.locator("tbody").getByText("Hazırlanıyor").first().waitFor();
   s.ok();
 
   s = step(

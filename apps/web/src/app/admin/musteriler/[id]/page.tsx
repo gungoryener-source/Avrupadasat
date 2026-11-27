@@ -1,178 +1,95 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { canAccessTenant } from "@avrupadasat/core/roles";
+import { can, canAccessTenant } from "@avrupadasat/core/roles";
 import { fmtDate } from "@/components/AppShell";
-import { Submit } from "@/components/Submit";
+import { Badge, PageHeader, Tabs, sp } from "@/components/panel/ui";
 import { db } from "@/server/db";
-import { PACKAGE_LABEL, STEP_LABEL, STEP_STATUS, TENANT_STATUS } from "@/server/labels";
+import { PACKAGE_LABEL, TENANT_STATUS } from "@/server/labels";
 import { requireStaff } from "@/server/session";
-import { resendInviteAction } from "../../actions";
-import {
-  palletsAction,
-  stockCountAction,
-  updateRegistrationAction,
-  updateTenantStatusAction,
-} from "../../ops-actions";
+import { BillingTab } from "./_tabs/billing";
+import { CompanyTab } from "./_tabs/company";
+import { DocumentsTab } from "./_tabs/documents";
+import { HistoryTab } from "./_tabs/history";
+import { OperationsTab } from "./_tabs/operations";
+import { OrdersTab } from "./_tabs/orders";
+import { OverviewTab } from "./_tabs/overview";
+import { SupportTab } from "./_tabs/support";
+import { WarehouseTab } from "./_tabs/warehouse";
 
-export default async function TenantDetail({ params }: { params: Promise<{ id: string }> }) {
+export const metadata = { title: "Müşteri" };
+
+const TABS = [
+  { key: "genel", label: "Genel bakış", perm: "tenant.read" },
+  { key: "sirket", label: "Şirket", perm: "tenant.read" },
+  { key: "belgeler", label: "Belgeler", perm: "document.review" },
+  { key: "operasyon", label: "Operasyon", perm: "task.read" },
+  { key: "siparisler", label: "Siparişler", perm: "order.read" },
+  { key: "depo", label: "Depo", perm: "stock.read" },
+  { key: "fatura", label: "Faturalama", perm: "invoice.read" },
+  { key: "destek", label: "Destek", perm: "ticket.read" },
+  { key: "gecmis", label: "Geçmiş", perm: "audit.read" },
+] as const;
+
+export default async function TenantDetail({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const s = await requireStaff("tenant.read");
   const { id } = await params;
+  const q = sp(await searchParams);
+  // PARTNER yalnız atandığı firmayı açabilir; diğer firmaya erişim reddedilir
   if (!canAccessTenant(s.actor, id)) redirect("/admin?hata=yetki");
   const t = await db().tenant.findUnique({
     where: { id },
-    include: {
-      memberships: { include: { user: true } },
-      contacts: true,
-      contracts: { include: { quote: true } },
-      registration: { orderBy: { step: "asc" } },
-    },
+    select: { id: true, name: true, status: true, packageCode: true, createdAt: true, city: true },
   });
   if (!t) notFound();
-  const pendingInvites = await db().authToken.findMany({
-    where: {
-      userId: { in: t.memberships.map((m) => m.userId) },
-      purpose: "INVITE",
-      usedAt: null,
-      expiresAt: { gt: new Date() },
-    },
-  });
+  const tabs = TABS.filter((x) => can(s.actor.role, x.perm));
+  const active = tabs.find((x) => x.key === q.sekme)?.key ?? "genel";
+  const ctx = { tenantId: t.id, actor: s.actor, userId: s.userId, q };
   return (
     <>
-      <p>
-        <Link href="/admin/musteriler">← Müşteriler</Link>
+      <PageHeader
+        title={t.name}
+        crumbs={[{ href: "/admin/musteriler", label: "Müşteriler" }]}
+        desc={
+          <>
+            {t.packageCode ? PACKAGE_LABEL[t.packageCode] : "Paket yok"} · müşteri{" "}
+            {fmtDate(t.createdAt)}
+            {t.city ? ` · ${t.city}` : ""}
+          </>
+        }
+        actions={
+          <Badge
+            tone={t.status === "ACTIVE" ? "green" : t.status === "ONBOARDING" ? "blue" : "neutral"}
+          >
+            {TENANT_STATUS[t.status]}
+          </Badge>
+        }
+      />
+      <Tabs
+        active={active}
+        items={tabs.map((x) => ({
+          key: x.key,
+          label: x.label,
+          href: `/admin/musteriler/${t.id}${x.key === "genel" ? "" : `?sekme=${x.key}`}`,
+        }))}
+      />
+      {active === "genel" && <OverviewTab {...ctx} />}
+      {active === "sirket" && <CompanyTab {...ctx} />}
+      {active === "belgeler" && <DocumentsTab {...ctx} />}
+      {active === "operasyon" && <OperationsTab {...ctx} />}
+      {active === "siparisler" && <OrdersTab {...ctx} />}
+      {active === "depo" && <WarehouseTab {...ctx} />}
+      {active === "fatura" && <BillingTab {...ctx} />}
+      {active === "destek" && <SupportTab {...ctx} />}
+      {active === "gecmis" && <HistoryTab {...ctx} />}
+      <p className="muted" style={{ fontSize: 12, marginTop: 24 }}>
+        <Link href="/admin/musteriler">← Müşteri listesi</Link>
       </p>
-      <h1>
-        {t.name} <span className="tag">{TENANT_STATUS[t.status]}</span>
-      </h1>
-      <p className="muted">
-        {t.packageCode ? PACKAGE_LABEL[t.packageCode] : "Paket yok"} · Başlangıç{" "}
-        {fmtDate(t.createdAt)} · <Link href={`/admin/sevkiyatlar?firma=${t.id}`}>Sevkiyatlar</Link>{" "}
-        · <Link href={`/admin/siparisler?firma=${t.id}`}>Siparişler</Link> ·{" "}
-        <Link href={`/admin/faturalar?firma=${t.id}`}>Faturalar</Link>
-      </p>
-      <div className="g2">
-        <div className="card">
-          <h3 style={{ marginTop: 0 }}>Kuruluş ve kayıt adımları</h3>
-          <table className="tbl">
-            <tbody>
-              {t.registration.map((r) => (
-                <tr key={r.id}>
-                  <td>{STEP_LABEL[r.step]}</td>
-                  <td>
-                    <form action={updateRegistrationAction} className="inline-form">
-                      <input type="hidden" name="tenantId" value={t.id} />
-                      <input type="hidden" name="step" value={r.step} />
-                      <select name="status" defaultValue={r.status} aria-label="Durum">
-                        {Object.entries(STEP_STATUS).map(([k, v]) => (
-                          <option key={k} value={k}>
-                            {v}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        name="note"
-                        defaultValue={r.note ?? ""}
-                        placeholder="Not"
-                        style={{ width: 140 }}
-                        aria-label="Not"
-                      />
-                      <Submit className="btn btn-o btn-sm" pendingText="…">
-                        Kaydet
-                      </Submit>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <form action={updateTenantStatusAction} className="inline-form" style={{ marginTop: 14 }}>
-            <input type="hidden" name="tenantId" value={t.id} />
-            <select name="status" defaultValue={t.status} aria-label="Firma durumu">
-              {Object.entries(TENANT_STATUS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v}
-                </option>
-              ))}
-            </select>
-            <Submit className="btn btn-o btn-sm">Firma durumunu kaydet</Submit>
-          </form>
-        </div>
-        <div className="card">
-          <h3 style={{ marginTop: 0 }}>Kullanıcılar</h3>
-          <table className="tbl">
-            <tbody>
-              {t.memberships.map((m) => (
-                <tr key={m.id}>
-                  <td>
-                    {m.user.name}
-                    <div className="muted" style={{ fontSize: 12 }}>
-                      {m.user.email}
-                    </div>
-                  </td>
-                  <td>{m.role === "CLIENT_OWNER" ? "Firma sahibi" : "Kullanıcı"}</td>
-                  <td>
-                    {m.user.passwordHash ? (
-                      <span className="tag ok">Aktif</span>
-                    ) : (
-                      <form action={resendInviteAction}>
-                        <input type="hidden" name="userId" value={m.userId} />
-                        <input type="hidden" name="tenantId" value={t.id} />
-                        <span className="tag warn">
-                          {pendingInvites.some((p) => p.userId === m.userId)
-                            ? "Davet bekliyor"
-                            : "Davet süresi doldu"}
-                        </span>{" "}
-                        <Submit className="btn btn-o btn-sm" pendingText="…">
-                          Daveti yeniden gönder
-                        </Submit>
-                      </form>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <h3>Yetkililer</h3>
-          {t.contacts.map((c) => (
-            <p key={c.id} style={{ fontSize: 14 }}>
-              <b>{c.name}</b> {c.isPrimary && <span className="tag">Ana yetkili</span>}
-              <br />
-              {c.email} · {c.phone}
-            </p>
-          ))}
-          <h3>Depoda kullanılan palet</h3>
-          <form action={palletsAction} className="inline-form">
-            <input type="hidden" name="tenantId" value={t.id} />
-            <input
-              name="pallets"
-              type="number"
-              min={0}
-              defaultValue={t.palletsInUse}
-              style={{ width: 100 }}
-              aria-label="Kullanılan palet"
-            />
-            <Submit className="btn btn-o btn-sm">Kaydet</Submit>
-          </form>
-          <h3>Stok sayımı (CSV: sku;miktar)</h3>
-          <form action={stockCountAction} className="form">
-            <input type="hidden" name="tenantId" value={t.id} />
-            <textarea
-              name="csv"
-              rows={3}
-              placeholder={"sku;miktar\nHV-1;120"}
-              aria-label="Sayım CSV"
-            />
-            <Submit className="btn btn-o btn-sm">Sayımı işle</Submit>
-          </form>
-          <h3>Sözleşmeler</h3>
-          {t.contracts.map((c) => (
-            <p key={c.id} style={{ fontSize: 14 }}>
-              <Link href={`/admin/teklifler/${c.quoteId}`}>{c.quote.number}</Link> · {c.signerName}{" "}
-              · {fmtDate(c.signedAt, true)} · şartlar {c.termsVersion}
-            </p>
-          ))}
-        </div>
-      </div>
     </>
   );
 }

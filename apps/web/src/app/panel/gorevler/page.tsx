@@ -13,10 +13,10 @@ export const metadata = { title: "Görevlerim" };
 export default async function TasksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ g?: string }>;
+  searchParams: Promise<{ g?: string; bildirildi?: string }>;
 }) {
   const s = await requireClient("task.read");
-  const { g } = await searchParams;
+  const { g, bildirildi } = await searchParams;
   const done = g === "tamamlanan";
   const tasks = await listCustomerTasks(
     s.actor.tenantId,
@@ -59,6 +59,11 @@ export default async function TasksPage({
         title="Görevlerim"
         desc="Sizden beklenen işlemler ve ekibimizin sizin için yürüttüğü adımlar."
       />
+      {bildirildi && (
+        <p className="alert-ok" role="status" style={{ marginBottom: 16 }}>
+          Ekibe iletildi. Kontrol edildiğinde bildirim alacaksınız.
+        </p>
+      )}
       <Tabs
         active={done ? "done" : "open"}
         items={[
