@@ -46,6 +46,13 @@ async function toOps(ports: Ports, subject: string, lines: string[]) {
 }
 
 const handlers: Partial<Record<EventType, Handler>> = {
+  "notification.email.v1": async (payload, _row, ports) => {
+    const p = eventSchemas["notification.email.v1"].parse(payload);
+    await ports.sendMail(
+      p.email,
+      templates.ops(p.subject, p.body ? [p.body] : [], `${ports.appUrl}${p.href ?? ""}`),
+    );
+  },
   "account.deletion_requested.v1": async (payload, row, ports) => {
     eventSchemas["account.deletion_requested.v1"].parse(payload);
     await toOps(ports, "Hesap silme: firmanın sahibi kalmadı", [

@@ -9,7 +9,7 @@ execFileSync("pnpm", ["-s", "--filter", "@avrupadasat/db", "seed:e2e"], {
   stdio: "ignore",
 });
 let failed = 0;
-for (const phase of [1, 2, 3, 4, 5]) {
+for (const phase of [1, 2, 3, 4, 5, 6]) {
   console.log(`\n══════ Aşama ${phase} ══════`);
   const r = spawnSync("node", [`e2e/phase${phase}.mjs`], {
     cwd: root,

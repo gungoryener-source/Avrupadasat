@@ -97,6 +97,9 @@ export const DOC_OPTIONS: [string, string][] = [
   ["CMR", "CMR"],
   ["CE_BEYAN", "CE uygunluk beyanı"],
   ["SIRKET", "Şirket belgesi"],
+  ["VERGI", "Vergi belgesi"],
+  ["MUHASEBE", "Muhasebe belgesi"],
+  ["SOZLESME", "Sözleşme"],
   ["DIGER", "Diğer"],
 ];
 
@@ -133,6 +136,12 @@ export function UploadForm({
             accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx,.csv"
           />
         </div>
+        {!shipmentId && (
+          <div className="field">
+            <label htmlFor="expiresAt">Son geçerlilik (isteğe bağlı)</label>
+            <input id="expiresAt" name="expiresAt" type="date" />
+          </div>
+        )}
         <Submit pendingText="Yükleniyor…">Yükle</Submit>
       </div>
     </form>

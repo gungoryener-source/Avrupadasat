@@ -83,6 +83,7 @@ async function tick(): Promise<number> {
 const CRON = [
   { job: "sync", everyMs: 15 * 60_000 },
   { job: "snapshot", everyMs: 24 * 3600_000 },
+  { job: "hatirlatmalar", everyMs: 60 * 60_000 },
 ] as const;
 const lastRun = new Map<string, number>();
 

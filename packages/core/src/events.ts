@@ -115,6 +115,14 @@ export const accountDeletionRequestedV1 = z.object({
   reason: z.enum(["last_owner_deleted"]),
 });
 
+/** Uygulama içi bildirimin e-posta kopyası (worker gönderir) */
+export const notificationEmailV1 = z.object({
+  email: z.email(),
+  subject: z.string().max(200),
+  body: z.string().max(2000).optional(),
+  href: z.string().max(300).optional(),
+});
+
 export const eventSchemas = {
   "account.deletion_requested.v1": accountDeletionRequestedV1,
   "order.created.v1": orderCreatedV1,
@@ -122,6 +130,7 @@ export const eventSchemas = {
   "return.processed.v1": returnProcessedV1,
   "invoice.issued.v1": invoiceIssuedV1,
   "lead.submitted.v1": leadSubmittedV1,
+  "notification.email.v1": notificationEmailV1,
   "user.invited.v1": userInvitedV1,
   "quote.sent.v1": quoteSentV1,
   "quote.accepted.v1": quoteAcceptedV1,

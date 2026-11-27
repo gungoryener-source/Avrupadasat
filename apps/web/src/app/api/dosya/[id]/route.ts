@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 /**
  * Belge indirme: (1) süreli HMAC imza, (2) geçerli oturum + 2FA, (3) firma erişim kontrolü.
- * Dosya her zaman "attachment" olarak ve tespit edilen MIME ile verilir.
+ * Varsayılan "attachment"; PDF/PNG/JPG için ?gor=1 ile sandbox'lı önizleme. MIME tespit edilen türdür.
  */
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,6 +24,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return new Response("Bulunamadı", { status: 404 });
   if (doc.scanStatus === "infected") return new Response("Engellendi", { status: 403 });
   const data = await getObject(doc.storageKey);
+  // Önizleme yalnız PDF ve görsellerde; diğerleri her zaman indirilir
+  const inline =
+    url.searchParams.get("gor") === "1" && /^(application\/pdf|image\/(png|jpeg))$/.test(doc.mime);
   await audit({
     actorUserId: s.userId,
     tenantId: doc.tenantId,
@@ -36,7 +39,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     headers: {
       "Content-Type": doc.mime,
       "Content-Length": String(data.length),
-      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(doc.filename)}`,
+      "Content-Disposition": `${inline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(doc.filename)}`,
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
       "Content-Security-Policy": "default-src 'none'; sandbox",

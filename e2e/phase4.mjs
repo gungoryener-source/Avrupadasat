@@ -16,7 +16,7 @@ try {
   await op.getByRole("button", { name: "İçe aktar" }).click();
   await op.getByText("2 ürün eklendi").waitFor();
   await login(ap, E.admin.email, E.password, E.admin.secret);
-  await ap.goto(`${BASE}/admin/musteriler/${E.tenantId}`);
+  await ap.goto(`${BASE}/admin/musteriler/${E.tenantId}?sekme=depo`);
   await ap.getByLabel("Sayım CSV").fill("sku;miktar\nHV-50;20\nHV-70;5");
   await ap.getByRole("button", { name: "Sayımı işle" }).click();
   await ap.getByLabel("Kullanılan palet").fill("4");
@@ -31,7 +31,7 @@ try {
   s.ok();
 
   s = step("Ekip vergi no ve USt-IdNr adımlarını tamamlıyor → kilit açılıyor");
-  await ap.goto(`${BASE}/admin/musteriler/${E.tenantId}`);
+  await ap.goto(`${BASE}/admin/musteriler/${E.tenantId}?sekme=sirket`);
   for (const step of ["VERGI_NO", "UST_ID"]) {
     const form = ap.locator(`form:has(input[name="step"][value="${step}"])`);
     await form.locator('select[name="status"]').selectOption("TAMAM");
@@ -49,7 +49,7 @@ try {
     .click();
   await op.getByText("Bağlı (demo)").waitFor();
   await op.getByRole("button", { name: "Siparişleri şimdi çek" }).click();
-  await op.getByText("Hazırlanıyor").first().waitFor();
+  await op.locator("tbody").getByText("Hazırlanıyor").first().waitFor();
   const orderRows = await op.locator("tbody tr", { hasText: "Amazon.de" }).count();
   assert(orderRows === 3, `sipariş sayısı ${orderRows}`);
   await op.goto(`${BASE}/panel/stok`);
@@ -77,10 +77,11 @@ try {
   s.ok();
 
   s = step("İade kaydı ve işleme (satılabilir → stoğa dönüyor)");
-  await ap.goto(`${BASE}/admin/siparisler`);
-  await ap.getByLabel("Firma").selectOption({ label: "E2E Tekstil" });
-  await ap.getByLabel("SKU").fill("HV-70");
-  await ap.getByLabel("Neden").fill("Renk farklı");
+  await ap.goto(`${BASE}/admin/iadeler`);
+  await ap.locator("summary", { hasText: "İade kaydet" }).click();
+  await ap.locator("#r-tenant").selectOption({ label: "E2E Tekstil" });
+  await ap.locator("#r-sku").fill("HV-70");
+  await ap.locator("#r-reason").fill("Renk farklı");
   await ap.getByRole("button", { name: "İadeyi kaydet" }).click();
   await ap.getByLabel("HV-70 durum").waitFor();
   await ap.getByLabel("HV-70 durum").selectOption("SELLABLE");
@@ -89,8 +90,8 @@ try {
     .getByRole("button", { name: "İşle" })
     .click();
   await ap.waitForTimeout(800);
-  await op.goto(`${BASE}/panel/siparisler`);
-  await op.getByText("Satılabilir").waitFor();
+  await op.goto(`${BASE}/panel/iadeler`);
+  await op.locator("tbody").getByText("Satılabilir").waitFor();
   s.ok();
 
   s = step("Masraf yansıtma + aylık taslak + fatura kesme + PDF");

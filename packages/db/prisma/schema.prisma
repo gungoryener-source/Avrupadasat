@@ -17,6 +17,7 @@ enum StaffRole {
   FINANCE
   SALES
   PARTNER
+  SUPPORT
 }
 
 enum ClientRole {
@@ -74,21 +75,32 @@ enum ShipmentStage {
 
 /// Müşteri firma (kiracı)
 model Tenant {
-  id           String       @id @default(cuid())
-  name         String
-  slug         String       @unique
-  city         String?
-  status       TenantStatus @default(ONBOARDING)
-  packageCode  PackageCode?
+  id              String       @id @default(cuid())
+  name            String
+  slug            String       @unique
+  city            String?
+  status          TenantStatus @default(ONBOARDING)
+  packageCode     PackageCode?
   /// Depoda kullanılan palet (depo bildirir; faturalama günlük anlık görüntülerden ortalar)
-  palletsInUse Int          @default(0)
+  palletsInUse    Int          @default(0)
   /// Fatura KDV oranı (%). TODO(verify): müşteri tipine göre (Alman şirketi / yurt dışı B2B) vergi danışmanıyla
-  vatRatePct   Int          @default(19)
+  vatRatePct      Int          @default(19)
   /// AES-256-GCM ile şifreli (src/crypto.ts)
-  taxNumberEnc String?
-  ibanEnc      String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  taxNumberEnc    String?
+  ibanEnc         String?
+  /// Şirket profili (Almanya): ticaret unvanı, tür, sicil, adres, KDV kimlik no
+  legalName       String?
+  companyForm     CompanyForm?
+  registerNumber  String?
+  registerCourt   String?
+  businessAddress String?
+  /// USt-IdNr. faturada görünen kamuya açık bir numaradır; şifrelenmez
+  vatId           String?
+  registeredAt    DateTime?
+  /// [{ name, role }]
+  representatives Json         @default("[]")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   memberships  Membership[]
   partners     PartnerAssignment[]
@@ -104,6 +116,9 @@ model Tenant {
   invoices     Invoice[]
   connections  MarketplaceConnection[]
   euParty      EuResponsibleParty?
+  tickets      Ticket[]
+  tasks        Task[]
+  taxFilings   TaxFiling[]
 }
 
 model User {
@@ -341,6 +356,8 @@ model StockItem {
   ean               String?
   quantity          Int       @default(0)
   reserved          Int       @default(0)
+  /// Bu miktarın altına inince düşük stok bildirimi
+  lowStockAt        Int?
   /// Almanca ürün içeriği onaylandı mı (Aşama 5'te içerik üretimiyle dolar)
   contentApprovedAt DateTime?
   updatedAt         DateTime  @updatedAt
@@ -440,7 +457,39 @@ enum DocumentKind {
   CMR
   CE_BEYAN
   SIRKET
+  VERGI
+  MUHASEBE
+  SOZLESME
   DIGER
+}
+
+/// Ortak iş durumu: Bekliyor · Sürüyor · Tamamlandı · İlgi gerekiyor
+enum WorkStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ATTENTION
+}
+
+enum DocReview {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  WAITING_CUSTOMER
+  WAITING_TEAM
+  RESOLVED
+  CLOSED
 }
 
 model Document {
@@ -456,6 +505,13 @@ model Document {
   storageKey   String       @unique
   scanStatus   String       @default("pending")
   uploadedById String?
+  /// Ekip onayı (müşteri yüklemesi PENDING başlar; ekip yüklemesi APPROVED)
+  review       DocReview    @default(PENDING)
+  reviewNote   String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  /// Son geçerlilik (ör. vekâletname, sertifika); hatırlatma bu tarihe göre
+  expiresAt    DateTime?
   createdAt    DateTime     @default(now())
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -497,6 +553,9 @@ model MarketplaceConnection {
   /// Gizli olmayan hesap tanımı (Shopify mağaza alan adı, Amazon Seller ID) — webhook eşlemesi için
   externalAccount String?
   lastSyncAt      DateTime?
+  /// Son senkronizasyon hatası (başarılı senkronizasyonda temizlenir)
+  lastError       String?
+  lastErrorAt     DateTime?
   createdAt       DateTime     @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -751,4 +810,108 @@ model EuResponsibleParty {
   updatedAt               DateTime      @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+/// Destek talebi. İç notlar (TicketMessage.internal) müşteriye ASLA gösterilmez.
+model Ticket {
+  id           String       @id @default(cuid())
+  tenantId     String
+  number       Int          @default(autoincrement())
+  subject      String
+  category     String
+  priority     Priority     @default(NORMAL)
+  status       TicketStatus @default(OPEN)
+  createdById  String
+  assigneeId   String?
+  lastActivity DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messages TicketMessage[]
+
+  @@unique([number])
+  @@index([tenantId, status, lastActivity])
+  @@index([assigneeId, status])
+}
+
+model TicketMessage {
+  id         String   @id @default(cuid())
+  tenantId   String
+  ticketId   String
+  authorId   String
+  fromStaff  Boolean  @default(false)
+  internal   Boolean  @default(false)
+  body       String
+  documentId String?
+  createdAt  DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, ticketId, createdAt])
+}
+
+/// Operasyon görevi. internalNote yalnız ekip; customerUpdate müşteriye görünür.
+model Task {
+  id              String     @id @default(cuid())
+  tenantId        String
+  title           String
+  description     String?
+  category        String     @default("GENEL")
+  assigneeId      String?
+  dueAt           DateTime?
+  priority        Priority   @default(NORMAL)
+  status          WorkStatus @default(PENDING)
+  /// Müşteri panelinde görünür mü (Görevlerim)
+  customerVisible Boolean    @default(true)
+  /// Müşteriden bir işlem bekleniyor mu (ör. belge yükleme)
+  customerAction  Boolean    @default(false)
+  customerUpdate  String?
+  internalNote    String?
+  documentId      String?
+  remindedAt      DateTime?
+  createdById     String
+  completedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status, dueAt])
+  @@index([assigneeId, status])
+}
+
+/// Vergi beyanı / son tarih (USt-Voranmeldung, ZM, yıllık beyan). Bilgilendirme amaçlı takip.
+model TaxFiling {
+  id          String     @id @default(cuid())
+  tenantId    String
+  kind        String
+  period      String
+  dueAt       DateTime
+  status      WorkStatus @default(PENDING)
+  note        String?
+  documentId  String?
+  remindedAt  DateTime?
+  updatedById String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, kind, period])
+  @@index([tenantId, dueAt])
+}
+
+/// Uygulama içi bildirim (kullanıcıya özel)
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  tenantId  String?
+  type      String
+  title     String
+  body      String?
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt, createdAt])
 }

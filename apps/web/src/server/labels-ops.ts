@@ -1,5 +1,5 @@
 export const ORDER_STATUS = {
-  NEW: ["Yeni", ""],
+  NEW: ["Alındı", ""],
   ON_HOLD: ["Beklemede", "red"],
   ALLOCATED: ["Hazırlanıyor", "warn"],
   SHIPPED: ["Kargoda", "ok"],
@@ -26,3 +26,7 @@ export const INVOICE_STATUS = {
   PAID: ["Ödendi", "ok"],
   VOID: ["İptal", "red"],
 } as const;
+
+export const ORDER_STATUS_LABEL = Object.fromEntries(
+  Object.entries(ORDER_STATUS).map(([k, v]) => [k, v[0]]),
+) as Record<keyof typeof ORDER_STATUS, string>;

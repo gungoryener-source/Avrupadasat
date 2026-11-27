@@ -1,6 +1,7 @@
 import { snapshotStorage } from "@/server/billing";
 import { db } from "@/server/db";
 import { syncOrders } from "@/server/orders";
+import { runReminders } from "@/server/reminders";
 import { safeEqual } from "@/server/tokens";
 
 export const runtime = "nodejs";
@@ -13,6 +14,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ job: st
   if (secret.length < 32 || !safeEqual(auth, `Bearer ${secret}`))
     return new Response("Yetkisiz", { status: 401 });
   const { job } = await params;
+  if (job === "hatirlatmalar") return Response.json(await runReminders());
   if (job === "snapshot") return Response.json({ tenants: await snapshotStorage() });
   if (job === "sync") {
     const conns = await db().marketplaceConnection.findMany({ where: { status: "ACTIVE" } });

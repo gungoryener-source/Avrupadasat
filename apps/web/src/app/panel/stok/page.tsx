@@ -3,7 +3,9 @@ import { forTenant } from "@avrupadasat/db";
 import { fmtDate } from "@/components/AppShell";
 import { db } from "@/server/db";
 import { requireClient } from "@/server/session";
+import { PageHeader, Tabs } from "@/components/panel/ui";
 import { CatalogForm } from "../forms";
+import { lowStockAction } from "../portal-actions";
 
 export const metadata = { title: "Stok" };
 
@@ -29,7 +31,17 @@ export default async function StockPage({
   });
   return (
     <>
-      <h1>Stok</h1>
+      <PageHeader
+        title="Depo ve Stok"
+        desc="Almanya deposundaki ürünleriniz, sevkiyatlar ve stok hareketleri."
+      />
+      <Tabs
+        active="stok"
+        items={[
+          { key: "stok", label: "Stok", href: "/panel/stok" },
+          { key: "sevkiyat", label: "Sevkiyatlar", href: "/panel/sevkiyatlar" },
+        ]}
+      />
       <form className="inline-form" style={{ marginBottom: 14 }}>
         <div className="field">
           <label htmlFor="q">Ara (SKU veya ad)</label>
@@ -57,6 +69,7 @@ export default async function StockPage({
             <th>Depoda</th>
             <th>Rezerve</th>
             <th>Kullanılabilir</th>
+            <th>Düşük stok eşiği</th>
             <th>Almanca içerik</th>
             <th>Güncelleme</th>
           </tr>
@@ -75,6 +88,34 @@ export default async function StockPage({
                 </b>
               </td>
               <td>
+                <form
+                  action={lowStockAction}
+                  style={{ display: "flex", gap: 6, alignItems: "center" }}
+                >
+                  <input type="hidden" name="sku" value={i.sku} />
+                  <input
+                    name="lowStockAt"
+                    type="number"
+                    min={0}
+                    defaultValue={i.lowStockAt ?? ""}
+                    aria-label={`${i.sku} düşük stok eşiği`}
+                    style={{
+                      width: 72,
+                      height: 30,
+                      border: "1px solid var(--line-2)",
+                      borderRadius: 6,
+                      padding: "0 6px",
+                    }}
+                  />
+                  <button className="btn btn-o btn-sm" type="submit">
+                    Kaydet
+                  </button>
+                  {i.lowStockAt !== null && i.quantity - i.reserved <= i.lowStockAt && (
+                    <span className="tag red">Düşük</span>
+                  )}
+                </form>
+              </td>
+              <td>
                 <Link href={`/panel/icerik/${encodeURIComponent(i.sku)}`}>
                   {i.contentApprovedAt ? (
                     <span className="tag ok">Onaylı</span>
@@ -88,7 +129,7 @@ export default async function StockPage({
           ))}
           {items.length === 0 && (
             <tr>
-              <td colSpan={8} className="muted">
+              <td colSpan={9} className="muted">
                 Ürün yok. Aşağıdan katalog yükleyebilirsiniz.
               </td>
             </tr>
