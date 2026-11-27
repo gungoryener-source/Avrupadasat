@@ -125,7 +125,7 @@ export function AssessmentForm({ id = "rapor-formu" }: { id?: string }) {
         <span className="af-done__icon" aria-hidden>
           <IconCheck size={26} strokeWidth={2.2} />
         </span>
-        <h3>Talebiniz alındı.</h3>
+        <h3>Talebiniz alındı</h3>
         <p>
           Uygunluk raporunuz 48 saat içinde e-postanıza gönderilecek. Sorunuz olursa o e-postayı
           yanıtlamanız yeterli.
@@ -192,7 +192,7 @@ export function AssessmentForm({ id = "rapor-formu" }: { id?: string }) {
           aria-valuenow={step + 1}
           aria-label="Form ilerlemesi"
         >
-          <span style={{ width: `${pct}%` }} />
+          <span style={{ transform: `scaleX(${pct / 100})` }} />
         </div>
         <ol className="af-progress__steps" aria-hidden>
           {STEPS.map((s, i) => (
@@ -396,12 +396,10 @@ export function AssessmentForm({ id = "rapor-formu" }: { id?: string }) {
       </div>
 
       <div className="af-nav">
-        {step > 0 ? (
+        {step > 0 && (
           <button type="button" className="btn btn-o" onClick={back}>
             Geri
           </button>
-        ) : (
-          <span />
         )}
         {step < STEPS.length - 1 ? (
           <button type="button" className="btn" onClick={next}>
@@ -413,6 +411,11 @@ export function AssessmentForm({ id = "rapor-formu" }: { id?: string }) {
         )}
       </div>
 
+      <ul className="af-assure" aria-label="Koşullar">
+        <li>Ücretsiz</li>
+        <li>Taahhütsüz</li>
+        <li>48 saat içinde rapor</li>
+      </ul>
       <p className="af-privacy">
         <IconLock size={15} />
         <span>
