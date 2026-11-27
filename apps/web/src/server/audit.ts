@@ -30,7 +30,19 @@ export type AuditAction =
   | "data.exported"
   | "user.deleted"
   | "pricing.changed"
-  | "message.replied";
+  | "message.replied"
+  | "ticket.created"
+  | "ticket.replied"
+  | "ticket.updated"
+  | "task.created"
+  | "task.updated"
+  | "document.reviewed"
+  | "company.updated"
+  | "tax.updated"
+  | "subscription.requested"
+  | "subscription.changed"
+  | "staff.invited"
+  | "stock.adjusted";
 
 export interface AuditInput {
   actorUserId?: string | null;

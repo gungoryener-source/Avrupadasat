@@ -24,6 +24,10 @@ export const TENANT_SCOPED_MODELS = new Set([
   "CustomerMessage",
   "ProductContent",
   "EuResponsibleParty",
+  "Ticket",
+  "TicketMessage",
+  "Task",
+  "TaxFiling",
 ]);
 
 const READ_OPS = new Set([

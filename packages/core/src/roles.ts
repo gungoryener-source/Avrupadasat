@@ -8,12 +8,25 @@ export const ROLES = [
   "FINANCE",
   "SALES",
   "PARTNER",
+  "SUPPORT",
   "CLIENT_OWNER",
   "CLIENT_USER",
 ] as const;
 export type Role = (typeof ROLES)[number];
 
-export const STAFF_ROLES: readonly Role[] = ["ADMIN", "OPS", "FINANCE", "SALES"];
+export const STAFF_ROLES: readonly Role[] = ["ADMIN", "OPS", "FINANCE", "SALES", "SUPPORT"];
+
+/** Arayüzde rol adları (talimattaki rol adlarıyla eşleme) */
+export const ROLE_LABEL: Record<Role, string> = {
+  ADMIN: "Süper yönetici",
+  OPS: "Operasyon yöneticisi",
+  FINANCE: "Muhasebe",
+  SALES: "Satış",
+  PARTNER: "Depo personeli",
+  SUPPORT: "Destek",
+  CLIENT_OWNER: "Firma yöneticisi",
+  CLIENT_USER: "Firma kullanıcısı",
+};
 export const CLIENT_ROLES: readonly Role[] = ["CLIENT_OWNER", "CLIENT_USER"];
 
 export const PERMISSIONS = [
@@ -40,12 +53,23 @@ export const PERMISSIONS = [
   "order.write",
   "message.read",
   "message.write",
+  "ticket.read",
+  "ticket.write",
+  "task.read",
+  "task.write",
+  "document.review",
+  "tax.read",
+  "tax.write",
+  "staff.manage",
+  "subscription.manage",
+  /** Müşterinin paket değişikliği talep etmesi */
+  "subscription.request",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
 const MATRIX: Record<Role, readonly Permission[]> = {
   ADMIN: PERMISSIONS,
-  SALES: ["lead.read", "lead.write", "quote.write", "tenant.read"],
+  SALES: ["lead.read", "lead.write", "quote.write", "tenant.read", "ticket.read", "task.read"],
   OPS: [
     "tenant.read",
     "shipment.read",
@@ -57,8 +81,38 @@ const MATRIX: Record<Role, readonly Permission[]> = {
     "order.write",
     "message.read",
     "message.write",
+    "ticket.read",
+    "ticket.write",
+    "task.read",
+    "task.write",
+    "document.review",
+    "tax.read",
   ],
-  FINANCE: ["tenant.read", "invoice.read", "invoice.write", "pricing.manage", "data.export"],
+  FINANCE: [
+    "tenant.read",
+    "invoice.read",
+    "invoice.write",
+    "pricing.manage",
+    "data.export",
+    "ticket.read",
+    "task.read",
+    "task.write",
+    "tax.read",
+    "tax.write",
+    "subscription.manage",
+  ],
+  SUPPORT: [
+    "tenant.read",
+    "shipment.read",
+    "stock.read",
+    "order.read",
+    "message.read",
+    "message.write",
+    "ticket.read",
+    "ticket.write",
+    "task.read",
+    "task.write",
+  ],
   PARTNER: [
     "tenant.read",
     "shipment.read",
@@ -81,6 +135,11 @@ const MATRIX: Record<Role, readonly Permission[]> = {
     "order.read",
     "message.read",
     "message.write",
+    "ticket.read",
+    "ticket.write",
+    "task.read",
+    "tax.read",
+    "subscription.request",
   ],
   CLIENT_USER: [
     "tenant.read",
@@ -92,6 +151,9 @@ const MATRIX: Record<Role, readonly Permission[]> = {
     "order.read",
     "message.read",
     "message.write",
+    "ticket.read",
+    "ticket.write",
+    "task.read",
   ],
 };
 
