@@ -271,9 +271,12 @@ async function main() {
   console.info(
     `Demo hazır: ${orders.length} sipariş (${n} kargolandı), 2 sevkiyat, ${ids.length} talep`,
   );
-  console.info(
-    `Giriş: ${DEMO.admin} / ${DEMO.owner} · şifre ${DEMO.password} · TOTP yönetici ${DEMO.adminSecret}, sahip ${DEMO.ownerSecret}`,
-  );
+  // Bilgiler .env'den geldiyse günlüğe yazılmaz (ör. Vercel derleme günlüğü); yalnız rastgele üretildiyse gösterilir
+  if (!process.env.DEMO_PASSWORD) {
+    console.info(
+      `Giriş: ${DEMO.admin} / ${DEMO.owner} · şifre ${DEMO.password} · TOTP yönetici ${DEMO.adminSecret}, sahip ${DEMO.ownerSecret}`,
+    );
+  }
 }
 
 main()
