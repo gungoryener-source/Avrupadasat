@@ -19,6 +19,22 @@ const ATTR_KEYS = [
   "landingPath",
 ] as const;
 
+/** Çok adımlı formun ek yanıtları; tek adımlı form göndermez (undefined döner) */
+function readProfile(fd: FormData) {
+  if (fd.get("formVariant") !== "assessment") return undefined;
+  const str = (k: string) => {
+    const v = fd.get(k);
+    return typeof v === "string" && v.trim() ? v.trim() : undefined;
+  };
+  return {
+    contactName: str("contactName"),
+    city: str("city"),
+    website: str("companyWebsite"),
+    channels: fd.getAll("channels").filter((v): v is string => typeof v === "string"),
+    exportStatus: str("exportStatus"),
+  };
+}
+
 export async function submitLeadAction(_: LeadState, fd: FormData): Promise<LeadState> {
   // Bal küpü alanı: botlar doldurur, insanlar görmez
   if (String(fd.get("website") ?? "") !== "") return { ok: true };
@@ -43,6 +59,7 @@ export async function submitLeadAction(_: LeadState, fd: FormData): Promise<Lead
       consentKvkk: fd.get("consentKvkk") === "on",
       marketingConsent: fd.get("marketingConsent") === "on",
       attribution,
+      profile: readProfile(fd),
     },
     ip,
   );

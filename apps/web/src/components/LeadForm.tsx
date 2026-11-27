@@ -2,11 +2,11 @@
 import Script from "next/script";
 import { useActionState, useEffect, useState } from "react";
 import { productCategories } from "@avrupadasat/core/categories";
-import { submitLeadAction } from "@/app/(site)/lead-action";
+import { submitLeadAction, type LeadState } from "@/app/(site)/lead-action";
 import { adsConsentGiven, track } from "@/components/consent";
 import { Submit } from "./Submit";
 
-const CATEGORY_LABEL: Record<(typeof productCategories)[number], string> = {
+export const CATEGORY_LABEL: Record<(typeof productCategories)[number], string> = {
   tekstil: "Tekstil ve ev tekstili",
   mobilya: "Mobilya",
   gida: "Gıda",
@@ -19,7 +19,7 @@ const CATEGORY_LABEL: Record<(typeof productCategories)[number], string> = {
 const ATTR_STORAGE = "as_attr";
 
 /** Reklam tıklama bilgisi (gclid, UTM) ilk girişte saklanır, formla gönderilir */
-function useAttribution() {
+export function useAttribution() {
   const [attr, setAttr] = useState<Record<string, string>>({});
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -51,53 +51,13 @@ function useAttribution() {
   return attr;
 }
 
-const TURNSTILE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+export const TURNSTILE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 export function LeadForm({ id = "rapor-formu" }: { id?: string }) {
   const [state, action] = useActionState(submitLeadAction, undefined);
   const attr = useAttribution();
   const fe = state && !state.ok ? (state.fieldErrors ?? {}) : {};
-  const [meta, setMeta] = useState({ eventId: "", ads: false, url: "", emailHash: "" });
-
-  useEffect(() => {
-    if (state?.ok)
-      track(
-        "generate_lead",
-        {
-          form: "uygunluk_raporu",
-          ...(meta.emailHash ? { user_data: { sha256_email_address: meta.emailHash } } : {}),
-        },
-        meta.eventId || undefined,
-      );
-  }, [state, meta]);
-
-  // Gönderim anında: aynı event_id hem Pixel hem CAPI'de; Enhanced Conversions için e-posta hash'i (yalnız reklam onayıyla)
-  function onSubmitCapture(e: React.FormEvent<HTMLFormElement>) {
-    const form = e.currentTarget;
-    const ads = adsConsentGiven();
-    const eventId = crypto.randomUUID();
-    const url = window.location.href.split("?")[0] ?? "";
-    // Eşzamanlı: form verisi bu olaydan hemen sonra okunur
-    const setVal = (name: string, v: string) => {
-      const el = form.elements.namedItem(name);
-      if (el instanceof HTMLInputElement) el.value = v;
-    };
-    setVal("eventId", eventId);
-    setVal("adsConsent", ads ? "1" : "0");
-    setVal("sourceUrl", url);
-    const email = String(new FormData(form).get("email") ?? "")
-      .trim()
-      .toLowerCase();
-    setMeta({ eventId, ads, url, emailHash: "" });
-    if (ads && email && crypto.subtle) {
-      void crypto.subtle.digest("SHA-256", new TextEncoder().encode(email)).then((buf) => {
-        const emailHash = [...new Uint8Array(buf)]
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
-        setMeta({ eventId, ads, url, emailHash });
-      });
-    }
-  }
+  const onSubmitCapture = useLeadTracking(state);
 
   if (state?.ok) {
     return (
@@ -204,4 +164,51 @@ export function LeadForm({ id = "rapor-formu" }: { id?: string }) {
       <Submit pendingText="Gönderiliyor…">Ücretsiz raporumu iste</Submit>
     </form>
   );
+}
+
+/** Dönüşüm ölçümü: aynı event_id Pixel ve CAPI'de; Enhanced Conversions için e-posta hash'i (yalnız reklam onayıyla) */
+export function useLeadTracking(state: LeadState) {
+  const [meta, setMeta] = useState({ eventId: "", ads: false, url: "", emailHash: "" });
+
+  useEffect(() => {
+    if (state?.ok)
+      track(
+        "generate_lead",
+        {
+          form: "uygunluk_raporu",
+          ...(meta.emailHash ? { user_data: { sha256_email_address: meta.emailHash } } : {}),
+        },
+        meta.eventId || undefined,
+      );
+  }, [state, meta]);
+
+  // Gönderim anında: aynı event_id hem Pixel hem CAPI'de; Enhanced Conversions için e-posta hash'i (yalnız reklam onayıyla)
+  function onSubmitCapture(e: React.FormEvent<HTMLFormElement>) {
+    const form = e.currentTarget;
+    const ads = adsConsentGiven();
+    const eventId = crypto.randomUUID();
+    const url = window.location.href.split("?")[0] ?? "";
+    // Eşzamanlı: form verisi bu olaydan hemen sonra okunur
+    const setVal = (name: string, v: string) => {
+      const el = form.elements.namedItem(name);
+      if (el instanceof HTMLInputElement) el.value = v;
+    };
+    setVal("eventId", eventId);
+    setVal("adsConsent", ads ? "1" : "0");
+    setVal("sourceUrl", url);
+    const email = String(new FormData(form).get("email") ?? "")
+      .trim()
+      .toLowerCase();
+    setMeta({ eventId, ads, url, emailHash: "" });
+    if (ads && email && crypto.subtle) {
+      void crypto.subtle.digest("SHA-256", new TextEncoder().encode(email)).then((buf) => {
+        const emailHash = [...new Uint8Array(buf)]
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        setMeta({ eventId, ads, url, emailHash });
+      });
+    }
+  }
+
+  return onSubmitCapture;
 }

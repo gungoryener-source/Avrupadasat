@@ -8,7 +8,9 @@ export const brand = {
   nameParts: ["Avrupada", "Sat"] as const,
   monogram: "AS",
   tagline: "Türk üreticiler için Avrupa'ya satış",
-  heroTitle: "Ürününüzü Avrupa'da satın. Gerisini biz yönetelim.",
+  heroTitle: "Türkiye'den Avrupa'ya. İşinizi Almanya üzerinden büyütün.",
+  /** Ana marka mesajı (başlık etiketi, alt bilgi) */
+  slogan: "Türkiye'den Avrupa'ya satışın en kolay yolu.",
   locale: "tr-TR",
   currency: "EUR",
   /** TODO(verify): alan adı karar bekliyor */

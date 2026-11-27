@@ -17,6 +17,19 @@ export const attribution = z.object({
 });
 
 /** Ücretsiz uygunluk raporu / ön değerlendirme formu */
+/** Çok adımlı uygunluk formunun ek yanıtları (hepsi isteğe bağlı; eski formlar göndermez) */
+export const leadChannels = ["amazon", "ebay", "webshop", "b2b", "unsure"] as const;
+export const leadExportStatuses = ["none", "non_eu", "eu_parcel", "eu_bulk"] as const;
+export const leadProfile = z
+  .object({
+    contactName: z.string().trim().max(120),
+    city: z.string().trim().max(80),
+    website: z.string().trim().max(200),
+    channels: z.array(z.enum(leadChannels)).max(leadChannels.length),
+    exportStatus: z.enum(leadExportStatuses),
+  })
+  .partial();
+
 export const leadSubmittedV1 = z.object({
   companyName: z.string().trim().min(2).max(200),
   email: z.email().max(254),
@@ -25,6 +38,7 @@ export const leadSubmittedV1 = z.object({
   consentKvkk: z.literal(true),
   marketingConsent: z.boolean().default(false),
   attribution: attribution.default({}),
+  profile: leadProfile.optional(),
 });
 
 export const quoteAcceptedV1 = z.object({

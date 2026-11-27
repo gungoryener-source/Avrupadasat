@@ -24,3 +24,19 @@ export const STAGE_LABEL = {
   GUMRUK: "Alman gümrüğü",
   DEPO_KABUL: "Depoya kabul",
 } as const;
+
+/** Uygunluk formu yanıt etiketleri (site ve ekip paneli) */
+export const LEAD_CHANNEL_LABEL = {
+  amazon: "Amazon.de",
+  ebay: "eBay.de",
+  webshop: "Kendi web mağazası",
+  b2b: "Toptan / B2B satış",
+  unsure: "Henüz karar vermedim",
+} as const;
+
+export const LEAD_EXPORT_STATUS_LABEL = {
+  none: "Henüz ihracat yapmıyoruz",
+  non_eu: "AB dışına ihracat yapıyoruz",
+  eu_parcel: "AB'ye paketle (tek tek) satıyoruz",
+  eu_bulk: "AB'ye toptan veya toplu sevkiyat yapıyoruz",
+} as const;

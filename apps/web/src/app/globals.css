@@ -10,9 +10,12 @@ body {
 }
 body {
   font-family: var(--font);
+  font-feature-settings: "cv11", "ss03";
   color: var(--ink);
   background: var(--bg);
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 a {
   color: inherit;
@@ -116,13 +119,13 @@ footer button {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #fff1f3;
+  background: var(--p-soft);
   color: var(--p);
   font-size: 12px;
   font-weight: 700;
 }
 :focus-visible {
-  outline: 3px solid var(--gold);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -151,7 +154,7 @@ footer button {
 }
 .field .err,
 .alert-err {
-  color: var(--p);
+  color: var(--err);
   font-size: 13px;
 }
 .alert-err,
@@ -163,7 +166,8 @@ footer button {
   font-size: 14px;
 }
 .alert-err {
-  background: #fff1f3;
+  background: #fdf0f2;
+  color: var(--err);
 }
 .alert-ok {
   background: #eaf7ef;
@@ -187,9 +191,14 @@ footer button {
 }
 .btn {
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   padding: 11px 18px;
   border-radius: 10px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
   border: 1px solid var(--p);
   background: var(--p);
   color: #fff;
@@ -314,7 +323,7 @@ footer button {
   color: var(--warn);
 }
 .tag.red {
-  background: #fff1f3;
+  background: var(--p-soft);
   color: var(--p);
 }
 .g2 {

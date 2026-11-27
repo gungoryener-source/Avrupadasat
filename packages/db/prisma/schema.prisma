@@ -283,6 +283,8 @@ model Lead {
   consentKvkk      Boolean
   marketingConsent Boolean    @default(false)
   attribution      Json       @default("{}")
+  /// Uygunluk formunun ek yanıtları: ad soyad, şehir, web sitesi, hedef kanallar, ihracat durumu
+  profile          Json       @default("{}")
   /// Müşteriye dönüşünce bağlanır
   tenantId         String?
   createdAt        DateTime   @default(now())

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LEAD_CHANNEL_LABEL, LEAD_EXPORT_STATUS_LABEL, leadProfile } from "@avrupadasat/core";
 import { formatEur } from "@avrupadasat/core/pricing";
 import { fmtDate } from "@/components/AppShell";
 import { Submit } from "@/components/Submit";
@@ -18,6 +19,8 @@ export default async function LeadDetail({ params }: { params: Promise<{ id: str
   });
   if (!lead) notFound();
   const attr = lead.attribution as Record<string, string>;
+  const parsedProfile = leadProfile.safeParse(lead.profile);
+  const profile = parsedProfile.success ? parsedProfile.data : {};
   return (
     <>
       <p>
@@ -28,10 +31,49 @@ export default async function LeadDetail({ params }: { params: Promise<{ id: str
         <div className="card">
           <h3>İletişim</h3>
           <p>
+            {profile.contactName && (
+              <>
+                <b>{profile.contactName}</b>
+                <br />
+              </>
+            )}
             {lead.email}
             <br />
             {lead.phone}
           </p>
+          {(profile.city ||
+            profile.website ||
+            profile.channels?.length ||
+            profile.exportStatus) && (
+            <dl className="lead-profile" style={{ fontSize: 14, display: "grid", gap: 6 }}>
+              {profile.city && (
+                <div>
+                  <dt className="muted">Şehir</dt>
+                  <dd style={{ margin: 0 }}>{profile.city}</dd>
+                </div>
+              )}
+              {profile.website && (
+                <div>
+                  <dt className="muted">Web sitesi</dt>
+                  <dd style={{ margin: 0 }}>{profile.website}</dd>
+                </div>
+              )}
+              {profile.channels && profile.channels.length > 0 && (
+                <div>
+                  <dt className="muted">Hedef kanallar</dt>
+                  <dd style={{ margin: 0 }}>
+                    {profile.channels.map((c) => LEAD_CHANNEL_LABEL[c]).join(", ")}
+                  </dd>
+                </div>
+              )}
+              {profile.exportStatus && (
+                <div>
+                  <dt className="muted">İhracat durumu</dt>
+                  <dd style={{ margin: 0 }}>{LEAD_EXPORT_STATUS_LABEL[profile.exportStatus]}</dd>
+                </div>
+              )}
+            </dl>
+          )}
           <p className="muted" style={{ fontSize: 13 }}>
             Kategori: {lead.category} · {fmtDate(lead.createdAt, true)}
             <br />
