@@ -19,7 +19,8 @@ type Plan = {
   who: string;
   price: string;
   unit: string;
-  note: string;
+  setup: string;
+  monthly: string;
   includes: string[];
   extra: string[];
   cta: string;
@@ -37,7 +38,8 @@ const PLANS: Plan[] = [
     who: "Almanya'da şirketini kurmak isteyenler",
     price: formatEur(packages.BASLANGIC.oneTime.UG),
     unit: "'dan · tek sefer",
-    note: `UG ${formatEur(packages.BASLANGIC.oneTime.UG)}, GmbH ${formatEur(packages.BASLANGIC.oneTime.GMBH)}'dan. Aylık ücret yok.`,
+    setup: `UG ${formatEur(packages.BASLANGIC.oneTime.UG)} · GmbH ${formatEur(packages.BASLANGIC.oneTime.GMBH)}'dan`,
+    monthly: "Yok",
     includes: [
       "UG veya GmbH kuruluş koordinasyonu",
       "Vekâletname, apostil ve tercüme rehberliği",
@@ -56,7 +58,8 @@ const PLANS: Plan[] = [
     who: "Şirketi kurulu, Almanya'da düzenli çalışmak isteyenler",
     price: formatEur(packages.OPERASYON.monthly),
     unit: "/ay",
-    note: "Şirket kuruluşu gerekiyorsa Başlangıç ücreti ayrıca eklenir.",
+    setup: "Gerekirse Başlangıç ücreti",
+    monthly: formatEur(packages.OPERASYON.monthly),
     includes: [
       "Başlangıç paketindeki her şey",
       "Almanya'da iş adresi (sanal ofis)",
@@ -75,7 +78,8 @@ const PLANS: Plan[] = [
     who: "Kuruluştan Avrupa'da satışa tek ekiple geçmek isteyenler",
     price: formatEur(packages.PAZARA_GIRIS.monthly),
     unit: "/ay",
-    note: `${packages.PAZARA_GIRIS.largeFromPallets}+ palette ${formatEur(packages.PAZARA_GIRIS.monthlyLarge)}/ay. Kuruluş ücreti %${PAZARA_GIRIS_SETUP_DISCOUNT_PCT} indirimli (UG ${formatEur(ugSetupDiscounted)}).`,
+    setup: `%${PAZARA_GIRIS_SETUP_DISCOUNT_PCT} indirimli · UG ${formatEur(ugSetupDiscounted)}'dan`,
+    monthly: `${formatEur(packages.PAZARA_GIRIS.monthly)} · ${packages.PAZARA_GIRIS.largeFromPallets}+ palet ${formatEur(packages.PAZARA_GIRIS.monthlyLarge)}`,
     includes: [
       "Operasyon paketindeki her şey",
       "Depo, fulfillment ve gümrük takibi",
@@ -104,7 +108,16 @@ export function PlanCards() {
             <b>{p.price}</b>
             <span>{p.unit}</span>
           </div>
-          <p className="plan__note">{p.note}</p>
+          <dl className="plan__terms">
+            <div>
+              <dt>Kuruluş</dt>
+              <dd>{p.setup}</dd>
+            </div>
+            <div>
+              <dt>Aylık</dt>
+              <dd>{p.monthly}</dd>
+            </div>
+          </dl>
           <Link
             href="/ucretsiz-uygunluk-raporu"
             className={`btn${p.featured ? "" : " btn-o"} plan__cta`}

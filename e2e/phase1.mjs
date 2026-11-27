@@ -49,7 +49,7 @@ try {
   await rf.getByLabel("Telefon (WhatsApp)").fill("+90 236 000 00 00");
   await rf.locator("input[name=consentKvkk]").check();
   await rf.getByRole("button", { name: "Ücretsiz raporumu iste" }).click();
-  await vp.getByText("Talebiniz alındı.").waitFor();
+  await vp.getByText("Talebiniz alındı").waitFor();
   assert(tp.length === 0, `Onay reddedildiği halde üçüncü taraf isteği: ${tp.join(", ")}`);
   s.ok();
 

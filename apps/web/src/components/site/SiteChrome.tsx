@@ -51,7 +51,7 @@ export function SiteFooter() {
         <div className="site-footer__grid">
           <div className="site-footer__brand">
             <Logo inverted />
-            <p className="site-footer__slogan">{brand.slogan}</p>
+            <p className="site-footer__slogan">{brand.slogan.replace(/\.$/, "")}</p>
             <p className="site-footer__note">{brand.independenceNotice}</p>
             <a className="site-footer__mail" href={`mailto:${brand.contact.email}`}>
               <IconMail size={18} />

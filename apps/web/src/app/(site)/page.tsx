@@ -1,10 +1,17 @@
 import Link from "next/link";
-import { brand } from "@avrupadasat/core";
+import {
+  brand,
+  formatEur,
+  formationThirdPartyEstimate,
+  operations,
+  packages,
+} from "@avrupadasat/core";
 import { AssessmentForm } from "@/components/site/AssessmentForm";
 import { HeroVisual } from "@/components/site/HeroVisual";
 import {
   IconArrowRight,
   IconBuilding,
+  IconCheck,
   IconLanguage,
   IconLayers,
   IconPin,
@@ -19,6 +26,7 @@ import {
 import { faqLd, JsonLd } from "@/components/site/JsonLd";
 import { PlanCards, ThirdPartyFees } from "@/components/site/PlanCards";
 import { SitePage } from "@/components/site/SiteChrome";
+import { StickyCta } from "@/components/site/StickyCta";
 import { homeFaq, serviceTiles, steps, trustPoints } from "@/content/home";
 
 export const metadata = {
@@ -45,6 +53,24 @@ const SERVICE_ICON = {
   return: IconReturn,
 } as const;
 
+/** Bugün ayrı ayrı yürütülen işler (karşılaştırma görseli) */
+const SCATTERED = [
+  "Vergi danışmanı",
+  "Alman noteri",
+  "Nakliyeci",
+  "Gümrük müşaviri",
+  "Depo",
+  "Pazaryeri ajansı",
+];
+
+/** Hero altındaki doğrulanabilir bilgiler — hepsi yayınlanmış fiyat listesinden */
+const FACTS = [
+  { v: formatEur(operations.setupFee), l: "Kurulum ücreti" },
+  { v: formatEur(operations.storagePerPalletMonth), l: "Palet başına aylık depolama" },
+  { v: `${operations.noticePeriodMonths} ay`, l: "Fesih bildirimi, uzun sözleşme yok" },
+  { v: "48 saat", l: "Ücretsiz uygunluk raporu" },
+];
+
 export default function HomePage() {
   return (
     <SitePage>
@@ -64,7 +90,7 @@ export default function HomePage() {
               operasyonunuzu tek noktadan yönetin.
             </p>
             <div className="hero2__ctas">
-              <Link className="btn btn-lg" href="/ucretsiz-uygunluk-raporu">
+              <Link className="btn btn-lg" href="#rapor" data-hero-cta>
                 Ücretsiz Uygunluk Raporu Al
                 <IconArrowRight size={18} />
               </Link>
@@ -73,52 +99,78 @@ export default function HomePage() {
               </Link>
             </div>
             <p className="hero2__trust">
-              Türkiye merkezli işletmeler için Avrupa operasyon desteği.
+              <IconCheck size={16} strokeWidth={2} />
+              Türkiye merkezli işletmeler için Avrupa operasyon desteği
             </p>
-            <ul className="hero2__facts" aria-label="Çalışma koşulları">
-              <li>Kurulum ücreti yok</li>
-              <li>Aylık fesih</li>
-              <li>Türkçe tek muhatap</li>
-            </ul>
           </div>
           <div className="hero2__visual">
             <HeroVisual />
           </div>
         </div>
+        <div className="wrap">
+          <dl className="facts">
+            {FACTS.map((f) => (
+              <div key={f.l}>
+                <dt>{f.l}</dt>
+                <dd>{f.v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </section>
 
       {/* Neden biz */}
       <section className="sec" aria-labelledby="neden-title">
-        <div className="wrap">
-          <div className="sec__head" data-reveal>
-            <p className="eyebrow">Neden {brand.name}</p>
-            <h2 id="neden-title">Avrupa&apos;ya açılmanın dağınık kısmını biz toparlıyoruz</h2>
-            <p className="sec__lead">
-              Vergi danışmanı, noter, nakliyeci, gümrükçü, depo ve ajansla ayrı ayrı uğraşmak yerine
-              tek ekip ve tek süreç.
-            </p>
-          </div>
-          <div className="trust4">
-            {trustPoints.map((t, i) => {
-              const Icon = TRUST_ICON[t.icon];
-              return (
-                <div
-                  key={t.n}
-                  className="trust4__item"
-                  data-reveal
-                  style={{ transitionDelay: `${i * 60}ms` }}
-                >
-                  <div className="trust4__top">
-                    <span className="trust4__icon">
-                      <Icon size={22} />
+        <div className="wrap why">
+          <div className="why__copy">
+            <div className="sec__head" data-reveal>
+              <p className="eyebrow">Neden {brand.name}</p>
+              <h2 id="neden-title">Altı ayrı muhatap yerine tek ekip</h2>
+              <p className="sec__lead">
+                Avrupa&apos;ya açılan bir üretici bugün vergi danışmanı, noter, nakliyeci, gümrükçü,
+                depo ve ajansla ayrı ayrı çalışır. Biz bu işleri tek süreçte birleştiriyoruz.
+              </p>
+            </div>
+            <ol className="why__list">
+              {trustPoints.map((t) => {
+                const Icon = TRUST_ICON[t.icon];
+                return (
+                  <li key={t.n}>
+                    <span className="why__icon">
+                      <Icon size={20} />
                     </span>
-                    <span className="trust4__n">{t.n}</span>
-                  </div>
-                  <h3>{t.title}</h3>
-                  <p>{t.text}</p>
-                </div>
-              );
-            })}
+                    <div>
+                      <h3>
+                        <span className="why__n">{t.n}</span>
+                        {t.title}
+                      </h3>
+                      <p>{t.text}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+          <div className="merge" aria-hidden>
+            <div className="merge__label">Bugün</div>
+            <ul className="merge__nodes">
+              {SCATTERED.map((n) => (
+                <li key={n}>
+                  {n}
+                  <small>ayrı sözleşme, ayrı fatura</small>
+                </li>
+              ))}
+            </ul>
+            <svg className="merge__lines" viewBox="0 0 300 72" preserveAspectRatio="none">
+              {[50, 150, 250].map((x) => (
+                <path key={x} d={`M${x},0 C${x},40 150,32 150,72`} />
+              ))}
+            </svg>
+            <div className="merge__hub">
+              <div className="merge__label merge__label--on">{brand.name} ile</div>
+              <b>Tek ekip, tek panel, tek fatura</b>
+              <span>Türkçe tek muhatap · Almanya&apos;da iş ortağı ağı</span>
+            </div>
           </div>
         </div>
       </section>
@@ -138,16 +190,10 @@ export default function HomePage() {
             </p>
           </div>
           <div className="bento">
-            {serviceTiles.map((s, i) => {
+            {serviceTiles.map((s) => {
               const Icon = SERVICE_ICON[s.icon];
               return (
-                <Link
-                  key={s.title}
-                  href={s.href}
-                  className={`tile tile--${s.size}`}
-                  data-reveal
-                  style={{ transitionDelay: `${(i % 3) * 60}ms` }}
-                >
+                <Link key={s.title} href={s.href} className={`tile tile--${s.size}`}>
                   <span className="tile__icon">
                     <Icon size={22} />
                   </span>
@@ -167,6 +213,28 @@ export default function HomePage() {
                       ))}
                     </ol>
                   )}
+                  {s.size === "lg" && (
+                    <dl className="tile__figs">
+                      <div>
+                        <dt>Hizmet bedeli (UG)</dt>
+                        <dd>{formatEur(packages.BASLANGIC.oneTime.UG)}&apos;dan</dd>
+                      </div>
+                      <div>
+                        <dt>Noter, sicil, tercüme</dt>
+                        <dd>
+                          ≈ {formatEur(formationThirdPartyEstimate.UG.minCents)}–
+                          {formatEur(formationThirdPartyEstimate.UG.maxCents)}
+                        </dd>
+                      </div>
+                    </dl>
+                  )}
+                  {s.outputs && (
+                    <ul className="tile__outputs" aria-label="Çıktılar">
+                      {s.outputs.map((o) => (
+                        <li key={o}>{o}</li>
+                      ))}
+                    </ul>
+                  )}
                   <span className="tile__more">
                     Daha fazla bilgi <IconArrowRight size={16} />
                   </span>
@@ -174,10 +242,20 @@ export default function HomePage() {
               );
             })}
           </div>
-          <p className="sec__aside" data-reveal>
-            Ürününüz için hangi kayıtların gerektiğini merak ediyorsanız{" "}
-            <Link href="/urunum-avrupaya-uygun-mu">6 soruluk ön kontrolü</Link> deneyin.
-          </p>
+          <div className="nudge">
+            <p>
+              <b>Ürününüz için hangi kayıtlar gerekiyor?</b> 6 soruluk ön kontrolle hemen görün ya
+              da ürününüze özel ücretsiz raporu isteyin.
+            </p>
+            <div className="nudge__ctas">
+              <Link href="/urunum-avrupaya-uygun-mu" className="btn btn-o">
+                Ön kontrol
+              </Link>
+              <Link href="#rapor" className="btn">
+                Ücretsiz rapor al
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -189,8 +267,8 @@ export default function HomePage() {
             <h2 id="nasil-title">Başvurudan Avrupa&apos;da ilk satışa dört adım</h2>
           </div>
           <ol className="timeline2">
-            {steps.map((s, i) => (
-              <li key={s.n} data-reveal style={{ transitionDelay: `${i * 80}ms` }}>
+            {steps.map((s) => (
+              <li key={s.n}>
                 <span className="timeline2__n">{s.n}</span>
                 <h3>{s.title}</h3>
                 <p>{s.text}</p>
@@ -211,12 +289,8 @@ export default function HomePage() {
               hesaplayıcı ve teklifiniz aynı rakamları gösterir.
             </p>
           </div>
-          <div data-reveal>
-            <PlanCards />
-          </div>
-          <div data-reveal>
-            <ThirdPartyFees />
-          </div>
+          <PlanCards />
+          <ThirdPartyFees />
           <p className="sec__aside sec__aside--center">
             <Link href="/fiyatlar">Tüm fiyat listesi ve maliyet hesaplayıcı</Link>
           </p>
@@ -224,21 +298,37 @@ export default function HomePage() {
       </section>
 
       {/* Uygunluk raporu formu */}
-      <section className="sec" id="rapor" aria-labelledby="rapor-title">
-        <div className="wrap assess">
-          <div className="assess__copy" data-reveal>
+      <section className="sec assess-sec" id="rapor" aria-labelledby="rapor-title">
+        <div className="wrap assess assess--home">
+          <div className="assess__head">
             <p className="eyebrow">Ücretsiz uygunluk raporu</p>
-            <h2 id="rapor-title">Ürününüz Avrupa&apos;ya hazır mı? Birlikte bakalım.</h2>
+            <h2 id="rapor-title">Ürününüz Avrupa&apos;ya hazır mı? Birlikte bakalım</h2>
             <p className="sec__lead">
-              Beş kısa adımı doldurun; 48 saat içinde ürününüze özel raporla dönelim. Ücret ve
-              taahhüt yok.
+              Beş kısa adım, yaklaşık iki dakika. Ürününüze özel raporu 48 saat içinde e-postanıza
+              gönderiyoruz.
             </p>
-            <ul className="assess__list">
-              <li>Gerekli kayıtlar: KDV, ambalaj (LUCID), ürün güvenliği, WEEE</li>
-              <li>Tahmini gümrük ve ithalat KDV&apos;si</li>
-              <li>Size uygun şirket modeli ve satış kanalı</li>
-              <li>Aylık maliyet tahmini</li>
-            </ul>
+          </div>
+          <div className="assess__details">
+            <div className="report-card">
+              <div className="report-card__k">Raporunuzda</div>
+              <ul>
+                <li>Gerekli kayıtlar: KDV, ambalaj (LUCID), ürün güvenliği, WEEE</li>
+                <li>Tahmini gümrük ve ithalat KDV&apos;si</li>
+                <li>Size uygun şirket modeli ve satış kanalı</li>
+                <li>Depo, paketleme ve paket dahil aylık maliyet tahmini</li>
+              </ul>
+            </div>
+            <ol className="after">
+              <li>
+                <b>Form</b> Bugün, iki dakika
+              </li>
+              <li>
+                <b>Rapor</b> 48 saat içinde e-postanızda
+              </li>
+              <li>
+                <b>Görüşme</b> İsterseniz size özel teklif
+              </li>
+            </ol>
             <p className="assess__note">{brand.independenceNotice}</p>
           </div>
           <div className="assess__form">
@@ -250,7 +340,7 @@ export default function HomePage() {
       {/* SSS */}
       <section className="sec sec--tint" id="sss" aria-labelledby="sss-title">
         <div className="wrap faq2">
-          <div className="faq2__head" data-reveal>
+          <div className="faq2__head">
             <p className="eyebrow">Sık sorulan sorular</p>
             <h2 id="sss-title">Merak edilenler</h2>
             <p className="sec__lead">
@@ -276,6 +366,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <StickyCta />
     </SitePage>
   );
 }

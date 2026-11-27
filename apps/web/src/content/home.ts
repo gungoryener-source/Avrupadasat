@@ -38,6 +38,8 @@ export type ServiceTile = {
   href: string;
   points?: string[];
   flow?: string[];
+  /** Somut çıktılar — kartın altında sessiz etiketler */
+  outputs?: string[];
   size: "lg" | "md" | "sm";
 };
 
@@ -56,6 +58,7 @@ export const serviceTiles: ServiceTile[] = [
     title: "Vergi ve KDV işlemleri",
     text: "Alman vergi numarası, KDV kimlik numarası ve dönemsel beyanlar, vergi danışmanı iş ortağımızla.",
     href: "/uyum-paketi",
+    outputs: ["Vergi numarası", "USt-IdNr.", "Dönemsel beyan"],
     size: "md",
   },
   {
@@ -63,6 +66,7 @@ export const serviceTiles: ServiceTile[] = [
     title: "Depolama ve fulfillment",
     text: "Mal kabul, palet bazında depolama, sipariş paketleme ve kargo. Stok anlık olarak panelde.",
     href: "/almanyada-depo-kiralama",
+    outputs: ["Mal kabul raporu", "Anlık stok", "Takip numarası"],
     size: "md",
   },
   {
@@ -70,6 +74,7 @@ export const serviceTiles: ServiceTile[] = [
     title: "Gümrük ve EPR uyumluluğu",
     text: "A.TR ile toplu ithalat, gümrük ve ithalat KDV'si takibi; LUCID, WEEE ve ürün güvenliği kayıtları.",
     href: "/gumruk-atr-ve-3-euro-vergisi",
+    outputs: ["A.TR ile ithalat", "LUCID", "WEEE"],
     size: "sm",
   },
   {
@@ -77,6 +82,7 @@ export const serviceTiles: ServiceTile[] = [
     title: "Amazon ve eBay mağaza kurulumu",
     text: "Amazon.de ve eBay.de satıcı hesabı, FBA hazırlığı ve reklam yönetimi.",
     href: "/amazon-almanyada-satis",
+    outputs: ["Satıcı hesabı", "FBA hazırlığı", "Reklam"],
     size: "sm",
   },
   {
@@ -84,6 +90,7 @@ export const serviceTiles: ServiceTile[] = [
     title: "Almanca ürün listeleme",
     text: "Almanca başlık, açıklama ve ürün özellikleri; pazaryeri kurallarına ve yasal etiket bilgilerine uygun.",
     href: "/amazon-almanyada-satis",
+    outputs: ["Başlık", "Açıklama", "Etiket bilgisi"],
     size: "sm",
   },
   {
@@ -91,6 +98,7 @@ export const serviceTiles: ServiceTile[] = [
     title: "İade ve müşteri hizmetleri",
     text: "İadeler Türkiye'ye dönmez: Almanya'da kontrol edilir, yeniden satışa alınır. İsteğe bağlı Almanca müşteri desteği.",
     href: "/iade-merkezi",
+    outputs: ["Kontrol", "Yeniden etiket", "Stoğa dönüş"],
     size: "sm",
   },
 ];

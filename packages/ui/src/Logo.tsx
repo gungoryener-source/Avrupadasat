@@ -30,7 +30,7 @@ export function Logo({
         <span
           style={{
             fontSize: 18,
-            fontWeight: 700,
+            fontWeight: 600,
             letterSpacing: "-0.02em",
             color: inverted ? "#fff" : "var(--ink)",
           }}
