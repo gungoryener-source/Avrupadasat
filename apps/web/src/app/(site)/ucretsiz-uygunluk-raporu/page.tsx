@@ -1,5 +1,5 @@
 import { brand } from "@avrupadasat/core/brand.config";
-import { LeadForm } from "@/components/LeadForm";
+import { AssessmentForm } from "@/components/site/AssessmentForm";
 import { SitePage } from "@/components/site/SiteChrome";
 
 export const metadata = {
@@ -25,15 +25,16 @@ export default function ReportPage() {
   return (
     <SitePage>
       <div className="wrap page-head">
-        <div className="k">Ücretsiz</div>
+        <p className="eyebrow">Ücretsiz</p>
         <h1>Avrupa uygunluk raporu</h1>
         <p className="lead">
-          Formu doldurun; 48 saat içinde ürününüze özel raporla dönelim. Ücret ve taahhüt yok.
+          Beş kısa adımı doldurun; 48 saat içinde ürününüze özel raporla dönelim. Ücret ve taahhüt
+          yok.
         </p>
       </div>
-      <div className="wrap g2" style={{ paddingBottom: 40 }}>
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Raporda neler var?</h2>
+      <div className="wrap assess">
+        <div className="assess__copy">
+          <h2 style={{ fontSize: 22 }}>Raporda neler var?</h2>
           <ul className="checklist">
             {ITEMS.map(([t, d]) => (
               <li key={t}>
@@ -44,10 +45,10 @@ export default function ReportPage() {
               </li>
             ))}
           </ul>
-          <p className="note">{brand.independenceNotice}</p>
+          <p className="assess__note">{brand.independenceNotice}</p>
         </div>
-        <div className="card">
-          <LeadForm />
+        <div className="assess__form">
+          <AssessmentForm />
         </div>
       </div>
     </SitePage>

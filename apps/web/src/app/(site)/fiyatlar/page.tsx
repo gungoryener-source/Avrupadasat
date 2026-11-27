@@ -8,6 +8,7 @@ import {
 } from "@avrupadasat/core/pricing";
 import { Calculator } from "@/components/site/Calculator";
 import { JsonLd, SITE } from "@/components/site/JsonLd";
+import { PlanCards, ThirdPartyFees } from "@/components/site/PlanCards";
 import { SitePage } from "@/components/site/SiteChrome";
 
 export const metadata = {
@@ -68,72 +69,89 @@ export default function PricesPage() {
         }}
       />
       <div className="wrap page-head">
-        <div className="k">Fiyatlar</div>
+        <p className="eyebrow">Fiyatlandırma</p>
         <h1>Tek ve tutarlı fiyat listesi</h1>
         <p className="lead">
-          Site, hesaplayıcı ve teklifleriniz aynı listeden hesaplanır. Fiyatlar KDV hariçtir.
+          Site, hesaplayıcı ve teklifleriniz aynı listeden hesaplanır. Fiyatlar KDV hariçtir;
+          kurulum ücreti yoktur, {operations.noticePeriodMonths} ay önceden bildirimle fesih
+          edebilirsiniz.
         </p>
       </div>
       <div className="wrap">
-        <div className="g2">
-          <div className="card">
-            <h2 style={{ marginTop: 0 }}>Paketler</h2>
-            <table className="tbl">
-              <tbody>
-                <tr>
-                  <th scope="row">Başlangıç — UG kuruluşu</th>
-                  <td>{formatEur(packages.BASLANGIC.oneTime.UG)}&apos;dan, tek sefer</td>
-                </tr>
-                <tr>
-                  <th scope="row">Başlangıç — GmbH kuruluşu</th>
-                  <td>{formatEur(packages.BASLANGIC.oneTime.GMBH)}&apos;dan, tek sefer</td>
-                </tr>
-                <tr>
-                  <th scope="row">Operasyon</th>
-                  <td>{formatEur(packages.OPERASYON.monthly)}/ay + kuruluş</td>
-                </tr>
-                <tr>
-                  <th scope="row">Pazara Giriş</th>
-                  <td>
-                    {formatEur(packages.PAZARA_GIRIS.monthly)}/ay (
-                    {packages.PAZARA_GIRIS.largeFromPallets}+ palette{" "}
-                    {formatEur(packages.PAZARA_GIRIS.monthlyLarge)}/ay), kuruluş %
-                    {PAZARA_GIRIS_SETUP_DISCOUNT_PCT} indirimli
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p className="note">
-              Noter, ticaret sicili, apostil ve tercüme masrafları ile şirket sermayesi dahil
-              değildir; faturasıyla birebir yansıtılır.
-            </p>
+        <PlanCards />
+        <ThirdPartyFees />
+      </div>
+      <section className="sec">
+        <div className="wrap">
+          <div className="sec__head">
+            <p className="eyebrow">Operasyon fiyatları</p>
+            <h2>Kullandığınız kadar ödediğiniz kalemler</h2>
           </div>
-          <div className="card">
-            <h2 style={{ marginTop: 0 }}>Operasyon fiyatları</h2>
-            <table className="tbl">
-              <tbody>
-                {rows.map(([k, v]) => (
-                  <tr key={k}>
-                    <th scope="row">{k}</th>
-                    <td>{v}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="note">
-              <b>Pilot sevkiyat:</b> Almanya&apos;yı ilk 1–2 paletle, uzun sözleşme olmadan test
-              edebilirsiniz.
-            </p>
+          <div className="g2">
+            <div className="card">
+              <h3 style={{ marginTop: 0 }}>Depo ve fulfillment</h3>
+              <div className="tbl-wrap">
+                <table className="tbl">
+                  <tbody>
+                    {rows.map(([k, v]) => (
+                      <tr key={k}>
+                        <th scope="row">{k}</th>
+                        <td>{v}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="card">
+              <h3 style={{ marginTop: 0 }}>Paketler ve kuruluş</h3>
+              <div className="tbl-wrap">
+                <table className="tbl">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Başlangıç — UG kuruluşu</th>
+                      <td>{formatEur(packages.BASLANGIC.oneTime.UG)}&apos;dan, tek sefer</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Başlangıç — GmbH kuruluşu</th>
+                      <td>{formatEur(packages.BASLANGIC.oneTime.GMBH)}&apos;dan, tek sefer</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Operasyon</th>
+                      <td>{formatEur(packages.OPERASYON.monthly)}/ay + kuruluş</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Pazara Giriş</th>
+                      <td>
+                        {formatEur(packages.PAZARA_GIRIS.monthly)}/ay (
+                        {packages.PAZARA_GIRIS.largeFromPallets}+ palette{" "}
+                        {formatEur(packages.PAZARA_GIRIS.monthlyLarge)}/ay), kuruluş %
+                        {PAZARA_GIRIS_SETUP_DISCOUNT_PCT} indirimli
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="note">
+                <b>Pilot sevkiyat:</b> Almanya&apos;yı ilk 1–2 paletle, uzun sözleşme olmadan test
+                edebilirsiniz.
+              </p>
+            </div>
           </div>
         </div>
-        <section>
-          <h2>Hesaplayıcı</h2>
+      </section>
+      <section className="sec sec--tint" id="hesaplayici">
+        <div className="wrap">
+          <div className="sec__head">
+            <p className="eyebrow">Hesaplayıcı</p>
+            <h2>Aylık maliyetinizi hemen görün</h2>
+          </div>
           <Calculator />
-          <p className="muted" style={{ fontSize: 12 }}>
+          <p className="muted" style={{ fontSize: 12, marginTop: 12 }}>
             Fiyat listesi sürümü: {PRICE_LIST_VERSION}
           </p>
-        </section>
-      </div>
+        </div>
+      </section>
     </SitePage>
   );
 }

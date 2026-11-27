@@ -1,243 +1,278 @@
 import Link from "next/link";
-import { brand, formatEur, operations, packages } from "@avrupadasat/core";
-import { LeadForm } from "@/components/LeadForm";
-import { Calculator } from "@/components/site/Calculator";
+import { brand } from "@avrupadasat/core";
+import { AssessmentForm } from "@/components/site/AssessmentForm";
+import { HeroVisual } from "@/components/site/HeroVisual";
+import {
+  IconArrowRight,
+  IconBuilding,
+  IconLanguage,
+  IconLayers,
+  IconPin,
+  IconReceipt,
+  IconReturn,
+  IconScale,
+  IconShield,
+  IconStore,
+  IconSupport,
+  IconWarehouse,
+} from "@/components/site/Icons";
 import { faqLd, JsonLd } from "@/components/site/JsonLd";
+import { PlanCards, ThirdPartyFees } from "@/components/site/PlanCards";
 import { SitePage } from "@/components/site/SiteChrome";
-import { generalFaq } from "@/content/faq";
-import { services } from "@/content/services";
+import { homeFaq, serviceTiles, steps, trustPoints } from "@/content/home";
 
-const ROUTE = [
-  ["Şirket", "UG/GmbH, vergi ve gümrük numaraları"],
-  ["Gümrük", "A.TR ile toplu ithalat, belge takibi"],
-  ["Depo", "Mal kabul, paketleme, iade"],
-  ["Pazaryeri", "Amazon.de, eBay.de, web mağaza"],
-  ["Pazarlama", "Almanca içerik ve reklam"],
-];
-
-const ICON: Record<string, string> = {
-  "almanyada-sirket-kurmak": "🏛️",
-  "almanyada-depo-kiralama": "🏭",
-  "gumruk-atr-ve-3-euro-vergisi": "🛃",
-  "amazon-almanyada-satis": "🛒",
-  "uyum-paketi": "✅",
-  "iade-merkezi": "↩️",
-  "e-ihracat-destek-rehberi": "📘",
+export const metadata = {
+  title: { absolute: `${brand.name} — Türkiye'den Avrupa'ya satış, Almanya üzerinden` },
+  description:
+    "Türk üretici ve ihracatçılar için Almanya'da şirket kuruluşu, vergi ve KDV kaydı, depo ve fulfillment, Amazon.de ve eBay.de satışı. Tek ekip, Türkçe, şeffaf fiyat.",
+  alternates: { canonical: "/" },
 };
+
+const TRUST_ICON = {
+  layers: IconLayers,
+  pin: IconPin,
+  scale: IconScale,
+  support: IconSupport,
+} as const;
+
+const SERVICE_ICON = {
+  building: IconBuilding,
+  receipt: IconReceipt,
+  shield: IconShield,
+  warehouse: IconWarehouse,
+  store: IconStore,
+  language: IconLanguage,
+  return: IconReturn,
+} as const;
 
 export default function HomePage() {
   return (
     <SitePage>
-      <JsonLd data={faqLd(generalFaq.slice(0, 6))} />
-      <section className="hero">
-        <div className="wrap hero-grid">
-          <div>
-            <span className="badge">İhracatçı firmalar için</span>
-            <h1>{brand.heroTitle}</h1>
-            <p>
-              Almanya&apos;da şirketiniz, deponuz, gümrüğünüz ve satışınız: tek ekip, Türkçe, şeffaf
-              fiyat.
+      <JsonLd data={faqLd(homeFaq)} />
+
+      {/* Hero */}
+      <section className="hero2" aria-labelledby="hero-title">
+        <div className="wrap hero2__grid">
+          <div className="hero2__copy">
+            <p className="eyebrow">Türk üretici ve ihracatçılar için</p>
+            <h1 id="hero-title">
+              Türkiye&apos;den Avrupa&apos;ya.{" "}
+              <span className="hero2__em">İşinizi Almanya üzerinden büyütün.</span>
+            </h1>
+            <p className="hero2__lead">
+              Şirket kuruluşundan vergi kaydına, depolamadan Amazon satışlarına kadar Avrupa
+              operasyonunuzu tek noktadan yönetin.
             </p>
-            <div className="row">
-              <Link className="btn" href="/ucretsiz-uygunluk-raporu">
-                Ücretsiz uygunluk raporu al
+            <div className="hero2__ctas">
+              <Link className="btn btn-lg" href="/ucretsiz-uygunluk-raporu">
+                Ücretsiz Uygunluk Raporu Al
+                <IconArrowRight size={18} />
               </Link>
-              <Link className="btn btn-o" href="/fiyatlar">
-                Fiyatları gör
+              <Link className="btn btn-lg btn-o" href="#hizmetler">
+                Hizmetlerimizi Keşfedin
               </Link>
             </div>
-            <ul className="trust">
+            <p className="hero2__trust">
+              Türkiye merkezli işletmeler için Avrupa operasyon desteği.
+            </p>
+            <ul className="hero2__facts" aria-label="Çalışma koşulları">
               <li>Kurulum ücreti yok</li>
               <li>Aylık fesih</li>
-              <li>48 saatte rapor</li>
               <li>Türkçe tek muhatap</li>
             </ul>
           </div>
-          <div className="card route" aria-label="Almanya'ya giriş rotası">
-            <div className="k">Almanya&apos;ya giriş rotası</div>
-            <ol>
-              {ROUTE.map(([t, d], i) => (
-                <li key={t}>
-                  <span className="num">{i + 1}</span>
-                  <div>
-                    <b>{t}</b>
-                    <div className="muted" style={{ fontSize: 13 }}>
-                      {d}
-                    </div>
+          <div className="hero2__visual">
+            <HeroVisual />
+          </div>
+        </div>
+      </section>
+
+      {/* Neden biz */}
+      <section className="sec" aria-labelledby="neden-title">
+        <div className="wrap">
+          <div className="sec__head" data-reveal>
+            <p className="eyebrow">Neden {brand.name}</p>
+            <h2 id="neden-title">Avrupa&apos;ya açılmanın dağınık kısmını biz toparlıyoruz</h2>
+            <p className="sec__lead">
+              Vergi danışmanı, noter, nakliyeci, gümrükçü, depo ve ajansla ayrı ayrı uğraşmak yerine
+              tek ekip ve tek süreç.
+            </p>
+          </div>
+          <div className="trust4">
+            {trustPoints.map((t, i) => {
+              const Icon = TRUST_ICON[t.icon];
+              return (
+                <div
+                  key={t.n}
+                  className="trust4__item"
+                  data-reveal
+                  style={{ transitionDelay: `${i * 60}ms` }}
+                >
+                  <div className="trust4__top">
+                    <span className="trust4__icon">
+                      <Icon size={22} />
+                    </span>
+                    <span className="trust4__n">{t.n}</span>
                   </div>
-                </li>
-              ))}
-            </ol>
+                  <h3>{t.title}</h3>
+                  <p>{t.text}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      <section id="hizmetler">
+      {/* Hizmetler */}
+      <section className="sec sec--tint" id="hizmetler" aria-labelledby="hizmet-title">
         <div className="wrap">
-          <div className="k">Hizmetler</div>
-          <h2>Almanya&apos;da satış için gereken her şey</h2>
-          <p className="muted" style={{ maxWidth: 680 }}>
-            Vergi danışmanı, nakliyeci, gümrükçü, depo ve ajansla ayrı ayrı uğraşmak yerine tek
-            ortak, tek panel, tek fatura.
+          <div className="sec__head sec__head--split" data-reveal>
+            <div>
+              <p className="eyebrow">Hizmetler</p>
+              <h2 id="hizmet-title">
+                Almanya&apos;da satış için gereken her şey, tek çatı altında
+              </h2>
+            </div>
+            <p className="sec__lead">
+              İhtiyacınız olan modülleri seçin; hepsi aynı panelde, aynı ekip tarafından yürütülür.
+            </p>
+          </div>
+          <div className="bento">
+            {serviceTiles.map((s, i) => {
+              const Icon = SERVICE_ICON[s.icon];
+              return (
+                <Link
+                  key={s.title}
+                  href={s.href}
+                  className={`tile tile--${s.size}`}
+                  data-reveal
+                  style={{ transitionDelay: `${(i % 3) * 60}ms` }}
+                >
+                  <span className="tile__icon">
+                    <Icon size={22} />
+                  </span>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                  {s.points && (
+                    <ul className="tile__points">
+                      {s.points.map((p) => (
+                        <li key={p}>{p}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {s.flow && (
+                    <ol className="tile__flow" aria-label="Kuruluş adımları">
+                      {s.flow.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ol>
+                  )}
+                  <span className="tile__more">
+                    Daha fazla bilgi <IconArrowRight size={16} />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+          <p className="sec__aside" data-reveal>
+            Ürününüz için hangi kayıtların gerektiğini merak ediyorsanız{" "}
+            <Link href="/urunum-avrupaya-uygun-mu">6 soruluk ön kontrolü</Link> deneyin.
           </p>
-          <div className="grid3">
-            {services.map((s) => (
-              <Link key={s.slug} href={`/${s.slug}`} className="card svc">
-                <span className="ico" aria-hidden>
-                  {ICON[s.slug] ?? "•"}
-                </span>
-                <h3>{s.kicker}</h3>
-                <p className="muted">{s.description.slice(0, 120)}…</p>
-              </Link>
-            ))}
-            <Link href="/urunum-avrupaya-uygun-mu" className="card svc">
-              <span className="ico" aria-hidden>
-                🧭
-              </span>
-              <h3>Ürünüm Avrupa&apos;ya uygun mu?</h3>
-              <p className="muted">
-                6 soruda ürününüz için gereken kayıt ve belgelerin ön listesini görün.
-              </p>
-            </Link>
-          </div>
         </div>
       </section>
 
-      <section id="nasil">
+      {/* Nasıl çalışır */}
+      <section className="sec" id="nasil-calisir" aria-labelledby="nasil-title">
         <div className="wrap">
-          <div className="k">Nasıl çalışır</div>
-          <h2>3 adımda Avrupa&apos;da satış</h2>
-          <ol className="grid3 how">
-            {[
-              [
-                "Formu doldurun",
-                "48 saat içinde ücretsiz Avrupa uygunluk raporunuz hazır: kayıtlar, gümrük, model ve maliyet.",
-              ],
-              ["Teklifi onaylayın", "Şirket, depo ve satış planı tek teklifte; çevrimiçi onay."],
-              ["Satışa başlayın", "Malınız Almanya deposunda, siparişler ve kayıtlar panelinizde."],
-            ].map(([t, d], i) => (
-              <li key={t} className="card">
-                <span className="badge">{i + 1}</span>
-                <h3 style={{ marginTop: 10 }}>{t}</h3>
-                <p className="muted">{d}</p>
+          <div className="sec__head" data-reveal>
+            <p className="eyebrow">Nasıl çalışır?</p>
+            <h2 id="nasil-title">Başvurudan Avrupa&apos;da ilk satışa dört adım</h2>
+          </div>
+          <ol className="timeline2">
+            {steps.map((s, i) => (
+              <li key={s.n} data-reveal style={{ transitionDelay: `${i * 80}ms` }}>
+                <span className="timeline2__n">{s.n}</span>
+                <h3>{s.title}</h3>
+                <p>{s.text}</p>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section id="hesapla">
+      {/* Fiyatlandırma */}
+      <section className="sec sec--tint" id="fiyatlandirma" aria-labelledby="fiyat-title">
         <div className="wrap">
-          <div className="k">Maliyet hesaplayıcı</div>
-          <h2>Aylık maliyetinizi hemen görün</h2>
-          <Calculator />
-        </div>
-      </section>
-
-      <section id="paketler">
-        <div className="wrap">
-          <div className="k">Paketler</div>
-          <h2>Şeffaf fiyat</h2>
-          <div className="grid3">
-            <div className="card plan">
-              <h3>{packages.BASLANGIC.name}</h3>
-              <p className="muted">Almanya&apos;da şirket kuruluşu</p>
-              <div className="price">
-                {formatEur(packages.BASLANGIC.oneTime.UG)}
-                <small>&apos;dan · tek sefer</small>
-              </div>
-              <ul>
-                <li>
-                  UG ({formatEur(packages.BASLANGIC.oneTime.UG)}&apos;dan) veya GmbH (
-                  {formatEur(packages.BASLANGIC.oneTime.GMBH)}&apos;dan)
-                </li>
-                <li>Vekâletname, apostil ve çeviri rehberliği</li>
-                <li>Ticaret sicili ve vergi kaydı koordinasyonu</li>
-                <li>Panelde adım adım takip</li>
-              </ul>
-              <Link className="btn btn-o" href="/ucretsiz-uygunluk-raporu">
-                Teklif al
-              </Link>
-            </div>
-            <div className="card plan">
-              <h3>{packages.OPERASYON.name}</h3>
-              <p className="muted">Şirketiniz Almanya&apos;da çalışsın</p>
-              <div className="price">
-                {formatEur(packages.OPERASYON.monthly)}
-                <small>/ay + kuruluş</small>
-              </div>
-              <ul>
-                <li>Başlangıç paketindeki her şey</li>
-                <li>İş adresi (sanal ofis)</li>
-                <li>Muhasebe ve vergi danışmanı koordinasyonu</li>
-                <li>Stok ve sevkiyat yazılımı</li>
-              </ul>
-              <Link className="btn btn-o" href="/ucretsiz-uygunluk-raporu">
-                Teklif al
-              </Link>
-            </div>
-            <div className="card plan hot">
-              <span className="badge">Önerilen</span>
-              <h3>{packages.PAZARA_GIRIS.name}</h3>
-              <p className="muted">Kuruluştan Avrupa&apos;da satışa</p>
-              <div className="price">
-                {formatEur(packages.PAZARA_GIRIS.monthly)}
-                <small>&apos;dan/ay</small>
-              </div>
-              <ul>
-                <li>Operasyon paketindeki her şey</li>
-                <li>
-                  <b>Kuruluş ücreti indirimli</b>
-                </li>
-                <li>Almanya&apos;da depo, fulfillment ve gümrük takibi</li>
-                <li>Amazon.de ve eBay.de kurulumu ve yönetimi</li>
-                <li>Almanca ürün sayfaları ve pazarlama</li>
-              </ul>
-              <Link className="btn" href="/ucretsiz-uygunluk-raporu">
-                Ücretsiz raporla başla
-              </Link>
-            </div>
+          <div className="sec__head sec__head--center" data-reveal>
+            <p className="eyebrow">Fiyatlandırma</p>
+            <h2 id="fiyat-title">Açık fiyat, sürpriz yok</h2>
+            <p className="sec__lead">
+              Paket ücretleri ve kullanım bazlı kalemler tek fiyat listesinden gelir; site,
+              hesaplayıcı ve teklifiniz aynı rakamları gösterir.
+            </p>
           </div>
-          <p className="muted center" style={{ fontSize: 14, marginTop: 16 }}>
-            Depolama {formatEur(operations.storagePerPalletMonth)}/palet/ay ·{" "}
-            <Link href="/fiyatlar">Tüm fiyat listesi</Link> · Noter, sicil ve devlet harçları ile
-            şirket sermayesi dahil değildir. Fiyatlar KDV hariç.
+          <div data-reveal>
+            <PlanCards />
+          </div>
+          <div data-reveal>
+            <ThirdPartyFees />
+          </div>
+          <p className="sec__aside sec__aside--center">
+            <Link href="/fiyatlar">Tüm fiyat listesi ve maliyet hesaplayıcı</Link>
           </p>
         </div>
       </section>
 
-      <section id="sss">
-        <div className="wrap" style={{ maxWidth: 820 }}>
-          <div className="k">Sık sorulan sorular</div>
-          <h2>Aklınızdaki sorular</h2>
-          <div className="faq">
-            {generalFaq.slice(0, 6).map((f, i) => (
-              <details key={f.q} open={i === 0}>
-                <summary>{f.q}</summary>
-                <p>{f.a}</p>
+      {/* Uygunluk raporu formu */}
+      <section className="sec" id="rapor" aria-labelledby="rapor-title">
+        <div className="wrap assess">
+          <div className="assess__copy" data-reveal>
+            <p className="eyebrow">Ücretsiz uygunluk raporu</p>
+            <h2 id="rapor-title">Ürününüz Avrupa&apos;ya hazır mı? Birlikte bakalım.</h2>
+            <p className="sec__lead">
+              Beş kısa adımı doldurun; 48 saat içinde ürününüze özel raporla dönelim. Ücret ve
+              taahhüt yok.
+            </p>
+            <ul className="assess__list">
+              <li>Gerekli kayıtlar: KDV, ambalaj (LUCID), ürün güvenliği, WEEE</li>
+              <li>Tahmini gümrük ve ithalat KDV&apos;si</li>
+              <li>Size uygun şirket modeli ve satış kanalı</li>
+              <li>Aylık maliyet tahmini</li>
+            </ul>
+            <p className="assess__note">{brand.independenceNotice}</p>
+          </div>
+          <div className="assess__form">
+            <AssessmentForm />
+          </div>
+        </div>
+      </section>
+
+      {/* SSS */}
+      <section className="sec sec--tint" id="sss" aria-labelledby="sss-title">
+        <div className="wrap faq2">
+          <div className="faq2__head" data-reveal>
+            <p className="eyebrow">Sık sorulan sorular</p>
+            <h2 id="sss-title">Merak edilenler</h2>
+            <p className="sec__lead">
+              Kesin hukuki ve vergisel değerlendirme, durumunuza göre iş ortağımız avukat ve vergi
+              danışmanı tarafından yapılır.
+            </p>
+            <Link href="/sss" className="af-link">
+              Tüm sorular <IconArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="faq2__list">
+            {homeFaq.map((f) => (
+              <details key={f.q} className="acc">
+                <summary>
+                  <span>{f.q}</span>
+                  <span className="acc__icon" aria-hidden />
+                </summary>
+                <div className="acc__body">
+                  <p>{f.a}</p>
+                </div>
               </details>
             ))}
-          </div>
-          <p>
-            <Link href="/sss">Tüm sorular →</Link>
-          </p>
-        </div>
-      </section>
-
-      <section id="rapor">
-        <div className="wrap">
-          <div className="cta-band">
-            <div>
-              <h2>Ücretsiz uygunluk raporunuzu alın</h2>
-              <p>
-                Formu doldurun; 48 saat içinde ürününüze özel uygunluk raporu ve maliyet tahminiyle
-                dönelim. Ücret ve taahhüt yok.
-              </p>
-              <p style={{ fontSize: 13, opacity: 0.85 }}>{brand.independenceNotice}</p>
-            </div>
-            <div className="card">
-              <LeadForm />
-            </div>
           </div>
         </div>
       </section>

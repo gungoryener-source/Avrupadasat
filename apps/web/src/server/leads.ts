@@ -48,6 +48,7 @@ export async function submitLead(input: unknown, ip: string | null): Promise<Sub
         consentKvkk: p.consentKvkk,
         marketingConsent: p.marketingConsent,
         attribution: p.attribution as Prisma.InputJsonValue,
+        profile: (p.profile ?? {}) as Prisma.InputJsonValue,
       },
     });
     const dup = await tx.outboxEvent.findUnique({ where: { idempotencyKey: idem } });

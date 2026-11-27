@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { brand } from "@avrupadasat/core/brand.config";
 import { JsonLd, organizationLd } from "@/components/site/JsonLd";
+import "@fontsource-variable/inter";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -9,7 +10,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${brand.name} — ${brand.heroTitle}`,
+    default: `${brand.name} — ${brand.slogan.replace(/\.$/, "")}`,
     template: `%s | ${brand.name}`,
   },
   description:

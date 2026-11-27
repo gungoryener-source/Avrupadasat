@@ -1,3 +1,4 @@
+import "./site.css";
 import { ConsentProvider } from "@/components/consent";
 
 /** Herkese açık site: çerez onayı ve (onay sonrası) ölçüm etiketleri yalnız burada */
