@@ -21,7 +21,7 @@ try {
 
   let s = step("Firma sahibi giriş yapıyor; satış kilidi ve bekleme listesi görünüyor");
   await login(op, E.owner.email, E.password, E.owner.secret);
-  await op.getByText("Satış ve ödeme adımları vergi kayıtları tamamlanınca açılacak").waitFor();
+  await op.getByText("Satış, vergi kaydı tamamlanınca açılır").waitFor();
   await op.getByText("Ürün kartlarınızı yükleyin").waitFor();
   s.ok();
 

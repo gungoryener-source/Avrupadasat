@@ -1,4 +1,80 @@
 /* =====================================================================
+   Panel tasarım belirteçleri (açık + koyu tema). Renkler yalnız buradan gelir.
+   ===================================================================== */
+.app2 {
+  --surface-2: #fafbfd;
+  --surface-3: #f1f4f9;
+  --ink-2: #475569;
+  --ok-bg: #e7f5ef;
+  --ok-ink: #0d6b4c;
+  --warn-bg: #fdf3e2;
+  --warn-ink: #8a5207;
+  --warn-line: #f3e0b3;
+  --err-bg: #fdecee;
+  --err-ink: #b42335;
+  --err-line: #f2c6cd;
+  --info-bg: #eef3fe;
+  --info-ink: #23345c;
+  --info-line: #dbe5fd;
+  --chart-1: #2457e8;
+  --chart-2: #f59e0b;
+  --chart-3: #0f9d74;
+  --chart-4: #8b5cf6;
+  --chart-grid: #eef1f6;
+  --focus: 0 0 0 3px rgba(36, 87, 232, 0.28);
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --shadow-card: 0 1px 2px rgba(16, 27, 53, 0.04);
+  --shadow-hover: 0 1px 2px rgba(16, 27, 53, 0.05), 0 8px 24px -8px rgba(16, 27, 53, 0.14);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-color-scheme: dark) {
+  .app2 {
+    color-scheme: dark;
+    --bg: #0b1120;
+    --card: #111a2e;
+    --surface-2: #0f1729;
+    --surface-3: #18233b;
+    --ink: #e6ebf5;
+    --ink-2: #c3cddd;
+    --mute: #93a1b8;
+    --line: #1f2b45;
+    --line-2: #2a3856;
+    --p: #5b8bff;
+    --p-dark: #477bff;
+    --p-soft: #16244a;
+    --ok: #3ccf98;
+    --warn: #f0b252;
+    --err: #ff7d8d;
+    --ok-bg: #0f2f25;
+    --ok-ink: #7ee2b8;
+    --warn-bg: #33250d;
+    --warn-ink: #f6c97a;
+    --warn-line: #57401a;
+    --err-bg: #3a1620;
+    --err-ink: #ffa3ae;
+    --err-line: #5a2432;
+    --info-bg: #142345;
+    --info-ink: #bcd0ff;
+    --info-line: #24396b;
+    --chart-1: #6d97ff;
+    --chart-2: #f5b13d;
+    --chart-3: #34c58f;
+    --chart-4: #a98bfa;
+    --chart-grid: #1c2740;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -10px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* =====================================================================
    Panel tasarım sistemi (müşteri ve ekip paneli) — .app2 altında
    ===================================================================== */
 
@@ -128,7 +204,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 0 32px;
-  background: rgba(255, 255, 255, 0.86);
+  background: color-mix(in srgb, var(--card) 86%, transparent);
   backdrop-filter: saturate(180%) blur(12px);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid var(--line);
@@ -152,7 +228,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  color: #475569;
+  color: var(--ink-2);
   text-decoration: none;
 }
 .app2 .sh-bell:hover {
@@ -223,7 +299,7 @@
   top: calc(100% + 6px);
   min-width: 200px;
   padding: 6px;
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: 0 12px 32px rgba(16, 27, 53, 0.12);
@@ -289,7 +365,7 @@
     height: 40px;
     border-radius: 10px;
     border: 1px solid var(--line);
-    background: #fff;
+    background: var(--card);
     color: var(--ink);
     cursor: pointer;
   }
@@ -369,7 +445,7 @@
 /* ---------- Kartlar ---------- */
 .app2 .card,
 .app2 .pc {
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(16, 27, 53, 0.04);
@@ -435,7 +511,7 @@
 .app2 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
   margin-bottom: 16px;
@@ -503,8 +579,8 @@
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
-  background: #eef1f6;
-  color: #475569;
+  background: var(--surface-3);
+  color: var(--ink-2);
 }
 .app2 .bd::before {
   content: "";
@@ -517,22 +593,22 @@
 .app2 .bd-blue,
 .app2 .tag.blue {
   background: var(--p-soft);
-  color: #1d47c4;
+  color: var(--info-ink);
 }
 .app2 .bd-green,
 .app2 .tag.ok {
-  background: #e7f5ef;
-  color: #0f6b4c;
+  background: var(--ok-bg);
+  color: var(--ok-ink);
 }
 .app2 .bd-amber,
 .app2 .tag.warn {
-  background: #fdf3e2;
-  color: #8a5207;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
 }
 .app2 .bd-red,
 .app2 .tag.red {
-  background: #fdecee;
-  color: #b42335;
+  background: var(--err-bg);
+  color: var(--err-ink);
 }
 
 /* ---------- Tablolar ---------- */
@@ -540,7 +616,7 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  background: #fff;
+  background: var(--card);
   font-size: 14px;
 }
 .app2 .tbl th {
@@ -550,7 +626,7 @@
   color: var(--mute);
   text-transform: none;
   letter-spacing: 0;
-  background: #fafbfd;
+  background: var(--surface-2);
   padding: 10px 16px;
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
@@ -564,7 +640,7 @@
   border-bottom: 0;
 }
 .app2 .tbl tbody tr:hover td {
-  background: #fbfcfe;
+  background: var(--surface-2);
 }
 .app2 .tbl a {
   color: var(--ink);
@@ -611,7 +687,7 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   overflow: auto;
-  background: #fff;
+  background: var(--card);
 }
 .app2 .tw .tbl {
   border: 0;
@@ -672,7 +748,7 @@
   height: 38px;
   border: 1px solid var(--line-2);
   border-radius: 8px;
-  background: #fff;
+  background: var(--card);
   font: inherit;
   font-size: 14px;
   padding: 0 10px;
@@ -742,7 +818,7 @@
   font-size: 11.5px;
   padding: 0 6px;
   border-radius: 9px;
-  background: #eef1f6;
+  background: var(--surface-3);
   font-variant-numeric: tabular-nums;
 }
 
@@ -798,7 +874,7 @@
   border: 1px solid var(--line-2);
   border-radius: 8px;
   font-size: 14px;
-  background: #fff;
+  background: var(--card);
   width: 100%;
 }
 .app2 .field textarea {
@@ -847,12 +923,12 @@
   font-size: 13px;
 }
 .app2 .btn-danger {
-  background: #fff;
+  background: var(--card);
   color: var(--err);
-  border-color: #f2c6cd;
+  border-color: var(--err-line);
 }
 .app2 .btn-danger:hover {
-  background: #fdf0f2;
+  background: var(--err-bg);
 }
 .app2 .muted {
   color: var(--mute);
@@ -860,12 +936,12 @@
 .app2 .note {
   background: var(--p-soft);
   border-left: 3px solid var(--p);
-  color: #23345c;
+  color: var(--info-ink);
   border-radius: 8px;
 }
 .app2 .alert-warn {
-  background: #fdf3e2;
-  color: #8a5207;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
   border-radius: 8px;
 }
 
@@ -913,7 +989,7 @@
   flex: none;
 }
 .app2 .ls-dot[data-read] {
-  background: #d4dbe6;
+  background: var(--line-2);
 }
 
 /* Hoş geldin şeridi */
@@ -960,7 +1036,7 @@
 .app2 .prog {
   height: 8px;
   border-radius: 8px;
-  background: #e9edf3;
+  background: var(--surface-3);
   overflow: hidden;
 }
 .app2 .prog span {
@@ -980,17 +1056,17 @@
   max-width: 760px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--line);
 }
 .app2 .msg-me {
   margin-left: auto;
-  background: #f4f7ff;
-  border-color: #dbe5fd;
+  background: var(--info-bg);
+  border-color: var(--info-line);
 }
 .app2 .msg-int {
-  background: #fff9eb;
-  border-color: #f3e0b3;
+  background: var(--warn-bg);
+  border-color: var(--warn-line);
   border-style: dashed;
 }
 .app2 .msg-h {
@@ -1037,7 +1113,7 @@
 }
 .app2 .task-d {
   margin: 6px 0 0;
-  color: #475569;
+  color: var(--ink-2);
   font-size: 14px;
   white-space: pre-wrap;
 }
@@ -1046,7 +1122,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   background: var(--p-soft);
-  color: #23345c;
+  color: var(--info-ink);
   font-size: 13.5px;
 }
 .app2 .task-f {
@@ -1138,7 +1214,7 @@
   padding: 0 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--card);
   font: inherit;
   font-size: 13.5px;
   color: var(--ink);
@@ -1172,14 +1248,15 @@
   border-radius: 8px;
   object-fit: cover;
   border: 1px solid var(--line);
-  background: #f2f5fa;
+  background: var(--surface-3);
   display: inline-block;
   vertical-align: middle;
   flex-shrink: 0;
 }
 .app2 .thumb-empty {
   background:
-    linear-gradient(135deg, transparent 46%, #dfe5ef 46%, #dfe5ef 54%, transparent 54%), #f2f5fa;
+    linear-gradient(135deg, transparent 46%, var(--line-2) 46%, var(--line-2) 54%, transparent 54%),
+    var(--surface-3);
 }
 .app2 .prod {
   display: flex;
@@ -1192,7 +1269,7 @@
   object-fit: contain;
   border-radius: 12px;
   border: 1px solid var(--line);
-  background: #f7f9fc;
+  background: var(--surface-2);
 }
 .app2 .task-f input[type="file"] {
   flex: 1 1 200px;
@@ -1204,10 +1281,1251 @@
   font-size: 12.5px;
   font-weight: 500;
   color: var(--mute);
-  background: #fafbfd;
+  background: var(--surface-2);
 }
 @media (max-width: 720px) {
   .app2 .stats {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ---------- Genel (globals.css) bileşenlerinin panel içi tema eşlemesi ---------- */
+.app2 .field input,
+.app2 .field select,
+.app2 .field textarea,
+.app2 .btn-o {
+  background: var(--card);
+  color: var(--ink);
+}
+.app2 .alert-err {
+  background: var(--err-bg);
+  color: var(--err-ink);
+}
+.app2 .alert-ok {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+.app2 .alert-info {
+  background: var(--info-bg);
+  color: var(--info-ink);
+}
+.app2 .note {
+  background: var(--info-bg);
+  color: var(--info-ink);
+  border-left-color: var(--p);
+}
+.app2 :focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app2 *,
+  .app2 *::before,
+  .app2 *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =====================================================================
+   Genel Bakış (dashboard)
+   ===================================================================== */
+.app2 .dash {
+  display: grid;
+  gap: var(--sp-6);
+  max-width: 1440px;
+}
+.app2 .mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Başlık şeridi: ince, dokulu, kompakt */
+.app2 .dh {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-6);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(
+      120% 140% at 100% 0%,
+      color-mix(in srgb, var(--p) 10%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      80% 120% at 0% 100%,
+      color-mix(in srgb, var(--chart-3) 7%, transparent) 0%,
+      transparent 60%
+    ),
+    var(--card);
+  overflow: hidden;
+}
+.app2 .dh h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.app2 .dh-sum {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.app2 .dh-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.app2 .dh-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.app2 .dh-actions .btn {
+  gap: 6px;
+  align-items: center;
+}
+
+/* Durum hapı: açık zemin + koyu metin + simge */
+.app2 .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  background: var(--surface-3);
+  color: var(--ink-2);
+  width: fit-content;
+}
+.app2 .pill-g {
+  font-size: 11px;
+  line-height: 1;
+}
+.app2 .pill-ok {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+.app2 .pill-warn {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+.app2 .pill-err {
+  background: var(--err-bg);
+  color: var(--err-ink);
+}
+.app2 .pill-info {
+  background: var(--info-bg);
+  color: var(--info-ink);
+}
+
+/* Onboarding */
+.app2 .onb {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--sp-5);
+  align-items: start;
+  padding: var(--sp-5) var(--sp-6);
+  border-radius: var(--r-lg);
+  border: 1px solid color-mix(in srgb, var(--p) 28%, var(--line));
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  animation: onb-in 0.3s var(--ease);
+}
+.app2 .onb.is-complete {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  border-color: color-mix(in srgb, var(--ok) 35%, var(--line));
+  animation: onb-done 0.6s var(--ease);
+}
+@keyframes onb-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes onb-done {
+  0% {
+    transform: scale(0.98);
+  }
+  50% {
+    transform: scale(1.01);
+  }
+}
+.app2 .onb-ring {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+.app2 .onb-seg {
+  fill: none;
+  stroke: var(--surface-3);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke 0.3s var(--ease);
+}
+.app2 .onb-seg.is-on {
+  stroke: var(--p);
+}
+.app2 .onb.is-complete .onb-seg.is-on {
+  stroke: var(--ok);
+}
+.app2 .onb-num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 650;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.app2 .onb-h {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.app2 .onb-sub {
+  margin: 2px 0 0;
+  color: var(--mute);
+  font-size: 13.5px;
+}
+.app2 .onb-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 6px 20px;
+}
+.app2 .onb-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  min-height: 28px;
+}
+.app2 .onb-list a {
+  color: var(--ink);
+  text-decoration: none;
+  flex: 1;
+}
+.app2 .onb-list a:hover {
+  color: var(--p);
+}
+.app2 .onb-list li.is-done a {
+  color: var(--mute);
+  text-decoration: line-through;
+  text-decoration-color: var(--line-2);
+}
+.app2 .onb-list li.is-next a {
+  font-weight: 600;
+  color: var(--p);
+}
+.app2 .onb-check {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.app2 .onb-list li.is-done .onb-check {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+.app2 .onb-list li.is-next .onb-check {
+  border-color: var(--p);
+  box-shadow: 0 0 0 3px var(--p-soft);
+}
+.app2 .onb-min {
+  color: var(--mute);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* KPI kartları */
+.app2 .kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+.app2 .kpi {
+  display: grid;
+  gap: 8px;
+  padding: var(--sp-5);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    transform 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    border-color 0.18s var(--ease);
+}
+.app2 a.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--line-2);
+}
+.app2 .kpi-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.app2 .kpi-ic {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--p-soft);
+  color: var(--p);
+}
+.app2 .kpi-l {
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 500;
+}
+.app2 .kpi-v {
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.app2 .kpi-f {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+}
+.app2 .kpi-ch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-3);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.app2 .kpi-ch.is-good {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+.app2 .kpi-ch.is-bad {
+  background: var(--err-bg);
+  color: var(--err-ink);
+}
+.app2 .kpi-cmp {
+  font-size: 12px;
+  color: var(--mute);
+  font-weight: 400;
+}
+.app2 .kpi-sp {
+  margin-left: auto;
+  display: flex;
+}
+.app2 .kpi-sub {
+  font-size: 12.5px;
+  color: var(--mute);
+}
+.app2 .spark-line {
+  fill: none;
+  stroke: var(--p);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.app2 .spark-area {
+  fill: var(--p);
+  opacity: 0.08;
+}
+.app2 .spark-err .spark-line {
+  stroke: var(--err);
+}
+.app2 .spark-err .spark-area {
+  fill: var(--err);
+}
+.app2 .spark-flat {
+  stroke: var(--line-2);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+/* Izgara: 8/4 */
+.app2 .dg {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  gap: var(--sp-6);
+  align-items: start;
+}
+.app2 .dg-main,
+.app2 .dg-side {
+  display: grid;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+
+/* Widget kartı */
+.app2 .wc {
+  padding: var(--sp-5) var(--sp-6) var(--sp-6);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  min-width: 0;
+}
+.app2 .wc-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: var(--sp-4);
+  min-height: 28px;
+}
+.app2 .wc-h h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.app2 .wc-a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app2 .wc-link {
+  font-size: 13px;
+  color: var(--p);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.app2 .wc-link:hover {
+  text-decoration: underline;
+}
+
+/* Segment kontrolü */
+.app2 .seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--surface-3);
+}
+.app2 .seg a {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--mute);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+.app2 .seg a.is-on {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(16, 27, 53, 0.08);
+}
+
+/* Satış grafiği */
+.app2 .sales-sum {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.app2 .sales-v {
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+  margin-right: 10px;
+}
+.app2 .sales-l {
+  color: var(--mute);
+  font-size: 13px;
+}
+.app2 .chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.app2 .legend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.app2 .legend-btn[aria-pressed="false"] {
+  color: var(--mute);
+  text-decoration: line-through;
+}
+.app2 .legend-sw {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  border: 1.5px solid;
+  flex: none;
+}
+.app2 .chart-box {
+  position: relative;
+}
+.app2 .chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  touch-action: pan-y;
+  border-radius: 6px;
+}
+.app2 .chart-grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+.app2 .chart-axis {
+  stroke: var(--line-2);
+}
+.app2 .chart-area {
+  opacity: 0.16;
+}
+.app2 .chart-line {
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+.app2 .chart-tick {
+  fill: var(--mute);
+  font-size: 11px;
+}
+.app2 .chart-cursor {
+  stroke: var(--ink-2);
+  stroke-dasharray: 3 3;
+  stroke-width: 1;
+}
+.app2 .chart-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  min-width: 150px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--navy);
+  color: #e6ebf5;
+  font-size: 12px;
+  display: grid;
+  gap: 3px;
+  pointer-events: none;
+  box-shadow: var(--shadow-hover);
+  z-index: 2;
+}
+.app2 .chart-tip-total {
+  font-size: 15px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.app2 .chart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.app2 .chart-tip-row b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Boş / hata / iskelet */
+.app2 .de {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: var(--sp-6) var(--sp-4);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px dashed var(--line-2);
+}
+.app2 .de b {
+  font-size: 14px;
+  font-weight: 600;
+}
+.app2 .de p {
+  margin: 0 0 6px;
+  max-width: 44ch;
+  color: var(--mute);
+  font-size: 13px;
+}
+.app2 .de-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--p);
+  margin-bottom: 4px;
+}
+.app2 .de-positive {
+  border-style: solid;
+  border-color: transparent;
+  background: var(--ok-bg);
+  padding: var(--sp-4);
+}
+.app2 .de-positive .de-ic {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ok);
+  color: #fff;
+  border: 0;
+}
+.app2 .de-positive b {
+  color: var(--ok-ink);
+}
+.app2 .wc-err {
+  border-color: var(--err-line);
+}
+.app2 .sk {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-3) 0%,
+    var(--surface-2) 50%,
+    var(--surface-3) 100%
+  );
+  background-size: 200% 100%;
+  animation: sk 1.2s ease-in-out infinite;
+}
+@keyframes sk {
+  to {
+    background-position: -200% 0;
+  }
+}
+.app2 .sk-title {
+  height: 16px;
+  width: 30%;
+  margin-bottom: 18px;
+}
+.app2 .sk-row {
+  height: 14px;
+  margin: 10px 0;
+}
+.app2 .sk-num {
+  height: 30px;
+  width: 60%;
+}
+.app2 .sk-chart {
+  height: 200px;
+}
+
+/* Sipariş listesi (tablo → mobilde kart) */
+.app2 .ot {
+  display: grid;
+  margin: 0 calc(-1 * var(--sp-6));
+}
+.app2 .ot-h,
+.app2 .ot-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(160px, 2fr) minmax(80px, 1fr) 96px 130px 96px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px var(--sp-6);
+}
+.app2 .ot-h {
+  font-size: 12px;
+  color: var(--mute);
+  font-weight: 500;
+  border-bottom: 1px solid var(--line);
+  padding-top: 0;
+}
+.app2 .ot-row {
+  position: relative;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  transition: background-color 0.15s var(--ease);
+}
+.app2 .ot-row:last-child {
+  border-bottom: 0;
+}
+.app2 .ot-row:hover {
+  background: var(--surface-2);
+}
+.app2 .ot-r {
+  text-align: right;
+  justify-self: end;
+}
+.app2 .ot-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.app2 .ot-link {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+}
+/* Satırın tamamı tıklanabilir (bağlantı satırı kaplar); kopyala düğmesi üstte kalır */
+.app2 .ot-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.app2 .ot-row .icon-btn {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+}
+.app2 .ot-row:hover .icon-btn,
+.app2 .ot-row .icon-btn:focus-visible {
+  opacity: 1;
+}
+.app2 .ot-prod {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.app2 .ot-prod .thumb {
+  width: 32px;
+  height: 32px;
+}
+.app2 .ot-pn {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app2 .ot-pn small {
+  color: var(--mute);
+}
+.app2 .ot-mob {
+  display: none;
+}
+.app2 .ot-city small {
+  color: var(--mute);
+}
+.app2 .ot-amt {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.app2 .ot-time {
+  color: var(--mute);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+/* Kanal rozeti */
+.app2 .ch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.app2 .ch-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex: none;
+}
+.app2 .ch-amz {
+  background: #232f3e;
+  color: #ffb84d;
+}
+.app2 .ch-eby {
+  background: #e53238;
+}
+.app2 .ch-shp {
+  background: #5e8e3e;
+}
+.app2 .ch-man {
+  background: var(--ink-2);
+}
+.app2 .ch-name {
+  font-weight: 500;
+}
+
+.app2 .icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--mute);
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease);
+}
+.app2 .icon-btn:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+/* Zaman çizelgesi */
+.app2 .sh-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13.5px;
+  margin-bottom: 12px;
+}
+.app2 .sh-head a {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+.app2 .tl {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.app2 .tl-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 34px;
+  font-size: 13.5px;
+  color: var(--mute);
+}
+.app2 .tl-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 24px;
+  bottom: -10px;
+  width: 2px;
+  background: var(--line);
+}
+.app2 .tl-step.is-done:not(:last-child)::after {
+  background: var(--ok);
+}
+.app2 .tl-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+  background: var(--card);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  z-index: 1;
+}
+.app2 .tl-step.is-done {
+  color: var(--ink-2);
+}
+.app2 .tl-step.is-done .tl-dot {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+.app2 .tl-step.is-current {
+  color: var(--ink);
+  font-weight: 600;
+}
+.app2 .tl-step.is-current .tl-dot {
+  border-color: var(--p);
+  box-shadow: 0 0 0 4px var(--p-soft);
+}
+.app2 .tl-step.is-current .tl-dot::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--p);
+}
+.app2 .tl-at {
+  font-size: 12px;
+  color: var(--mute);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.app2 .sh-eta {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13.5px;
+}
+.app2 .sh-more {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+.app2 .sh-more li {
+  display: flex;
+  justify-content: space-between;
+  color: var(--mute);
+}
+
+/* Aktivite akışı */
+.app2 .feed-sec {
+  margin: 4px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mute);
+  text-transform: none;
+}
+.app2 .feed-sec + .feed {
+  margin-bottom: 12px;
+}
+.app2 .feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.app2 .feed-i {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.app2 .feed-i:last-child {
+  border-bottom: 0;
+}
+.app2 .feed-ic {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-3);
+  color: var(--ink-2);
+}
+.app2 .feed-task .feed-ic,
+.app2 .feed-ic.feed-task {
+  background: var(--p-soft);
+  color: var(--p);
+}
+.app2 .feed-ic.feed-deadline {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+.app2 .feed-ic.feed-ticket {
+  background: var(--info-bg);
+  color: var(--info-ink);
+}
+.app2 .feed-ic.feed-document {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+.app2 .feed-b {
+  display: grid;
+  min-width: 0;
+}
+.app2 .feed-t {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app2 .feed-t:hover {
+  color: var(--p);
+}
+.app2 .feed-i.is-unread .feed-t::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--p);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.app2 .feed-m {
+  font-size: 12px;
+  color: var(--mute);
+}
+.app2 .feed-flag {
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  font-weight: 500;
+}
+
+/* Stok sağlığı */
+.app2 .sb {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.app2 .sb-t {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+.app2 .sb-n {
+  color: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app2 .sb-q {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.app2 .sb-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+.app2 .sb-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--p);
+}
+.app2 .sb-bar i {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--ink-2);
+  border-radius: 1px;
+}
+.app2 .sb li.is-low .sb-bar span {
+  background: var(--warn);
+}
+.app2 .sb li.is-low .sb-q {
+  color: var(--warn-ink);
+}
+
+/* Sipariş çekmecesi */
+.app2 .drw-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 27, 53, 0.36);
+  z-index: 60;
+  animation: fade 0.18s var(--ease);
+}
+.app2 .drw {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(440px, 100vw);
+  background: var(--card);
+  border-left: 1px solid var(--line);
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -24px 0 60px -20px rgba(16, 27, 53, 0.3);
+  animation: drw-in 0.22s var(--ease);
+  outline: none;
+}
+@keyframes drw-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+.app2 .drw-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.app2 .drw-h h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.app2 .drw-b {
+  padding: 20px;
+  overflow-y: auto;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+.app2 .drw-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.app2 .drw-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mute);
+  font-weight: 600;
+}
+.app2 .drw-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.app2 .drw-lines li {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 13.5px;
+}
+.app2 .drw-lines small {
+  color: var(--mute);
+}
+.app2 .drw-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Duyarlı yerleşim */
+@media (max-width: 1279px) {
+  .app2 .dg {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app2 .dg-side {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+@media (max-width: 1100px) {
+  .app2 .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 860px) {
+  .app2 .ot-h {
+    display: none;
+  }
+  .app2 .ot-row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "id st"
+      "prod time";
+    gap: 6px 10px;
+  }
+  .app2 .ot-row > :nth-child(1) {
+    grid-area: id;
+  }
+  .app2 .ot-row > :nth-child(2) {
+    grid-area: prod;
+  }
+  .app2 .ot-row > :nth-child(3),
+  .app2 .ot-row > :nth-child(4) {
+    display: none;
+  }
+  .app2 .ot-row > :nth-child(5) {
+    grid-area: st;
+    justify-self: end;
+  }
+  .app2 .ot-row > :nth-child(6) {
+    grid-area: time;
+  }
+  .app2 .ot-mob {
+    display: block;
+    font-size: 12px;
+  }
+  .app2 .ot-pn {
+    white-space: normal;
+  }
+  .app2 .ot-row .icon-btn {
+    opacity: 1;
+  }
+}
+@media (max-width: 720px) {
+  .app2 .dh {
+    padding: var(--sp-4);
+  }
+  .app2 .dh h1 {
+    font-size: 20px;
+  }
+  .app2 .dh-actions,
+  .app2 .dh-actions .btn {
+    width: 100%;
+  }
+  .app2 .dh-actions .btn {
+    flex: 1;
+  }
+  .app2 .onb {
+    grid-template-columns: auto 1fr;
+    padding: var(--sp-4);
+  }
+  .app2 .onb-cta {
+    grid-column: 1 / -1;
+  }
+  .app2 .onb-cta .btn {
+    width: 100%;
+  }
+  .app2 .kpi {
+    padding: var(--sp-4);
+  }
+  .app2 .kpi-v {
+    font-size: 24px;
+  }
+  .app2 .kpi-cmp,
+  .app2 .kpi-sp {
+    display: none;
+  }
+  .app2 .wc {
+    padding: var(--sp-4);
+  }
+  .app2 .ot {
+    margin: 0 calc(-1 * var(--sp-4));
+  }
+  .app2 .ot-h,
+  .app2 .ot-row {
+    padding-left: var(--sp-4);
+    padding-right: var(--sp-4);
+  }
+  .app2 .dg-side {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

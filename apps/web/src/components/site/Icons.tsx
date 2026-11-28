@@ -269,3 +269,59 @@ export const IconMessage = (p: P) => (
     <path d="M4.5 5.5h15v10h-9l-4.5 3.5v-3.5h-1.5z" />
   </Svg>
 );
+
+export const IconEuro = (p: P) => (
+  <Svg {...p}>
+    <path d="M17.5 6.5A7 7 0 1 0 17.5 17.5" />
+    <path d="M4 10h9M4 14h9" />
+  </Svg>
+);
+
+export const IconTrendUp = (p: P) => (
+  <Svg {...p}>
+    <path d="m4 16 6-6 4 4 6-7" />
+    <path d="M15 7h5v5" />
+  </Svg>
+);
+
+export const IconTrendDown = (p: P) => (
+  <Svg {...p}>
+    <path d="m4 8 6 6 4-4 6 7" />
+    <path d="M15 17h5v-5" />
+  </Svg>
+);
+
+export const IconCopy = (p: P) => (
+  <Svg {...p}>
+    <rect x="8" y="8" width="12" height="12" rx="2" />
+    <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+  </Svg>
+);
+
+export const IconAlert = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 4 2.8 19.5h18.4z" />
+    <path d="M12 10v4M12 17h.01" />
+  </Svg>
+);
+
+export const IconClock = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 2" />
+  </Svg>
+);
+
+export const IconSidebar = (p: P) => (
+  <Svg {...p}>
+    <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+    <path d="M9.5 4.5v15" />
+  </Svg>
+);
+
+export const IconHelp = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7M12 17h.01" />
+  </Svg>
+);
