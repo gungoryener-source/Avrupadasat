@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { FeedItem } from "@/server/dashboard";
 import { IconBell, IconChecklist, IconClock, IconLifebuoy } from "@/components/site/Icons";
-import { fmtDay, fmtRelative } from "./format";
+import { formatter } from "./format";
 
 const ICON = {
   task: IconChecklist,
@@ -18,7 +18,19 @@ const KIND = {
   document: "Belge",
 } as const;
 
-export function ActivityFeed({ items, now }: { items: FeedItem[]; now: number }) {
+export function ActivityFeed({
+  items,
+  now,
+  kinds = KIND,
+  words = { soon: "Yaklaşıyor", unread: "okunmadı" },
+  fmt = formatter("tr"),
+}: {
+  items: FeedItem[];
+  now: number;
+  kinds?: Record<FeedItem["kind"], string>;
+  words?: { soon: string; unread: string };
+  fmt?: ReturnType<typeof formatter>;
+}) {
   return (
     <ul className="feed">
       {items.map((i) => {
@@ -34,16 +46,16 @@ export function ActivityFeed({ items, now }: { items: FeedItem[]; now: number })
             </span>
             <div className="feed-b">
               <Link href={i.href} className="feed-t">
-                <span className="sr-only">{KIND[i.kind]}: </span>
+                <span className="sr-only">{kinds[i.kind]}: </span>
                 {i.title}
               </Link>
               <span className="feed-m">
                 {i.detail && <>{i.detail} · </>}
-                <time dateTime={i.at.toISOString()} title={fmtDay(i.at)}>
-                  {future && i.kind !== "notification" ? fmtDay(i.at) : fmtRelative(i.at, now)}
+                <time dateTime={i.at.toISOString()} title={fmt.day(i.at)}>
+                  {future && i.kind !== "notification" ? fmt.day(i.at) : fmt.relative(i.at, now)}
                 </time>
-                {i.urgent && <span className="feed-flag">Yaklaşıyor</span>}
-                {i.unread && <span className="sr-only"> (okunmadı)</span>}
+                {i.urgent && <span className="feed-flag">{words.soon}</span>}
+                {i.unread && <span className="sr-only"> ({words.unread})</span>}
               </span>
             </div>
           </li>

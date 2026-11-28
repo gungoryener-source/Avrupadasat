@@ -17,7 +17,27 @@ const KIND: Record<string, string> = {
   tenant: "Firma",
 };
 
-export function CommandPalette({ groups }: { groups: NavGroup[] }) {
+type S = {
+  search: string;
+  searchPlaceholder: string;
+  searching: string;
+  noResults: string;
+  kinds: Record<string, string>;
+};
+
+export function CommandPalette({
+  groups,
+  s = {
+    search: "Ara…",
+    searchPlaceholder: "Sipariş no, SKU, ürün veya sayfa ara",
+    searching: "Aranıyor…",
+    noResults: "Sonuç yok",
+    kinds: KIND,
+  },
+}: {
+  groups: NavGroup[];
+  s?: S;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -95,7 +115,7 @@ export function CommandPalette({ groups }: { groups: NavGroup[] }) {
         aria-haspopup="dialog"
       >
         <IconSearch size={16} />
-        <span>Ara…</span>
+        <span>{s.search}</span>
         <kbd>{mac ? "⌘K" : "Ctrl K"}</kbd>
       </button>
       {open && (
@@ -128,8 +148,8 @@ export function CommandPalette({ groups }: { groups: NavGroup[] }) {
                   setQ(e.target.value);
                   setSel(0);
                 }}
-                placeholder="Sipariş no, SKU, ürün veya sayfa ara"
-                aria-label="Ara"
+                placeholder={s.searchPlaceholder}
+                aria-label={s.search}
                 role="combobox"
                 aria-expanded="true"
                 aria-controls="cmd-list"
@@ -148,14 +168,14 @@ export function CommandPalette({ groups }: { groups: NavGroup[] }) {
                   onMouseEnter={() => setSel(i)}
                   onClick={() => go(h)}
                 >
-                  <span className="cmd-k">{KIND[h.kind] ?? h.kind}</span>
+                  <span className="cmd-k">{s.kinds[h.kind] ?? h.kind}</span>
                   <span className="cmd-t">{h.title}</span>
                   {h.sub && <span className="cmd-s">{h.sub}</span>}
                 </li>
               ))}
               {hits.length === 0 && (
                 <li className="cmd-empty" role="option" aria-selected="false">
-                  {loading ? "Aranıyor…" : "Sonuç yok"}
+                  {loading ? s.searching : s.noResults}
                 </li>
               )}
             </ul>

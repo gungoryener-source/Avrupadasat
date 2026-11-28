@@ -19,7 +19,11 @@ export function StatCard({
   line,
   sub,
   invert = false,
+  labels = { new: "yeni", noData: "henüz veri yok", noPrev: "önceki dönemde veri yok" },
+  intlLocale = "tr-TR",
 }: {
+  labels?: { new: string; noData: string; noPrev: string };
+  intlLocale?: string;
   href: string;
   icon: ReactNode;
   label: string;
@@ -42,7 +46,7 @@ export function StatCard({
         <span className="kpi-l">{label}</span>
       </div>
       <div className="kpi-v">
-        <CountUp value={value} format={format} />
+        <CountUp value={value} format={format} locale={intlLocale} />
       </div>
       <div className="kpi-f">
         <span className={`kpi-ch ${good === null ? "" : good ? "is-good" : "is-bad"}`}>
@@ -51,7 +55,7 @@ export function StatCard({
           {noData
             ? "—"
             : change === null
-              ? "yeni"
+              ? labels.new
               : change > 0
                 ? `+%${change}`
                 : change < 0

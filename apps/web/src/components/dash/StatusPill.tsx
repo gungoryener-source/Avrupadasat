@@ -12,14 +12,14 @@ const MAP: Record<OrderStatus, { label: string; tone: string; glyph: string }> =
   CANCELLED: { label: "İptal", tone: "neutral", glyph: "×" },
 };
 
-export function StatusPill({ status }: { status: OrderStatus }) {
+export function StatusPill({ status, label }: { status: OrderStatus; label?: string }) {
   const m = MAP[status];
   return (
     <span className={`pill pill-${m.tone}`}>
       <span className="pill-g" aria-hidden="true">
         {m.glyph}
       </span>
-      {m.label}
+      {label ?? m.label}
     </span>
   );
 }

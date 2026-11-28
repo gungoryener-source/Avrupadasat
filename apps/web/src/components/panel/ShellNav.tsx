@@ -93,10 +93,24 @@ export function ShellNav({
   groups,
   children,
   footer,
+  labels = {
+    collapse: "Daralt",
+    expand: "Menüyü genişlet",
+    collapseLong: "Menüyü daralt",
+    menuOpen: "Menüyü aç",
+    menuClose: "Menüyü kapat",
+  },
 }: {
   groups: NavGroup[];
   children?: React.ReactNode;
   footer?: React.ReactNode;
+  labels?: {
+    collapse: string;
+    expand: string;
+    collapseLong: string;
+    menuOpen: string;
+    menuClose: string;
+  };
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -126,7 +140,7 @@ export function ShellNav({
       <button
         type="button"
         className="sh-burger"
-        aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
+        aria-label={open ? labels.menuClose : labels.menuOpen}
         aria-expanded={open}
         aria-controls="sh-side"
         onClick={() => setOpen((o) => !o)}
@@ -174,11 +188,11 @@ export function ShellNav({
             className="sh-collapse"
             onClick={toggle}
             aria-pressed={collapsed}
-            aria-label={collapsed ? "Menüyü genişlet" : "Menüyü daralt"}
-            title={collapsed ? "Menüyü genişlet" : "Menüyü daralt"}
+            aria-label={collapsed ? labels.expand : labels.collapseLong}
+            title={collapsed ? labels.expand : labels.collapseLong}
           >
             <I.IconSidebar size={18} />
-            <span className="sh-lbl">Daralt</span>
+            <span className="sh-lbl">{labels.collapse}</span>
           </button>
         </div>
       </aside>

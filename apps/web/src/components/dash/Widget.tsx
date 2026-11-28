@@ -67,17 +67,25 @@ export function DashEmpty({
 }
 
 /** Hata durumu: widget tek başına çöker, sayfa çalışır; "Tekrar dene" sayfayı tazeler */
-export function WidgetError({ title, retryHref }: { title: string; retryHref: string }) {
+export function WidgetError({
+  title,
+  retryHref,
+  w = { error: "Bu bölüm yüklenemedi", text: "Geçici bir sorun olabilir.", retry: "Tekrar dene" },
+}: {
+  title: string;
+  retryHref: string;
+  w?: { error: string; text: string; retry: string };
+}) {
   return (
     <section className="wc wc-err" role="alert">
       <header className="wc-h">
         <h2>{title}</h2>
       </header>
       <div className="de">
-        <b>Bu bölüm yüklenemedi</b>
-        <p>Geçici bir sorun olabilir.</p>
+        <b>{w.error}</b>
+        <p>{w.text}</p>
         <Link href={retryHref} className="btn btn-o btn-sm" prefetch={false}>
-          Tekrar dene
+          {w.retry}
         </Link>
       </div>
     </section>

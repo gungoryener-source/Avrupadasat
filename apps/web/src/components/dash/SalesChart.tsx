@@ -24,13 +24,28 @@ const eur = new Intl.NumberFormat("de-DE", {
   currency: "EUR",
   maximumFractionDigits: 0,
 });
-const day = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short" });
 
 const W = 720;
 const H = 220;
 const PAD = { l: 8, r: 8, t: 12, b: 26 };
 
-export function SalesChart({ buckets, channels }: { buckets: Bucket[]; channels: string[] }) {
+export function SalesChart({
+  buckets,
+  channels,
+  locale = "tr-TR",
+  seriesLabel = "Kanal serileri",
+  summaryTpl = "Son {n} günde {sum} ciro. En yüksek gün {day}: {peak}.",
+}: {
+  buckets: Bucket[];
+  channels: string[];
+  locale?: string;
+  seriesLabel?: string;
+  summaryTpl?: string;
+}) {
+  const day = useMemo(
+    () => new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }),
+    [locale],
+  );
   const [hidden, setHidden] = useState<string[]>([]);
   const [idx, setIdx] = useState<number | null>(null);
   const shown = channels.filter((c) => !hidden.includes(c));
@@ -65,7 +80,11 @@ export function SalesChart({ buckets, channels }: { buckets: Bucket[]; channels:
     (best, b, i) => (b.total > (buckets[best]?.total ?? 0) ? i : best),
     0,
   );
-  const summary = `Son ${n} günde ${eur.format(total / 100)} ciro. En yüksek gün ${day.format(new Date(buckets[peak]!.d))}: ${eur.format(buckets[peak]!.total / 100)}.`;
+  const summary = summaryTpl
+    .replace("{n}", String(n))
+    .replace("{sum}", eur.format(total / 100))
+    .replace("{day}", day.format(new Date(buckets[peak]!.d)))
+    .replace("{peak}", eur.format(buckets[peak]!.total / 100));
   const cur = idx !== null ? buckets[idx] : null;
 
   function pick(clientX: number, el: SVGSVGElement) {
@@ -77,7 +96,7 @@ export function SalesChart({ buckets, channels }: { buckets: Bucket[]; channels:
 
   return (
     <div className="chart">
-      <div className="chart-legend" role="group" aria-label="Kanal serileri">
+      <div className="chart-legend" role="group" aria-label={seriesLabel}>
         {channels.map((c) => {
           const on = !hidden.includes(c);
           return (
