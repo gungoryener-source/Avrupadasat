@@ -68,7 +68,9 @@ describe("depolama", () => {
       get: async (p: string, opts: Record<string, unknown>) => {
         calls.push({ path: p, opts });
         const d = store.get(p);
-        return d ? ({ statusCode: 200, stream: new Response(d).body } as never) : null;
+        return d
+          ? ({ statusCode: 200, stream: new Response(new Uint8Array(d)).body } as never)
+          : null;
       },
     };
     const s = blobStorage(api as never);
