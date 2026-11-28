@@ -124,7 +124,7 @@ export function CommandPalette({
             className="cmd"
             role="dialog"
             aria-modal="true"
-            aria-label="Ara ve git"
+            aria-label={s.search.replace("…", "")}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => {
               if (e.key === "Escape") setOpen(false);

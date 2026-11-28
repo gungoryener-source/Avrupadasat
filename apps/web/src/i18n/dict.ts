@@ -9,6 +9,8 @@ export const LOCALE_NAME: Record<Locale, string> = { tr: "Türkçe", de: "Deutsc
 export const INTL_LOCALE: Record<Locale, string> = { tr: "tr-TR", de: "de-DE", en: "en-GB" };
 
 const tr = {
+  "dash.processing.one": "{n} sipariş hazırlanıyor",
+  "dash.inTransit.one": "{n} sevkiyat yolda",
   // Kabuk
   "shell.panel": "Müşteri paneli",
   "shell.search": "Ara…",
@@ -215,6 +217,8 @@ export type DictKey = keyof typeof tr;
 type Dict = Record<DictKey, string>;
 
 const de: Dict = {
+  "dash.processing.one": "{n} Bestellung in Bearbeitung",
+  "dash.inTransit.one": "{n} Sendung unterwegs",
   "shell.panel": "Kundenportal",
   "shell.search": "Suchen…",
   "shell.searchPlaceholder": "Bestellnr., SKU, Produkt oder Seite suchen",
@@ -416,6 +420,8 @@ const de: Dict = {
 };
 
 const en: Dict = {
+  "dash.processing.one": "{n} order being prepared",
+  "dash.inTransit.one": "{n} shipment in transit",
   "shell.panel": "Customer portal",
   "shell.search": "Search…",
   "shell.searchPlaceholder": "Search order no., SKU, product or page",
@@ -618,7 +624,9 @@ export type T = (key: DictKey, vars?: Record<string, string | number>) => string
 export function makeT(locale: Locale): T {
   const d = DICTS[locale] ?? tr;
   return (key, vars) => {
-    let s = d[key] ?? tr[key] ?? key;
+    // Tekil biçim: n === 1 ve "<anahtar>.one" tanımlıysa o kullanılır
+    const one = `${key}.one` as DictKey;
+    let s = (vars?.n === 1 && d[one]) || d[key] || tr[key] || key;
     if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
     return s;
   };

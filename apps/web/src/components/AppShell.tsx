@@ -127,7 +127,7 @@ export function AppShell({
         }
       >
         <Link href={home} className="sh-logo" aria-label="Panel ana sayfası">
-          <Logo inverted tagline={false} />
+          <Logo tagline={false} />
         </Link>
         {context && (
           <div className="sh-context" title={context}>

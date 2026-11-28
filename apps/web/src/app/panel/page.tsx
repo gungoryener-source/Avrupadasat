@@ -103,6 +103,7 @@ export default async function PanelHome({ searchParams }: { searchParams: Promis
     <div className="dash">
       <header className="dh">
         <div className="dh-main">
+          <p className="dh-eyebrow">{t("nav.overview")}</p>
           <h1>
             <Greeting
               name={s.name.split(" ")[0] ?? s.name}
@@ -378,7 +379,10 @@ async function Sales({ tenantId, now, sp, t, locale, f }: Ctx) {
               </div>
               {s.revenueChange !== null && (
                 <span className={`kpi-ch ${s.revenueChange >= 0 ? "is-good" : "is-bad"}`}>
-                  {s.revenueChange >= 0 ? "+" : "−"}%{Math.abs(s.revenueChange)}
+                  {new Intl.NumberFormat(INTL_LOCALE[locale], {
+                    style: "percent",
+                    signDisplay: "exceptZero",
+                  }).format(s.revenueChange / 100)}
                   <span className="kpi-cmp"> {t("sales.vsPrev", { n: days })}</span>
                 </span>
               )}
