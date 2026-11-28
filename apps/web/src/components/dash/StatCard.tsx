@@ -19,7 +19,11 @@ export function StatCard({
   line,
   sub,
   invert = false,
+  labels = { new: "yeni", noData: "henüz veri yok", noPrev: "önceki dönemde veri yok" },
+  intlLocale = "tr-TR",
 }: {
+  labels?: { new: string; noData: string; noPrev: string };
+  intlLocale?: string;
   href: string;
   icon: ReactNode;
   label: string;
@@ -35,6 +39,7 @@ export function StatCard({
   const noData = value === 0 && (change === 0 || change === null);
   const dir = change === null || change === 0 ? "flat" : change > 0 ? "up" : "down";
   const good = dir === "flat" ? null : (dir === "up") !== invert;
+  const cmp = noData ? labels.noData : change === null ? labels.noPrev : compareLabel;
   return (
     <Link href={href} className="kpi">
       <div className="kpi-h">
@@ -42,7 +47,7 @@ export function StatCard({
         <span className="kpi-l">{label}</span>
       </div>
       <div className="kpi-v">
-        <CountUp value={value} format={format} />
+        <CountUp value={value} format={format} locale={intlLocale} />
       </div>
       <div className="kpi-f">
         <span className={`kpi-ch ${good === null ? "" : good ? "is-good" : "is-bad"}`}>
@@ -51,19 +56,15 @@ export function StatCard({
           {noData
             ? "—"
             : change === null
-              ? "yeni"
-              : change > 0
-                ? `+%${change}`
-                : change < 0
-                  ? `−%${Math.abs(change)}`
-                  : "%0"}
-          <span className="sr-only">
-            {" "}
-            {change === null ? "önceki dönemde veri yok" : compareLabel}
-          </span>
+              ? labels.new
+              : new Intl.NumberFormat(intlLocale, {
+                  style: "percent",
+                  signDisplay: "exceptZero",
+                }).format(change / 100)}
+          <span className="sr-only"> {cmp}</span>
         </span>
         <span className="kpi-cmp" aria-hidden="true">
-          {change === null ? "önceki dönemde veri yok" : compareLabel}
+          {cmp}
         </span>
         {line && (
           <span className="kpi-sp">

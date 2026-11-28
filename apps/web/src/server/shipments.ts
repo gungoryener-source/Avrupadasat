@@ -318,3 +318,37 @@ export async function importStockCounts(tenantId: string, csvText: string, actor
   });
   return { adjusted, errors };
 }
+
+/** Taşıyıcı, takip no ve tahmini varış güncellemesi (ekip). Müşteri sevkiyat sayfasında görür. */
+export async function updateShipmentTransport(
+  tenantId: string,
+  shipmentId: string,
+  input: { carrier?: string; trackingNo?: string; expectedAt?: string },
+  actorUserId: string,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const t = forTenant(db(), tenantId);
+  const sh = await t.shipment.findFirst({ where: { id: shipmentId } });
+  if (!sh) return { ok: false, reason: "Sevkiyat bulunamadı" };
+  const tracking = input.trackingNo?.trim() ?? "";
+  if (tracking && !/^[A-Za-z0-9-]{6,40}$/.test(tracking))
+    return { ok: false, reason: "Takip no 6–40 harf/rakam olmalı" };
+  const eta = input.expectedAt ? new Date(`${input.expectedAt}T12:00:00Z`) : null;
+  if (eta && Number.isNaN(eta.getTime())) return { ok: false, reason: "Geçersiz tarih" };
+  await t.shipment.update({
+    where: { id: sh.id },
+    data: {
+      carrier: input.carrier?.trim().slice(0, 80) || null,
+      trackingNo: tracking || null,
+      expectedAt: eta,
+    },
+  });
+  await audit({
+    actorUserId,
+    tenantId,
+    action: "shipment.updated",
+    entity: "Shipment",
+    entityId: sh.id,
+    meta: { transport: true },
+  });
+  return { ok: true };
+}

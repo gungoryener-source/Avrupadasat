@@ -6,7 +6,7 @@ import { forTenant } from "@avrupadasat/db";
 import { ActivityFeed } from "@/components/dash/ActivityFeed";
 import { ChannelBadge, CHANNEL_NAME } from "@/components/dash/ChannelBadge";
 import { CopyButton } from "@/components/dash/CopyButton";
-import { fmtDay, fmtEur, fmtNum, fmtRelative, shortId } from "@/components/dash/format";
+import { formatter, shortId } from "@/components/dash/format";
 import { Greeting } from "@/components/dash/Greeting";
 import { Onboarding } from "@/components/dash/Onboarding";
 import { OrderDrawer } from "@/components/dash/OrderDrawer";
@@ -35,10 +35,14 @@ import {
   recentOrders,
   salesSeries,
   stockHealth,
+  type FeedItem,
 } from "@/server/dashboard";
 import { db } from "@/server/db";
 import { waitingList, registrationState } from "@/server/panel";
 import { requireClient } from "@/server/session";
+import { getT } from "@/i18n/server";
+import { INTL_LOCALE, type DictKey, type Locale, type T } from "@/i18n/dict";
+import { trackingUrl } from "@/server/tracking";
 
 export const metadata = { title: "Genel Bakış" };
 
@@ -52,13 +56,23 @@ const STEP_MINUTES: Record<string, number> = {
 };
 
 type SP = { donem?: string; siparis?: string };
-type Ctx = { tenantId: string; userId: string; now: number; sp: SP };
+type Ctx = {
+  tenantId: string;
+  userId: string;
+  now: number;
+  sp: SP;
+  t: T;
+  locale: Locale;
+  f: ReturnType<typeof formatter>;
+};
 
 export default async function PanelHome({ searchParams }: { searchParams: Promise<SP> }) {
   const s = await requireClient();
   const sp = await searchParams;
+  const { t, locale } = await getT();
+  const f = formatter(locale);
   const tenantId = s.actor.tenantId;
-  const t = forTenant(db(), tenantId);
+  const tdb = forTenant(db(), tenantId);
   const now = nowMs();
   const [tenant, steps, reg, processing, inTransit] = await Promise.all([
     db().tenant.findUniqueOrThrow({
@@ -67,38 +81,44 @@ export default async function PanelHome({ searchParams }: { searchParams: Promis
     }),
     waitingList(tenantId),
     registrationState(tenantId),
-    t.order.count({ where: { status: { in: ["NEW", "ALLOCATED", "PACKED"] } } }),
-    t.shipment.count({ where: { receivedAt: null, stage: { not: "FABRIKA" } } }),
+    tdb.order.count({ where: { status: { in: ["NEW", "ALLOCATED", "PACKED"] } } }),
+    tdb.shipment.count({ where: { receivedAt: null, stage: { not: "FABRIKA" } } }),
   ]);
   const pkg = tenant.packageCode ? packages[tenant.packageCode as keyof typeof packages] : null;
   const summary = [
-    processing ? `${processing} sipariş hazırlanıyor` : null,
-    inTransit ? `${inTransit} sevkiyat yolda` : null,
+    processing ? t("dash.processing", { n: processing }) : null,
+    inTransit ? t("dash.inTransit", { n: inTransit }) : null,
   ].filter(Boolean);
-  const ctx: Ctx = { tenantId, userId: s.actor.userId, now, sp };
+  const ctx: Ctx = { tenantId, userId: s.actor.userId, now, sp, t, locale, f };
   const canAsn = can(s.actor.role, "asn.write");
   const canCatalog = can(s.actor.role, "catalog.write");
   const statusLabel =
     tenant.status === "ACTIVE"
-      ? "Aktif"
+      ? t("dash.active")
       : tenant.status === "ONBOARDING"
-        ? "Kurulumda"
-        : "Durduruldu";
+        ? t("dash.onboarding")
+        : t("dash.paused");
 
   return (
     <div className="dash">
       <header className="dh">
         <div className="dh-main">
+          <p className="dh-eyebrow">{t("nav.overview")}</p>
           <h1>
-            <Greeting name={s.name.split(" ")[0] ?? s.name} />
+            <Greeting
+              name={s.name.split(" ")[0] ?? s.name}
+              w={{
+                morning: t("greet.morning"),
+                day: t("greet.day"),
+                evening: t("greet.evening"),
+                night: t("greet.night"),
+                neutral: t("greet.neutral"),
+              }}
+            />
           </h1>
-          <p className="dh-sum">
-            {summary.length
-              ? summary.join(", ") + "."
-              : "Bugün bekleyen sipariş veya yolda sevkiyat yok."}
-          </p>
+          <p className="dh-sum">{summary.length ? summary.join(", ") + "." : t("dash.allQuiet")}</p>
           <div className="dh-badges">
-            <span className="pill pill-info">{pkg ? pkg.name : "Paket seçilmedi"}</span>
+            <span className="pill pill-info">{pkg ? pkg.name : t("shell.noPlan")}</span>
             <span className={`pill ${tenant.status === "ACTIVE" ? "pill-ok" : "pill-warn"}`}>
               <span className="pill-g" aria-hidden="true">
                 {tenant.status === "ACTIVE" ? "✓" : "◔"}
@@ -110,7 +130,7 @@ export default async function PanelHome({ searchParams }: { searchParams: Promis
                 <span className="pill-g" aria-hidden="true">
                   !
                 </span>
-                Satış, vergi kaydı tamamlanınca açılır
+                {t("dash.salesLocked")}
               </Link>
             )}
           </div>
@@ -118,12 +138,12 @@ export default async function PanelHome({ searchParams }: { searchParams: Promis
         <div className="dh-actions">
           {canCatalog && (
             <Link href="/panel/stok#katalog" className="btn btn-o">
-              <IconPlus size={16} /> Ürün ekle
+              <IconPlus size={16} /> {t("dash.addProduct")}
             </Link>
           )}
           {canAsn && (
             <Link href="/panel/sevkiyatlar#yeni" className="btn">
-              <IconTruck size={16} /> Sevkiyat oluştur
+              <IconTruck size={16} /> {t("dash.createShipment")}
             </Link>
           )}
         </div>
@@ -131,30 +151,44 @@ export default async function PanelHome({ searchParams }: { searchParams: Promis
 
       <Onboarding
         tenantId={tenantId}
-        steps={steps.map((x) => ({ ...x, minutes: STEP_MINUTES[x.id] ?? 5 }))}
+        steps={steps.map((x) => ({
+          ...x,
+          title: t(`onb.step.${x.id}` as DictKey),
+          minutes: STEP_MINUTES[x.id] ?? 5,
+        }))}
+        s={{
+          title: t("onb.title"),
+          done: t("onb.done"),
+          doneText: t("onb.doneText"),
+          left: t("onb.left"),
+          cont: t("onb.continue"),
+          close: t("onb.close"),
+          min: t("onb.min"),
+          completed: t("onb.completed"),
+        }}
       />
 
-      <Suspense fallback={<KpiSkeleton />}>
+      <Suspense fallback={<KpiSkeleton label={t("kpi.loading")} />}>
         <Kpis {...ctx} />
       </Suspense>
 
       <div className="dg">
         <div className="dg-main">
-          <Suspense fallback={<Skeleton chart title="Satışlar" />}>
+          <Suspense fallback={<Skeleton chart title={t("sales.title")} />}>
             <Sales {...ctx} />
           </Suspense>
-          <Suspense fallback={<Skeleton rows={5} title="Son siparişler" />}>
+          <Suspense fallback={<Skeleton rows={5} title={t("orders.title")} />}>
             <Orders {...ctx} />
           </Suspense>
         </div>
-        <aside className="dg-side" aria-label="Takip ve yapılacaklar">
-          <Suspense fallback={<Skeleton rows={4} title="Sevkiyat takibi" />}>
+        <aside className="dg-side" aria-label={t("aside.label")}>
+          <Suspense fallback={<Skeleton rows={4} title={t("ship.title")} />}>
             <Shipments {...ctx} />
           </Suspense>
-          <Suspense fallback={<Skeleton rows={4} title="Yapılacaklar ve aktivite" />}>
+          <Suspense fallback={<Skeleton rows={4} title={t("act.title")} />}>
             <Activity {...ctx} />
           </Suspense>
-          <Suspense fallback={<Skeleton rows={5} title="Stok sağlığı" />}>
+          <Suspense fallback={<Skeleton rows={5} title={t("stock.title")} />}>
             <Stock {...ctx} />
           </Suspense>
         </aside>
@@ -167,6 +201,50 @@ export default async function PanelHome({ searchParams }: { searchParams: Promis
       )}
     </div>
   );
+}
+
+function werr(t: T) {
+  return { error: t("w.loadError"), text: t("w.loadErrorText"), retry: t("w.retry") };
+}
+
+function kpiProps(t: T, locale: Locale) {
+  return {
+    labels: { new: t("kpi.new"), noData: t("kpi.noData"), noPrev: t("kpi.noPrev") },
+    intlLocale: INTL_LOCALE[locale],
+    compareLabel: t("kpi.vsPrev30"),
+  };
+}
+
+function feedProps(t: T, f: ReturnType<typeof formatter>) {
+  return {
+    kinds: {
+      task: t("act.kind.task"),
+      deadline: t("act.kind.deadline"),
+      ticket: t("act.kind.ticket"),
+      notification: t("act.kind.notification"),
+      document: t("act.kind.document"),
+    },
+    words: { soon: t("act.soon"), unread: t("act.unread") },
+    fmt: f,
+  };
+}
+
+/** Sistem üretimi akış açıklamaları ve beyan adları çevrilir; kullanıcı içeriği (görev başlığı) çevrilmez */
+function localizeFeed(items: FeedItem[], t: T): FeedItem[] {
+  return items.map((i) => {
+    if (i.kind === "deadline") {
+      const [code, period] = (i.code ?? "").split("|");
+      return {
+        ...i,
+        title: code ? `${t(`tax.${code}` as DictKey)} · ${period}` : i.title,
+        detail: t("act.d.deadline"),
+      };
+    }
+    if (i.kind === "task")
+      return { ...i, detail: t(i.code === "due" ? "act.d.taskDue" : "act.d.task") };
+    if (i.kind === "ticket") return { ...i, detail: t("act.d.ticket") };
+    return i;
+  });
 }
 
 /** Widget verisi: hata olursa null döner (widget kendi hata kartını gösterir, sayfa çalışır) */
@@ -190,9 +268,9 @@ function qs(sp: SP, patch: Partial<SP>) {
 
 /* ---------------- KPI ---------------- */
 
-function KpiSkeleton() {
+function KpiSkeleton({ label }: { label: string }) {
   return (
-    <div className="kpis" aria-busy="true" aria-label="Göstergeler yükleniyor">
+    <div className="kpis" aria-busy="true" aria-label={label}>
       {[0, 1, 2, 3].map((i) => (
         <div key={i} className="kpi">
           <div className="sk sk-row" style={{ width: "40%" }} />
@@ -204,47 +282,51 @@ function KpiSkeleton() {
   );
 }
 
-async function Kpis({ tenantId, now }: Ctx) {
+async function Kpis({ tenantId, now, t, locale, f }: Ctx) {
   const k = await safe(kpis(tenantId, new Date(now)));
-  if (!k) return <WidgetError title="Göstergeler" retryHref="/panel" />;
+  if (!k) return <WidgetError title={t("kpi.title")} retryHref="/panel" w={werr(t)} />;
   {
     return (
       <div className="kpis">
         <StatCard
+          {...kpiProps(t, locale)}
           href="/panel/siparisler"
           icon={<IconEuro size={18} />}
-          label="Ciro (30 gün)"
+          label={t("kpi.revenue")}
           value={k.revenue.value}
           format="eur"
           change={k.revenue.change}
           line={k.revenue.line}
         />
         <StatCard
+          {...kpiProps(t, locale)}
           href="/panel/siparisler"
           icon={<IconCart size={18} />}
-          label="Sipariş (30 gün)"
+          label={t("kpi.orders")}
           value={k.orders.value}
           change={k.orders.change}
           line={k.orders.line}
         />
         <StatCard
+          {...kpiProps(t, locale)}
           href="/panel/stok"
           icon={<IconBox size={18} />}
-          label="Depodaki stok"
+          label={t("kpi.stock")}
           value={k.stock.units}
           change={k.stock.change}
-          compareLabel="30 gün önceye göre"
+          compareLabel={t("kpi.vs30ago")}
           line={k.stock.line}
-          sub={`${fmtNum(k.stock.skus)} SKU · adet`}
+          sub={t("kpi.skuUnits", { n: f.num(k.stock.skus) })}
         />
         <StatCard
+          {...kpiProps(t, locale)}
           href="/panel/sevkiyatlar"
           icon={<IconTruck size={18} />}
-          label="Yoldaki sevkiyat"
+          label={t("kpi.transit")}
           value={k.transit.value}
           change={k.transit.change}
-          compareLabel="oluşturulan, önceki 30 güne göre"
-          sub={`Son 30 günde ${k.transit.created30} sevkiyat oluşturuldu`}
+          compareLabel={t("kpi.vsCreated")}
+          sub={t("kpi.created30", { n: k.transit.created30 })}
         />
       </div>
     );
@@ -253,7 +335,7 @@ async function Kpis({ tenantId, now }: Ctx) {
 
 /* ---------------- Satış grafiği ---------------- */
 
-async function Sales({ tenantId, now, sp }: Ctx) {
+async function Sales({ tenantId, now, sp, t, locale, f }: Ctx) {
   const days = sp.donem === "7" ? 7 : sp.donem === "90" ? 90 : 30;
   const data = await safe(
     Promise.all([
@@ -261,11 +343,11 @@ async function Sales({ tenantId, now, sp }: Ctx) {
       forTenant(db(), tenantId).marketplaceConnection.count({ where: { status: "ACTIVE" } }),
     ]),
   );
-  if (!data) return <WidgetError title="Satışlar" retryHref={qs(sp, {})} />;
+  if (!data) return <WidgetError title={t("sales.title")} retryHref={qs(sp, {})} w={werr(t)} />;
   const [s, conns] = data;
   {
     const seg = (
-      <div className="seg" role="group" aria-label="Dönem">
+      <div className="seg" role="group" aria-label={t("sales.period")}>
         {[7, 30, 90].map((d) => (
           <Link
             key={d}
@@ -274,35 +356,34 @@ async function Sales({ tenantId, now, sp }: Ctx) {
             className={d === days ? "is-on" : ""}
             aria-current={d === days ? "true" : undefined}
           >
-            {d}g
+            {t("sales.days", { n: d })}
           </Link>
         ))}
       </div>
     );
     return (
-      <ChartCard title="Satışlar" id="sales" action={seg}>
+      <ChartCard title={t("sales.title")} id="sales" action={seg}>
         {s.orders === 0 ? (
           <DashEmpty
             icon={<IconPlug size={20} />}
-            title={conns ? `Son ${days} günde sipariş yok` : "Henüz satış verisi yok"}
-            text={
-              conns
-                ? "Bağlı pazaryerlerinizden sipariş geldiğinde ciro burada kanal bazında görünür."
-                : "Amazon.de, eBay.de veya Shopify mağazanızı bağladığınızda ciro grafiği burada oluşur."
-            }
-            cta={conns ? undefined : { href: "/panel/pazaryerleri", label: "Pazaryeri bağla" }}
+            title={conns ? t("sales.noneConnTitle", { n: days }) : t("sales.noneTitle")}
+            text={conns ? t("sales.noneConnText") : t("sales.noneText")}
+            cta={conns ? undefined : { href: "/panel/pazaryerleri", label: t("sales.connect") }}
           />
         ) : (
           <>
             <div className="sales-sum">
               <div>
-                <span className="sales-v">{fmtEur(s.revenue)}</span>
-                <span className="sales-l">{fmtNum(s.orders)} sipariş</span>
+                <span className="sales-v">{f.eur(s.revenue)}</span>
+                <span className="sales-l">{t("sales.orders", { n: f.num(s.orders) })}</span>
               </div>
               {s.revenueChange !== null && (
                 <span className={`kpi-ch ${s.revenueChange >= 0 ? "is-good" : "is-bad"}`}>
-                  {s.revenueChange >= 0 ? "+" : "−"}%{Math.abs(s.revenueChange)}
-                  <span className="kpi-cmp"> önceki {days} güne göre</span>
+                  {new Intl.NumberFormat(INTL_LOCALE[locale], {
+                    style: "percent",
+                    signDisplay: "exceptZero",
+                  }).format(s.revenueChange / 100)}
+                  <span className="kpi-cmp"> {t("sales.vsPrev", { n: days })}</span>
                 </span>
               )}
             </div>
@@ -313,6 +394,9 @@ async function Sales({ tenantId, now, sp }: Ctx) {
                 byChannel: b.byChannel,
               }))}
               channels={s.channels}
+              locale={INTL_LOCALE[locale]}
+              seriesLabel={t("sales.series")}
+              summaryTpl={t("sales.summary")}
             />
           </>
         )}
@@ -323,30 +407,35 @@ async function Sales({ tenantId, now, sp }: Ctx) {
 
 /* ---------------- Son siparişler ---------------- */
 
-async function Orders({ tenantId, now, sp }: Ctx) {
+async function Orders({ tenantId, now, sp, t, f }: Ctx) {
   const rows = await safe(recentOrders(tenantId, 6));
-  if (!rows) return <WidgetError title="Son siparişler" retryHref={qs(sp, {})} />;
+  if (!rows) return <WidgetError title={t("orders.title")} retryHref={qs(sp, {})} w={werr(t)} />;
   {
     return (
-      <ChartCard title="Son siparişler" id="orders" href="/panel/siparisler">
+      <ChartCard
+        title={t("orders.title")}
+        id="orders"
+        href="/panel/siparisler"
+        hrefLabel={t("dash.all")}
+      >
         {rows.length === 0 ? (
           <DashEmpty
             icon={<IconCart size={20} />}
-            title="Henüz sipariş yok"
-            text="İlk siparişiniz geldiğinde kanal, ürün, şehir ve kargo durumu burada listelenir."
+            title={t("orders.noneTitle")}
+            text={t("orders.noneText")}
           />
         ) : (
-          <div className="ot" role="table" aria-label="Son siparişler">
+          <div className="ot" role="table" aria-label={t("orders.title")}>
             <div className="ot-h" role="row">
-              <span role="columnheader">Sipariş</span>
-              <span role="columnheader">Ürün</span>
-              <span role="columnheader">Şehir</span>
+              <span role="columnheader">{t("orders.col.order")}</span>
+              <span role="columnheader">{t("orders.col.product")}</span>
+              <span role="columnheader">{t("orders.col.city")}</span>
               <span role="columnheader" className="ot-r">
-                Tutar
+                {t("orders.col.amount")}
               </span>
-              <span role="columnheader">Durum</span>
+              <span role="columnheader">{t("orders.col.status")}</span>
               <span role="columnheader" className="ot-r">
-                Tarih
+                {t("orders.col.date")}
               </span>
             </div>
             {rows.map((o) => (
@@ -360,9 +449,13 @@ async function Orders({ tenantId, now, sp }: Ctx) {
                     title={`${CHANNEL_NAME[o.channel] ?? o.channel} · ${o.externalId}`}
                   >
                     {shortId(o.externalId)}
-                    <span className="sr-only"> sipariş detayını aç</span>
+                    <span className="sr-only"> {t("orders.open")}</span>
                   </Link>
-                  <CopyButton text={o.externalId} label={`Sipariş no ${o.externalId} kopyala`} />
+                  <CopyButton
+                    text={o.externalId}
+                    label={t("orders.copy", { id: o.externalId })}
+                    copied={t("orders.copied")}
+                  />
                 </span>
                 <span role="cell" className="ot-prod">
                   {o.product && (
@@ -374,9 +467,11 @@ async function Orders({ tenantId, now, sp }: Ctx) {
                       />
                       <span className="ot-pn">
                         {o.product.name}
-                        {o.lines.length > 1 && <small> +{o.lines.length - 1} ürün</small>}
+                        {o.lines.length > 1 && (
+                          <small> {t("orders.more", { n: o.lines.length - 1 })}</small>
+                        )}
                         <small className="ot-mob">
-                          {o.city ?? o.country} · {fmtEur(o.itemsCents, true)}
+                          {o.city ?? o.country} · {f.eur(o.itemsCents, true)}
                         </small>
                       </span>
                     </>
@@ -387,14 +482,14 @@ async function Orders({ tenantId, now, sp }: Ctx) {
                   {o.country !== "DE" && <small> {o.country}</small>}
                 </span>
                 <span role="cell" className="ot-r ot-amt">
-                  {fmtEur(o.itemsCents, true)}
+                  {f.eur(o.itemsCents, true)}
                 </span>
                 <span role="cell">
-                  <StatusPill status={o.status} />
+                  <StatusPill status={o.status} label={t(`status.${o.status}` as DictKey)} />
                 </span>
                 <span role="cell" className="ot-r ot-time">
-                  <time dateTime={o.orderedAt.toISOString()} title={fmtDay(o.orderedAt)}>
-                    {fmtRelative(o.orderedAt, now)}
+                  <time dateTime={o.orderedAt.toISOString()} title={f.day(o.orderedAt)}>
+                    {f.relative(o.orderedAt, now)}
                   </time>
                 </span>
               </div>
@@ -406,44 +501,91 @@ async function Orders({ tenantId, now, sp }: Ctx) {
   }
 }
 
-async function OrderPanel({ tenantId, sp, id, now }: Ctx & { id: string }) {
+async function OrderPanel({ tenantId, sp, id, now, t, f }: Ctx & { id: string }) {
   const o = await orderDetail(tenantId, id).catch(() => null);
   const close = qs(sp, { siparis: undefined });
   if (!o)
     return (
-      <OrderDrawer closeHref={close} title="Sipariş bulunamadı">
-        <p className="muted">Bu sipariş bulunamadı veya erişiminiz yok.</p>
+      <OrderDrawer closeHref={close} title={t("drawer.notFound")} closeLabel={t("drawer.close")}>
+        <p className="muted">{t("drawer.notFoundText")}</p>
       </OrderDrawer>
     );
   return (
-    <OrderDrawer closeHref={close} title={`Sipariş ${shortId(o.externalId)}`}>
+    <OrderDrawer
+      closeHref={close}
+      title={t("drawer.order", { id: shortId(o.externalId) })}
+      closeLabel={t("drawer.close")}
+    >
       <div className="drw-top">
         <ChannelBadge channel={o.channel} withName />
-        <StatusPill status={o.status} />
+        <StatusPill status={o.status} label={t(`status.${o.status}` as DictKey)} />
       </div>
       <dl className="kv">
-        <dt>Sipariş no</dt>
+        <dt>{t("drawer.no")}</dt>
         <dd className="mono">
-          {o.externalId} <CopyButton text={o.externalId} label="Sipariş no kopyala" />
+          {o.externalId}{" "}
+          <CopyButton
+            text={o.externalId}
+            label={t("orders.copy", { id: o.externalId })}
+            copied={t("orders.copied")}
+          />
         </dd>
-        <dt>Tarih</dt>
+        <dt>{t("drawer.date")}</dt>
         <dd>
-          {fmtDay(o.orderedAt)} · {fmtRelative(o.orderedAt, now)}
+          {f.day(o.orderedAt)} · {f.relative(o.orderedAt, now)}
         </dd>
-        <dt>Teslimat</dt>
+        <dt>{t("drawer.delivery")}</dt>
         <dd>
           {[o.zip, o.city].filter(Boolean).join(" ") || "—"} {o.country}
         </dd>
-        <dt>Kargo</dt>
-        <dd>{o.trackingNo ? `${o.carrier} ${o.trackingNo}` : "Henüz kargoya verilmedi"}</dd>
+        <dt>{t("drawer.carrier")}</dt>
+        <dd>
+          {o.trackingNo ? (
+            <>
+              {o.carrier} <span className="mono">{o.trackingNo}</span>
+              {trackingUrl(o.carrier, o.trackingNo) && (
+                <>
+                  {" · "}
+                  <a
+                    href={trackingUrl(o.carrier, o.trackingNo)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t("drawer.track")}
+                  </a>
+                </>
+              )}
+            </>
+          ) : (
+            t("drawer.notShipped")
+          )}
+        </dd>
+        {o.shippedAt && (
+          <>
+            <dt>{t("drawer.shippedAt")}</dt>
+            <dd>{f.day(o.shippedAt)}</dd>
+          </>
+        )}
+        {o.deliveredAt && (
+          <>
+            <dt>{t("drawer.deliveredAt")}</dt>
+            <dd>{f.day(o.deliveredAt)}</dd>
+          </>
+        )}
+        {o.returnedAt && (
+          <>
+            <dt>{t("drawer.returnedAt")}</dt>
+            <dd>{f.day(o.returnedAt)}</dd>
+          </>
+        )}
         {o.holdReason && (
           <>
-            <dt>Bekleme nedeni</dt>
+            <dt>{t("drawer.hold")}</dt>
             <dd>{o.holdReason}</dd>
           </>
         )}
       </dl>
-      <h3 className="drw-sub">Ürünler</h3>
+      <h3 className="drw-sub">{t("drawer.items")}</h3>
       <ul className="drw-lines">
         {o.lines.map((l) => (
           <li key={l.id}>
@@ -453,22 +595,22 @@ async function OrderPanel({ tenantId, sp, id, now }: Ctx & { id: string }) {
               <small className="mono"> {l.sku}</small>
             </span>
             <span className="ot-r">
-              {l.quantity} × {l.priceCents ? fmtEur(l.priceCents, true) : "—"}
+              {l.quantity} × {l.priceCents ? f.eur(l.priceCents, true) : "—"}
             </span>
           </li>
         ))}
       </ul>
       <div className="drw-total">
-        <span>Toplam (ürünler)</span>
-        <b>{fmtEur(o.itemsCents, true)}</b>
+        <span>{t("drawer.total")}</span>
+        <b>{f.eur(o.itemsCents, true)}</b>
       </div>
       {o.returns.length > 0 && (
         <p className="muted" style={{ fontSize: 13 }}>
-          İade: {o.returns.map((r) => `${r.quantity}× ${r.sku}`).join(", ")}
+          {t("drawer.returns")}: {o.returns.map((r) => `${r.quantity}× ${r.sku}`).join(", ")}
         </p>
       )}
       <Link href="/panel/siparisler" className="btn btn-o btn-sm">
-        Tüm siparişler
+        {t("drawer.allOrders")}
       </Link>
     </OrderDrawer>
   );
@@ -476,19 +618,24 @@ async function OrderPanel({ tenantId, sp, id, now }: Ctx & { id: string }) {
 
 /* ---------------- Sevkiyat takibi ---------------- */
 
-async function Shipments({ tenantId, sp }: Ctx) {
+async function Shipments({ tenantId, sp, t, f }: Ctx) {
   const list = await safe(activeShipments(tenantId, 3));
-  if (!list) return <WidgetError title="Sevkiyat takibi" retryHref={qs(sp, {})} />;
+  if (!list) return <WidgetError title={t("ship.title")} retryHref={qs(sp, {})} w={werr(t)} />;
   {
     const [main, ...rest] = list;
     return (
-      <ChartCard title="Sevkiyat takibi" id="ship" href="/panel/sevkiyatlar">
+      <ChartCard
+        title={t("ship.title")}
+        id="ship"
+        href="/panel/sevkiyatlar"
+        hrefLabel={t("dash.all")}
+      >
         {!main ? (
           <DashEmpty
             icon={<IconTruck size={20} />}
-            title="Yolda sevkiyat yok"
-            text="Türkiye'den Almanya deposuna gönderdiğiniz her sevkiyatı adım adım burada izlersiniz."
-            cta={{ href: "/panel/sevkiyatlar#yeni", label: "Sevkiyat oluştur" }}
+            title={t("ship.noneTitle")}
+            text={t("ship.noneText")}
+            cta={{ href: "/panel/sevkiyatlar#yeni", label: t("dash.createShipment") }}
           />
         ) : (
           <>
@@ -497,18 +644,28 @@ async function Shipments({ tenantId, sp }: Ctx) {
                 {main.reference}
               </Link>
               <span className="muted">
-                {main.pallets ? `${main.pallets} palet · ` : ""}
-                {fmtNum(main.units)} adet
+                {main.pallets ? `${t("ship.pallets", { n: main.pallets })} · ` : ""}
+                {t("ship.units", { n: f.num(main.units) })}
               </span>
             </div>
-            <Timeline steps={main.steps} label={`${main.reference} sevkiyat adımları`} />
+            <Timeline
+              steps={main.steps.map((x) => ({ ...x, label: t(`ship.step.${x.key}` as DictKey) }))}
+              label={t("ship.steps", { ref: main.reference })}
+              words={{
+                now: t("ship.now"),
+                done: t("ship.stepDone"),
+                current: t("ship.stepCurrent"),
+                waiting: t("ship.stepWaiting"),
+              }}
+              fmtDayMonth={f.dayMonth}
+            />
             <p className="sh-eta">
               {main.expectedAt ? (
                 <>
-                  Tahmini varış <b>{fmtDay(main.expectedAt)}</b>
+                  {t("ship.eta")} <b>{f.day(main.expectedAt)}</b>
                 </>
               ) : (
-                <span className="muted">Tahmini varış tarihi henüz girilmedi</span>
+                <span className="muted">{t("ship.noEta")}</span>
               )}
             </p>
             {rest.length > 0 && (
@@ -520,7 +677,7 @@ async function Shipments({ tenantId, sp }: Ctx) {
                       <Link href={`/panel/sevkiyatlar/${r.id}`} className="mono">
                         {r.reference}
                       </Link>
-                      <span>{cur ? cur.label : "Tamamlandı"}</span>
+                      <span>{cur ? t(`ship.step.${cur.key}` as DictKey) : t("ship.done")}</span>
                     </li>
                   );
                 })}
@@ -535,14 +692,14 @@ async function Shipments({ tenantId, sp }: Ctx) {
 
 /* ---------------- Yapılacaklar & aktivite ---------------- */
 
-async function Activity({ tenantId, userId, now, sp }: Ctx) {
+async function Activity({ tenantId, userId, now, sp, t, f }: Ctx) {
   const data = await safe(
     Promise.all([
       activityFeed(tenantId, userId, new Date(now)),
       forTenant(db(), tenantId).document.count({ where: { internal: false } }),
     ]),
   );
-  if (!data) return <WidgetError title="Yapılacaklar ve aktivite" retryHref={qs(sp, {})} />;
+  if (!data) return <WidgetError title={t("act.title")} retryHref={qs(sp, {})} w={werr(t)} />;
   const [feed, docs] = data;
   {
     const todo = [...feed.todo];
@@ -550,33 +707,42 @@ async function Activity({ tenantId, userId, now, sp }: Ctx) {
       todo.push({
         id: "doc-suggest",
         kind: "document",
-        title: "Şirket ve ürün belgelerinizi yükleyin",
-        detail: "Öneri · CE beyanı, sicil kaydı",
+        title: t("act.docSuggest"),
+        detail: t("act.d.docSuggest"),
         at: new Date(now),
         href: "/panel/belgeler",
       });
     const empty = todo.length === 0 && feed.recent.length === 0;
     return (
-      <ChartCard title="Yapılacaklar ve aktivite" id="act" href="/panel/bildirimler">
+      <ChartCard
+        title={t("act.title")}
+        id="act"
+        href="/panel/bildirimler"
+        hrefLabel={t("dash.all")}
+      >
         {empty ? (
           <DashEmpty
             tone="positive"
             icon={<IconCheck size={18} />}
-            title="Her şey yolunda"
-            text="Sizden beklenen bir işlem veya yaklaşan son tarih yok."
+            title={t("act.allGood")}
+            text={t("act.allGoodText")}
           />
         ) : (
           <>
             {todo.length > 0 && (
               <>
-                <h3 className="feed-sec">Sizden beklenenler</h3>
-                <ActivityFeed items={todo.slice(0, 5)} now={now} />
+                <h3 className="feed-sec">{t("act.todo")}</h3>
+                <ActivityFeed
+                  items={localizeFeed(todo.slice(0, 5), t)}
+                  now={now}
+                  {...feedProps(t, f)}
+                />
               </>
             )}
             {feed.recent.length > 0 && (
               <>
-                <h3 className="feed-sec">Son gelişmeler</h3>
-                <ActivityFeed items={feed.recent.slice(0, 5)} now={now} />
+                <h3 className="feed-sec">{t("act.recent")}</h3>
+                <ActivityFeed items={feed.recent.slice(0, 5)} now={now} {...feedProps(t, f)} />
               </>
             )}
           </>
@@ -588,24 +754,24 @@ async function Activity({ tenantId, userId, now, sp }: Ctx) {
 
 /* ---------------- Stok sağlığı ---------------- */
 
-async function Stock({ tenantId, sp }: Ctx) {
+async function Stock({ tenantId, sp, t, f }: Ctx) {
   const h = await safe(stockHealth(tenantId));
-  if (!h) return <WidgetError title="Stok sağlığı" retryHref={qs(sp, {})} />;
+  if (!h) return <WidgetError title={t("stock.title")} retryHref={qs(sp, {})} w={werr(t)} />;
   {
     return (
-      <ChartCard title="Stok sağlığı" id="stock" href="/panel/stok">
+      <ChartCard title={t("stock.title")} id="stock" href="/panel/stok" hrefLabel={t("dash.all")}>
         {h.total === 0 ? (
           <DashEmpty
             icon={<IconBox size={20} />}
-            title="Depoda ürün yok"
-            text="Ürün kartlarınızı yükleyip ilk sevkiyatı bildirdiğinizde stok burada izlenir."
-            cta={{ href: "/panel/stok#katalog", label: "Ürün ekle" }}
+            title={t("stock.noneTitle")}
+            text={t("stock.noneText")}
+            cta={{ href: "/panel/stok#katalog", label: t("dash.addProduct") }}
           />
         ) : (
           <>
             {h.lowCount > 0 && (
               <p className="pill pill-warn" style={{ marginBottom: 12 }}>
-                <IconAlert size={14} /> {h.lowCount} ürün düşük stokta
+                <IconAlert size={14} /> {t("stock.low", { n: h.lowCount })}
               </p>
             )}
             <ul className="sb">
@@ -619,14 +785,17 @@ async function Stock({ tenantId, sp }: Ctx) {
                         {r.name}
                       </Link>
                       <span className="sb-q">
-                        {fmtNum(r.available)}
-                        {r.low && <span className="sr-only"> düşük stok</span>}
+                        {f.num(r.available)}
+                        {r.low && <span className="sr-only"> {t("stock.lowSr")}</span>}
                       </span>
                     </div>
                     <div
                       className="sb-bar"
                       role="img"
-                      aria-label={`${r.sku}: kullanılabilir ${r.available}${r.lowStockAt != null ? `, eşik ${r.lowStockAt}` : ""}`}
+                      aria-label={
+                        t("stock.bar", { sku: r.sku, n: r.available }) +
+                        (r.lowStockAt != null ? t("stock.barLimit", { n: r.lowStockAt }) : "")
+                      }
                     >
                       <span style={{ width: `${pct}%` }} />
                       {mark !== null && <i style={{ left: `${mark}%` }} />}
@@ -641,7 +810,7 @@ async function Stock({ tenantId, sp }: Ctx) {
                 className="btn btn-o btn-sm"
                 style={{ marginTop: 12 }}
               >
-                <IconTruck size={15} /> Yeniden stok gönder
+                <IconTruck size={15} /> {t("stock.restock")}
               </Link>
             )}
           </>

@@ -7,9 +7,17 @@ import { Submit } from "@/components/Submit";
 import { db } from "@/server/db";
 import { STAGE_LABEL } from "@/server/labels";
 import { requireStaff } from "@/server/session";
-import { advanceStageAction, receiveAction } from "../../ops-actions";
+import { KNOWN_CARRIERS } from "@/server/tracking";
+import { advanceStageAction, receiveAction, transportAction } from "../../ops-actions";
 
-export default async function AdminShipment({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminShipment({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ sonuc?: string; hata?: string }>;
+}) {
+  const { sonuc, hata } = await searchParams;
   const s = await requireStaff("shipment.read");
   const { id } = await params;
   const sh = await db().shipment.findUnique({
@@ -32,7 +40,66 @@ export default async function AdminShipment({ params }: { params: Promise<{ id: 
       <h1>
         {sh.tenant.name} · {sh.reference}
       </h1>
+      {sonuc === "tasima" && (
+        <p className="alert-ok" role="status">
+          Taşıma bilgileri kaydedildi.
+        </p>
+      )}
+      {hata && (
+        <p className="alert-err" role="alert">
+          {hata.slice(0, 200)}
+        </p>
+      )}
       <ShipmentDetail s={sh} userId={s.userId} />
+      {write && !sh.receivedAt && (
+        <form action={transportAction} className="card form" style={{ marginTop: 18 }}>
+          <h2 style={{ margin: 0, fontSize: 19 }}>Taşıyıcı ve takip</h2>
+          <input type="hidden" name="tenantId" value={sh.tenantId} />
+          <input type="hidden" name="shipmentId" value={sh.id} />
+          <div className="form-row">
+            <div className="field">
+              <label htmlFor="t-carrier">Taşıyıcı</label>
+              <input
+                id="t-carrier"
+                name="carrier"
+                defaultValue={sh.carrier ?? ""}
+                list="carriers"
+                maxLength={80}
+              />
+              <datalist id="carriers">
+                {KNOWN_CARRIERS.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+            </div>
+            <div className="field">
+              <label htmlFor="t-no">Takip no</label>
+              <input
+                id="t-no"
+                name="trackingNo"
+                defaultValue={sh.trackingNo ?? ""}
+                maxLength={40}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="t-eta">Tahmini varış</label>
+              <input
+                id="t-eta"
+                name="expectedAt"
+                type="date"
+                defaultValue={sh.expectedAt ? sh.expectedAt.toISOString().slice(0, 10) : ""}
+              />
+            </div>
+          </div>
+          <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+            DHL, DPD, GLS, UPS, Hermes ve FedEx için müşteriye taşıyıcı sitesinde takip bağlantısı
+            gösterilir. Durum otomatik çekilmez; aşamaları aşağıdan güncelleyin.
+          </p>
+          <div>
+            <Submit className="btn btn-o">Kaydet</Submit>
+          </div>
+        </form>
+      )}
       {write && !sh.receivedAt && (
         <div className="g2" style={{ marginTop: 18 }}>
           <form action={advanceStageAction} className="card form">

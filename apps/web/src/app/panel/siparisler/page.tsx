@@ -28,6 +28,7 @@ import {
 } from "@/server/orders";
 import { registrationState } from "@/server/panel";
 import { requireClient } from "@/server/session";
+import { trackingUrl } from "@/server/tracking";
 
 export const metadata = { title: "Siparişler ve iadeler" };
 
@@ -301,7 +302,27 @@ export default async function OrdersPage({
                     )}
                   </td>
                   <td className="mono" style={{ fontSize: 12 }}>
-                    {o.trackingNo ? `${o.carrier} ${o.trackingNo}` : "—"}
+                    {o.trackingNo ? (
+                      trackingUrl(o.carrier, o.trackingNo) ? (
+                        <a
+                          href={trackingUrl(o.carrier, o.trackingNo)!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Taşıyıcı sitesinde takip et"
+                        >
+                          {`${o.carrier} ${o.trackingNo}`}
+                        </a>
+                      ) : (
+                        `${o.carrier} ${o.trackingNo}`
+                      )
+                    ) : (
+                      "—"
+                    )}
+                    {o.deliveredAt && (
+                      <div className="muted" style={{ fontFamily: "inherit" }}>
+                        Teslim {fmtDate(o.deliveredAt)}
+                      </div>
+                    )}
                   </td>
                 </tr>
               );

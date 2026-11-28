@@ -23,7 +23,37 @@ function readDismissed(tenantId: string) {
   }
 }
 
-export function Onboarding({ steps, tenantId }: { steps: Step[]; tenantId: string }) {
+export type OnbStrings = {
+  title: string;
+  done: string;
+  doneText: string;
+  left: string; // {n} {m}
+  cont: string;
+  close: string;
+  min: string; // {m}
+  completed: string;
+};
+
+const TR: OnbStrings = {
+  title: "Satışa hazırlık",
+  done: "Hazırlık tamamlandı",
+  doneText: "Tüm hazırlık adımlarını tamamladınız. Satış ve sevkiyat takibine geçebilirsiniz.",
+  left: "{n} adım kaldı · tahmini {m} dakika",
+  cont: "Devam et",
+  close: "Hazırlık kartını kapat",
+  min: "≈{m} dk",
+  completed: "tamamlandı",
+};
+
+export function Onboarding({
+  steps,
+  tenantId,
+  s: str = TR,
+}: {
+  steps: Step[];
+  tenantId: string;
+  s?: OnbStrings;
+}) {
   const done = steps.filter((s) => s.done).length;
   const all = done === steps.length;
   const [closed, setDismissed] = useState(false);
@@ -61,12 +91,12 @@ export function Onboarding({ steps, tenantId }: { steps: Step[]; tenantId: strin
       </div>
       <div className="onb-main">
         <h2 id="onb-h" className="onb-h">
-          {all ? "Hazırlık tamamlandı" : "Satışa hazırlık"}
+          {all ? str.done : str.title}
         </h2>
         <p className="onb-sub">
           {all
-            ? "Tüm hazırlık adımlarını tamamladınız. Satış ve sevkiyat takibine geçebilirsiniz."
-            : `${steps.length - done} adım kaldı · tahmini ${left} dakika`}
+            ? str.doneText
+            : str.left.replace("{n}", String(steps.length - done)).replace("{m}", String(left))}
         </p>
         {!all && (
           <ol className="onb-list">
@@ -76,8 +106,10 @@ export function Onboarding({ steps, tenantId }: { steps: Step[]; tenantId: strin
                   {s.done && <IconCheck size={12} />}
                 </span>
                 <Link href={s.href}>{s.title}</Link>
-                <span className="sr-only">{s.done ? " (tamamlandı)" : ""}</span>
-                {!s.done && <span className="onb-min">≈{s.minutes} dk</span>}
+                <span className="sr-only">{s.done ? ` (${str.completed})` : ""}</span>
+                {!s.done && (
+                  <span className="onb-min">{str.min.replace("{m}", String(s.minutes))}</span>
+                )}
               </li>
             ))}
           </ol>
@@ -86,13 +118,13 @@ export function Onboarding({ steps, tenantId }: { steps: Step[]; tenantId: strin
       <div className="onb-cta">
         {next ? (
           <Link href={next.href} className="btn">
-            Devam et
+            {str.cont}
           </Link>
         ) : (
           <button
             type="button"
             className="icon-btn"
-            aria-label="Hazırlık kartını kapat"
+            aria-label={str.close}
             onClick={() => {
               try {
                 localStorage.setItem(`${KEY}:${tenantId}`, "1");

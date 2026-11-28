@@ -1,15 +1,19 @@
 "use client";
-/** Saate göre selamlama (kullanıcının yerel saati). Sunucuda nötr "Merhaba" ile başlar. */
+/** Saate göre selamlama (kullanıcının yerel saati). Sunucuda nötr selamla başlar. */
 import { useSyncExternalStore } from "react";
 
+type Words = { morning: string; day: string; evening: string; night: string; neutral: string };
 const noop = () => () => {};
-function byHour() {
-  const h = new Date().getHours();
-  return h < 5 ? "İyi geceler" : h < 12 ? "Günaydın" : h < 18 ? "İyi günler" : "İyi akşamlar";
-}
 
-export function Greeting({ name }: { name: string }) {
-  const g = useSyncExternalStore(noop, byHour, () => "Merhaba");
+export function Greeting({ name, w }: { name: string; w: Words }) {
+  const g = useSyncExternalStore(
+    noop,
+    () => {
+      const h = new Date().getHours();
+      return h < 5 ? w.night : h < 12 ? w.morning : h < 18 ? w.day : w.evening;
+    },
+    () => w.neutral,
+  );
   return (
     <>
       {g}, {name}

@@ -271,6 +271,8 @@ export type FeedItem = {
   href: string;
   urgent?: boolean;
   unread?: boolean;
+  /** Arayüzün çevirebilmesi için sistem kodu (ör. beyan türü|dönem, "due") */
+  code?: string;
 };
 
 /** Görev, son tarih, destek ve bildirimleri tek akışta birleştirir */
@@ -307,6 +309,7 @@ export async function activityFeed(
         kind: "task" as const,
         title: x.title,
         detail: x.dueAt ? "Sizden bekleniyor · son tarih" : "Sizden bekleniyor",
+        code: x.dueAt ? "due" : undefined,
         at: x.dueAt ?? x.createdAt,
         href: "/panel/gorevler",
         urgent: !!x.dueAt && x.dueAt.getTime() < now.getTime() + 2 * DAY,
@@ -316,6 +319,7 @@ export async function activityFeed(
       kind: "deadline" as const,
       title: `${filingLabel(f.kind)} · ${f.period}`,
       detail: "Beyan son tarihi",
+      code: `${f.kind}|${f.period}`,
       at: f.dueAt,
       href: "/panel/vergi",
       urgent: f.dueAt.getTime() < now.getTime() + 5 * DAY,

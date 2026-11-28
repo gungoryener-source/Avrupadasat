@@ -3,7 +3,15 @@ import { useState } from "react";
 import { IconCheck, IconCopy } from "@/components/site/Icons";
 
 /** Panoya kopyalar; ekran okuyucuya sonucu duyurur */
-export function CopyButton({ text, label }: { text: string; label: string }) {
+export function CopyButton({
+  text,
+  label,
+  copied = "Kopyalandı",
+}: {
+  text: string;
+  label: string;
+  copied?: string;
+}) {
   const [ok, setOk] = useState(false);
   return (
     <button
@@ -25,7 +33,7 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
     >
       {ok ? <IconCheck size={14} /> : <IconCopy size={14} />}
       <span className="sr-only" aria-live="polite">
-        {ok ? "Kopyalandı" : ""}
+        {ok ? copied : ""}
       </span>
     </button>
   );

@@ -7,10 +7,12 @@ import { IconClose } from "@/components/site/Icons";
 export function OrderDrawer({
   closeHref,
   title,
+  closeLabel = "Kapat",
   children,
 }: {
   closeHref: string;
   title: string;
+  closeLabel?: string;
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -47,7 +49,7 @@ export function OrderDrawer({
           <button
             type="button"
             className="icon-btn"
-            aria-label="Kapat"
+            aria-label={closeLabel}
             onClick={() => router.push(closeHref, { scroll: false })}
           >
             <IconClose size={18} />
