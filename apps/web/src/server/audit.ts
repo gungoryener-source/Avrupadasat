@@ -42,7 +42,8 @@ export type AuditAction =
   | "subscription.requested"
   | "subscription.changed"
   | "staff.invited"
-  | "stock.adjusted";
+  | "stock.adjusted"
+  | "labels.printed";
 
 export interface AuditInput {
   actorUserId?: string | null;

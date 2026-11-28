@@ -11,6 +11,7 @@ const ICONS = {
   receipt: I.IconReceipt,
   folder: I.IconFolder,
   box: I.IconBox,
+  scan: I.IconScan,
   truck: I.IconTruck,
   cart: I.IconCart,
   return: I.IconReturn,

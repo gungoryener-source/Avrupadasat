@@ -4,6 +4,7 @@ import { can } from "@avrupadasat/core/roles";
 import { forTenant } from "@avrupadasat/db";
 import { fmtDate } from "@/components/AppShell";
 import { ActionForm } from "@/components/panel/ActionForm";
+import { LabelCard } from "@/components/panel/LabelCard";
 import { MovementTable } from "@/components/panel/StockViews";
 import { Badge, Card, PageHeader, pageNum } from "@/components/panel/ui";
 import { Submit } from "@/components/Submit";
@@ -50,7 +51,8 @@ export default async function ProductPage({
         crumbs={[{ href: "/panel/stok", label: "Depo ve Stok" }]}
         desc={
           <>
-            <span className="mono">{item.sku}</span>
+            <span className="mono">{item.sku}</span> · Etiket{" "}
+            <span className="mono">{item.labelCode}</span>
             {item.ean && <> · EAN {item.ean}</>}
             {item.location && <> · Raf {item.location}</>}
           </>
@@ -98,6 +100,7 @@ export default async function ProductPage({
           <MovementTable data={mv} params={{}} showSku={false} />
         </div>
         <div className="grid" style={{ alignContent: "start" }}>
+          <LabelCard id={item.id} code={item.labelCode} />
           <Card title="Ürün görseli">
             {item.imageKey ? (
               // eslint-disable-next-line @next/next/no-img-element -- yetkili rota

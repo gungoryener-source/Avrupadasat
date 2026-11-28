@@ -66,6 +66,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           badge: pendingDocs,
         },
         { href: "/admin/stok", label: "Depo ve stok", icon: "box", perm: "stock.read" },
+        { href: "/admin/okut", label: "Barkod okut", icon: "scan", perm: "stock.read" },
         {
           href: "/admin/sevkiyatlar",
           label: "Sevkiyatlar",
@@ -127,6 +128,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             [
               "/admin",
               "/admin/stok",
+              "/admin/okut",
               "/admin/sevkiyatlar",
               "/admin/siparisler",
               "/admin/iadeler",

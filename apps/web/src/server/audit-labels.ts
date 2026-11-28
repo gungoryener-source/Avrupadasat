@@ -19,6 +19,7 @@ export const AUDIT_LABEL: Record<string, string> = {
   "document.reviewed": "Belge incelendi",
   "stock.imported": "Stok sayımı işlendi",
   "stock.adjusted": "Stok düzeltildi",
+  "labels.printed": "Ürün etiketi basıldı",
   "order.created": "Sipariş alındı",
   "order.updated": "Sipariş güncellendi",
   "return.created": "İade kaydedildi",

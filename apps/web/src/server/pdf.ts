@@ -6,7 +6,7 @@ import { brand } from "@avrupadasat/core/brand.config";
 import { formatEur, type QuoteLine } from "@avrupadasat/core/pricing";
 
 /** DejaVu Sans: Türkçe karakterleri (ş, ğ, ı, İ) destekler; serbest lisans */
-async function fonts(doc: PDFDocument) {
+export async function fonts(doc: PDFDocument) {
   const dir = path.join(process.cwd(), "assets", "fonts");
   doc.registerFontkit(fontkit);
   const [regular, bold] = await Promise.all([

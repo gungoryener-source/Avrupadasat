@@ -163,12 +163,61 @@ try {
   assert((await r.textContent()).includes("B-12-1"), "raf görünmüyor");
   s.ok();
 
+  s = step("Barkod: etiket kodu, etiket PDF'i ve okutma (kiracı izolasyonu dahil)");
+  await op.getByRole("link", { name: "E2E-RAF" }).click();
+  const code = (await op.locator(".lbl-code").textContent()).trim();
+  assert(/^D[0-9A-HJKMNP-TV-Z]{7}$/.test(code), `etiket kodu biçimi: ${code}`);
+  const pid = op.url().split("/").pop().split("?")[0];
+  const lbl = await op.request.get(`${BASE}/api/etiket?u=${pid}:3&bicim=termal`);
+  assert(
+    lbl.status() === 200 && lbl.headers()["content-type"] === "application/pdf",
+    `etiket PDF'i: ${lbl.status()}`,
+  );
+  assert((await lbl.body()).subarray(0, 5).toString() === "%PDF-", "PDF değil");
+  const a4 = await op.request.get(`${BASE}/api/etiket?n_${pid}=30&bicim=a4`);
+  assert(a4.status() === 200, `A4 etiket: ${a4.status()}`);
+  const bad = await op.request.get(`${BASE}/api/etiket?u=${pid}:9999`);
+  assert(bad.status() === 400, `adet sınırı: ${bad.status()}`);
+  const xpdf = await xp.request.get(`${BASE}/api/etiket?u=${pid}:1`);
+  assert(xpdf.status() === 404, `başka firma etiket bastı: ${xpdf.status()}`);
+  const own = await (await op.request.get(`${BASE}/api/okut?kod=${code.toLowerCase()}`)).json();
+  assert(
+    own.by === "code" && own.hits.length === 1 && own.hits[0].sku === "E2E-RAF",
+    `okutma: ${JSON.stringify(own)}`,
+  );
+  assert(own.hits[0].location === "B-12-1", "okutmada raf yok");
+  const other = await (await xp.request.get(`${BASE}/api/okut?kod=${code}`)).json();
+  assert(other.hits.length === 0, "başka firmanın ürünü okutmada göründü");
+  await ap.goto(`${BASE}/admin/okut`);
+  await ap.getByLabel("Barkodu okutun veya kodu yazın").fill(code);
+  await ap.keyboard.press("Enter");
+  const hit = ap.locator(".scan-hit", { hasText: "Raf test ürünü" });
+  await hit.waitFor();
+  assert((await hit.textContent()).includes("B-12-1"), "ekip okutmasında raf yok");
+  await ap.getByLabel("Barkodu okutun veya kodu yazın").fill("YOK-BOYLE-BIR-KOD");
+  await ap.keyboard.press("Enter");
+  await ap.getByText("için ürün bulunamadı").waitFor();
+  await ap.screenshot({ path: `${SHOTS}/61-barkod-okut.png` });
+  await op.goto(`${BASE}/panel/stok?q=${code}`);
+  await op.getByRole("row", { name: /E2E-RAF/ }).waitFor();
+  await op.goto(`${BASE}/panel/stok/etiketler`);
+  await op.getByLabel("E2E-RAF etiket adedi").fill("2");
+  await op.screenshot({ path: `${SHOTS}/62-etiket-bas.png` });
+  s.ok();
+
   s = step("Mobil yerleşim: menü çekmecesi ve taşma yok");
   const mp = await (
     await b.newContext({ locale: "tr-TR", viewport: { width: 390, height: 844 } })
   ).newPage();
   await login(mp, E.owner.email, E.password, E.owner.secret);
-  for (const path of ["/panel", "/panel/destek", "/panel/belgeler", "/panel/siparisler"]) {
+  for (const path of [
+    "/panel",
+    "/panel/destek",
+    "/panel/belgeler",
+    "/panel/siparisler",
+    "/panel/stok/etiketler",
+    "/panel/stok/okut",
+  ]) {
     await mp.goto(`${BASE}${path}`);
     const w = await mp.evaluate(() => document.documentElement.scrollWidth);
     assert(w <= 392, `${path} yatay taşma: ${w}px`);

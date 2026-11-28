@@ -34,7 +34,9 @@ export async function GET(req: Request) {
         orderBy: { orderedAt: "desc" },
       }),
       t.stockItem.findMany({
-        where: { OR: [{ sku: like }, { name: like }, { ean: like }] },
+        where: {
+          OR: [{ sku: like }, { name: like }, { ean: like }, { labelCode: q.toUpperCase() }],
+        },
         select: { id: true, sku: true, name: true },
         take: 5,
       }),

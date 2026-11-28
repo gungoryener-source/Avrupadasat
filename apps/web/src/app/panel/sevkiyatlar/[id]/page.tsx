@@ -26,6 +26,13 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
         <Link href="/panel/sevkiyatlar">← Sevkiyatlar</Link>
       </p>
       <h1>Sevkiyat {sh.reference}</h1>
+      {sh.lines.length > 0 && sh.stage !== "DEPO_KABUL" && (
+        <p>
+          <Link className="btn btn-o btn-sm" href={`/panel/stok/etiketler?sevkiyat=${sh.id}`}>
+            Bu sevkiyatın ürün etiketlerini bas
+          </Link>
+        </p>
+      )}
       <ShipmentDetail s={sh} userId={s.userId} />
       <div className="card" style={{ marginTop: 18 }}>
         <h2 style={{ marginTop: 0, fontSize: 19 }}>Belge yükle</h2>
