@@ -146,6 +146,8 @@ model User {
   partnerOf   PartnerAssignment[]
   sessions    Session[]
   tokens      AuthToken[]
+  /// Arayüz dili: tr | de | en
+  locale      String              @default("tr")
 }
 
 model Session {
@@ -335,6 +337,8 @@ model Shipment {
   cartons    Int           @default(0)
   origin     String?
   carrier    String?
+  /// Taşıyıcı (nakliyeci/kargo) takip numarası
+  trackingNo String?
   expectedAt DateTime?
   receivedAt DateTime?
   notes      String?
@@ -591,22 +595,26 @@ enum OrderStatus {
 }
 
 model Order {
-  id         String       @id @default(cuid())
-  tenantId   String
-  channel    SalesChannel
-  externalId String
-  status     OrderStatus  @default(NEW)
+  id          String       @id @default(cuid())
+  tenantId    String
+  channel     SalesChannel
+  externalId  String
+  status      OrderStatus  @default(NEW)
   /// Alıcı adı + adres (kişisel veri): şifreli JSON
-  shipToEnc  String
-  country    String       @default("DE")
-  itemsCents Int          @default(0)
-  currency   String       @default("EUR")
-  carrier    String?
-  trackingNo String?
-  holdReason String?
-  orderedAt  DateTime
-  shippedAt  DateTime?
-  createdAt  DateTime     @default(now())
+  shipToEnc   String
+  country     String       @default("DE")
+  itemsCents  Int          @default(0)
+  currency    String       @default("EUR")
+  carrier     String?
+  trackingNo  String?
+  holdReason  String?
+  orderedAt   DateTime
+  shippedAt   DateTime?
+  /// Teslim teyidi (ekip işaretler veya taşıyıcı bildirir)
+  deliveredAt DateTime?
+  /// Tüm kalemler iade alınıp işlendiğinde
+  returnedAt  DateTime?
+  createdAt   DateTime     @default(now())
 
   tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   lines      OrderLine[]

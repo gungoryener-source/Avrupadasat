@@ -39,6 +39,7 @@ import {
 import { db } from "@/server/db";
 import { waitingList, registrationState } from "@/server/panel";
 import { requireClient } from "@/server/session";
+import { trackingUrl } from "@/server/tracking";
 
 export const metadata = { title: "Genel Bakış" };
 
@@ -435,7 +436,45 @@ async function OrderPanel({ tenantId, sp, id, now }: Ctx & { id: string }) {
           {[o.zip, o.city].filter(Boolean).join(" ") || "—"} {o.country}
         </dd>
         <dt>Kargo</dt>
-        <dd>{o.trackingNo ? `${o.carrier} ${o.trackingNo}` : "Henüz kargoya verilmedi"}</dd>
+        <dd>
+          {o.trackingNo ? (
+            <>
+              {o.carrier} <span className="mono">{o.trackingNo}</span>
+              {trackingUrl(o.carrier, o.trackingNo) && (
+                <>
+                  {" · "}
+                  <a
+                    href={trackingUrl(o.carrier, o.trackingNo)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Takip et ↗
+                  </a>
+                </>
+              )}
+            </>
+          ) : (
+            "Henüz kargoya verilmedi"
+          )}
+        </dd>
+        {o.shippedAt && (
+          <>
+            <dt>Kargoya verildi</dt>
+            <dd>{fmtDay(o.shippedAt)}</dd>
+          </>
+        )}
+        {o.deliveredAt && (
+          <>
+            <dt>Teslim edildi</dt>
+            <dd>{fmtDay(o.deliveredAt)}</dd>
+          </>
+        )}
+        {o.returnedAt && (
+          <>
+            <dt>İade tamamlandı</dt>
+            <dd>{fmtDay(o.returnedAt)}</dd>
+          </>
+        )}
         {o.holdReason && (
           <>
             <dt>Bekleme nedeni</dt>

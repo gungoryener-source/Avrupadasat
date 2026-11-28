@@ -470,7 +470,10 @@ export async function markDelivered(
   if (!o) return { ok: false, reason: "Sipariş bulunamadı" };
   if (o.status !== "SHIPPED")
     return { ok: false, reason: "Yalnız kargodaki sipariş teslim edilir" };
-  await t.order.update({ where: { id: o.id }, data: { status: "DELIVERED" } });
+  await t.order.update({
+    where: { id: o.id },
+    data: { status: "DELIVERED", deliveredAt: new Date() },
+  });
   await audit({
     actorUserId,
     tenantId,
@@ -603,7 +606,10 @@ export async function processReturn(
         const back = (sku: string) =>
           done.filter((x) => x.sku === sku).reduce((a, x) => a + x.quantity, 0);
         if (order.lines.every((l) => back(l.sku) >= l.quantity))
-          await tx.order.update({ where: { id: order.id }, data: { status: "RETURNED" } });
+          await tx.order.update({
+            where: { id: order.id },
+            data: { status: "RETURNED", returnedAt: new Date() },
+          });
       }
     }
   });

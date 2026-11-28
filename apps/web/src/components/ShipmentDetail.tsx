@@ -4,6 +4,7 @@ import { fmtDate } from "@/components/AppShell";
 import { DOC_KIND_LABEL, missingDocs } from "@/server/documents";
 import { signDownload } from "@/server/files";
 import { STAGE_LABEL } from "@/server/labels";
+import { trackingUrl } from "@/server/tracking";
 
 type Full = Shipment & { events: ShipmentEvent[]; lines: AsnLine[]; documents: Document[] };
 
@@ -46,6 +47,23 @@ export function ShipmentDetail({ s, userId }: { s: Full; userId: string }) {
           {s.carrier && `· ${s.carrier}`}{" "}
           {s.expectedAt && `· tahmini varış ${fmtDate(s.expectedAt)}`}
         </p>
+        {s.trackingNo && (
+          <p style={{ fontSize: 13.5, marginBottom: 0 }}>
+            Takip no <span className="mono">{s.trackingNo}</span>
+            {trackingUrl(s.carrier, s.trackingNo) && (
+              <>
+                {" · "}
+                <a
+                  href={trackingUrl(s.carrier, s.trackingNo)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Taşıyıcı sitesinde takip et ↗
+                </a>
+              </>
+            )}
+          </p>
+        )}
       </div>
       <div className="card">
         <h2 style={{ marginTop: 0, fontSize: 19 }}>Belgeler</h2>

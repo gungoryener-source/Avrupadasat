@@ -9,7 +9,12 @@ import { audit } from "@/server/audit";
 import { db } from "@/server/db";
 import { emit } from "@/server/outbox";
 import { requireStaff } from "@/server/session";
-import { advanceStage, importStockCounts, receiveShipment } from "@/server/shipments";
+import {
+  advanceStage,
+  importStockCounts,
+  receiveShipment,
+  updateShipmentTransport,
+} from "@/server/shipments";
 
 async function scoped(permission: Parameters<typeof requireStaff>[0], tenantId: string) {
   const s = await requireStaff(permission);
@@ -142,4 +147,22 @@ export async function palletsAction(fd: FormData) {
     meta: { palletsInUse: input.pallets },
   });
   revalidatePath(`/admin/musteriler/${input.tenantId}`);
+}
+
+export async function transportAction(fd: FormData) {
+  const input = z
+    .object({
+      tenantId: z.string().min(1),
+      shipmentId: z.string().min(1),
+      carrier: z.string().max(80).optional(),
+      trackingNo: z.string().max(40).optional(),
+      expectedAt: z.string().max(10).optional(),
+    })
+    .parse(Object.fromEntries(fd));
+  const s = await scoped("shipment.write", input.tenantId);
+  const r = await updateShipmentTransport(input.tenantId, input.shipmentId, input, s.userId);
+  revalidatePath(`/admin/sevkiyatlar/${input.shipmentId}`);
+  redirect(
+    `/admin/sevkiyatlar/${input.shipmentId}?${r.ok ? "sonuc=tasima" : `hata=${encodeURIComponent(r.reason)}`}`,
+  );
 }
