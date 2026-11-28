@@ -4,10 +4,13 @@
  *   STORAGE_DRIVER=s3 — S3 uyumlu AB bölgesi depolama (AWS eu-central-1, Cloudflare R2 EU, MinIO)
  *     S3_BUCKET, S3_REGION, [S3_ENDPOINT], S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
  *     Nesneler sunucu tarafında şifreli (SSE AES256) ve özel (public erişim yok) yazılır.
+ *   STORAGE_DRIVER=blob — Vercel Blob, YALNIZ özel (private) erişim; okuma kimlik doğrulamalıdır.
+ *     Vercel'de OIDC ile, başka yerde BLOB_READ_WRITE_TOKEN ile çalışır. Mağaza AB bölgesinde açılmalı.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { get as blobGet, put as blobPut } from "@vercel/blob";
 import { randomToken } from "./tokens";
 
 export interface ObjectStorage {
@@ -67,12 +70,40 @@ export function s3Storage(
   };
 }
 
+type BlobApi = { put: typeof blobPut; get: typeof blobGet };
+
+/** Vercel Blob (private). API dışarıdan verilebilir (test için). */
+export function blobStorage(
+  api: BlobApi = { put: blobPut, get: blobGet },
+  prefix = "files/",
+): ObjectStorage {
+  return {
+    async put(key, data) {
+      assertKey(key);
+      await api.put(`${prefix}${key}`, data, {
+        access: "private",
+        addRandomSuffix: false,
+        allowOverwrite: false,
+        contentType: "application/octet-stream",
+      });
+    },
+    async get(key) {
+      assertKey(key);
+      const r = await api.get(`${prefix}${key}`, { access: "private", useCache: false });
+      if (!r || r.statusCode !== 200) throw new Error("Nesne bulunamadı");
+      return Buffer.from(await new Response(r.stream).arrayBuffer());
+    },
+  };
+}
+
 let cached: ObjectStorage | null = null;
 
 export function storage(env: NodeJS.ProcessEnv = process.env): ObjectStorage {
   if (cached && env === process.env) return cached;
   let s: ObjectStorage;
-  if ((env.STORAGE_DRIVER ?? "local") === "s3") {
+  if (env.STORAGE_DRIVER === "blob") {
+    s = blobStorage();
+  } else if ((env.STORAGE_DRIVER ?? "local") === "s3") {
     if (!env.S3_BUCKET || !env.S3_REGION) throw new Error("S3_BUCKET ve S3_REGION gerekli");
     s = s3Storage(
       new S3Client({

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { describe, expect, it } from "vitest";
-import { localStorage, s3Storage, storage } from "./storage";
+import { blobStorage, localStorage, s3Storage, storage } from "./storage";
 
 const KEY = "abcdefghijklmnopqrstuvwxyz012345";
 
@@ -54,5 +54,32 @@ describe("depolama", () => {
         S3_REGION: "eu-central-1",
       } as unknown as NodeJS.ProcessEnv),
     ).not.toThrow();
+  });
+
+  it("Blob sürücüsü yalnız private yazar/okur, üzerine yazmaz, anahtarı doğrular", async () => {
+    const calls: { path: string; opts: Record<string, unknown> }[] = [];
+    const store = new Map<string, Buffer>();
+    const api = {
+      put: async (p: string, data: Buffer, opts: Record<string, unknown>) => {
+        calls.push({ path: p, opts });
+        store.set(p, data);
+        return {} as never;
+      },
+      get: async (p: string, opts: Record<string, unknown>) => {
+        calls.push({ path: p, opts });
+        const d = store.get(p);
+        return d ? ({ statusCode: 200, stream: new Response(d).body } as never) : null;
+      },
+    };
+    const s = blobStorage(api as never);
+    await s.put(KEY, Buffer.from("gizli"));
+    expect(calls[0]).toMatchObject({
+      path: `files/${KEY}`,
+      opts: { access: "private", addRandomSuffix: false, allowOverwrite: false },
+    });
+    expect((await s.get(KEY)).toString()).toBe("gizli");
+    expect(calls[1]?.opts).toMatchObject({ access: "private" });
+    await expect(s.get("ab".repeat(15))).rejects.toThrow(/bulunamadı/);
+    await expect(s.put("../x", Buffer.from("x"))).rejects.toThrow(/Geçersiz/);
   });
 });

@@ -79,6 +79,18 @@ export default async function Settings() {
             <dd>{set(process.env.META_CAPI_TOKEN)}</dd>
             <dt>Turnstile (form koruması)</dt>
             <dd>{set(env.turnstileSecret)}</dd>
+            <dt>Dosya depolama</dt>
+            <dd>
+              {process.env.STORAGE_DRIVER === "blob" ? (
+                <Badge tone="green">Vercel Blob (özel)</Badge>
+              ) : process.env.STORAGE_DRIVER === "s3" ? (
+                <Badge tone="green">S3 (AB)</Badge>
+              ) : process.env.VERCEL ? (
+                <Badge tone="red">Geçici disk — dosyalar kalıcı değil</Badge>
+              ) : (
+                <Badge>Yerel disk</Badge>
+              )}
+            </dd>
             <dt>Virüs taraması (ClamAV)</dt>
             <dd>{set(process.env.CLAMAV_HOST)}</dd>
           </dl>
