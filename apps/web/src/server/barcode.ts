@@ -57,3 +57,23 @@ export function code128Svg(text: string, height = 40): string {
     .join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${modules + 2 * q} ${height}" preserveAspectRatio="none" shape-rendering="crispEdges" role="img" aria-label="Barkod ${text}"><rect width="100%" height="100%" fill="#fff"/><g fill="#000">${rects}</g></svg>`;
 }
+
+/** Raf etiketi: "RAF" + konum (ör. RAFA-03-2). Konum kuralı stock.setLocation ile aynıdır. */
+export const SHELF_PREFIX = "RAF";
+export const LOCATION_RE = /^[A-Z0-9][A-Z0-9 ./-]{0,23}$/;
+
+export function shelfBarcode(location: string): string {
+  return `${SHELF_PREFIX}${location}`;
+}
+
+/**
+ * Okutulan değer bir raf etiketiyse konumu döndürür. Türkçe Q klavyeye ayarlı olmayan
+ * USB okuyucular "-" yerine "*" yazar; bu düzeltilir.
+ */
+export function parseShelfScan(raw: string): string | null {
+  // eslint-disable-next-line no-control-regex
+  const s = raw.replace(/[\u0000-\u001f\u007f]/g, "").trim().toUpperCase();
+  if (!s.startsWith(SHELF_PREFIX)) return null;
+  const loc = s.slice(SHELF_PREFIX.length).replace(/\*/g, "-").trim();
+  return LOCATION_RE.test(loc) ? loc : null;
+}

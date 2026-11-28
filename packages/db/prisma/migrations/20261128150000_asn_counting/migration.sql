@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "AsnLine" ADD COLUMN     "countedDamaged" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "countedQty" INTEGER NOT NULL DEFAULT 0;
+

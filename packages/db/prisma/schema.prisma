@@ -450,13 +450,16 @@ model ShipmentEvent {
 
 /// ASN (gelen sevkiyat bildirimi) satırı
 model AsnLine {
-  id          String @id @default(cuid())
-  tenantId    String
-  shipmentId  String
-  sku         String
-  quantity    Int
-  receivedQty Int?
-  damagedQty  Int    @default(0)
+  id             String @id @default(cuid())
+  tenantId       String
+  shipmentId     String
+  sku            String
+  quantity       Int
+  receivedQty    Int?
+  damagedQty     Int    @default(0)
+  /// Okutarak sayım taslağı (mal kabul tamamlanana kadar; birden çok cihazdan artırılabilir)
+  countedQty     Int    @default(0)
+  countedDamaged Int    @default(0)
 
   shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 

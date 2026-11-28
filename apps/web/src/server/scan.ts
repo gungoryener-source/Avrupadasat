@@ -4,7 +4,7 @@
  */
 import { STAFF_ROLES, canAccessTenant, type Actor } from "@avrupadasat/core/roles";
 import type { Prisma } from "@avrupadasat/db";
-import { isLabelCode, normalizeScan } from "./barcode";
+import { isLabelCode, normalizeScan, parseShelfScan } from "./barcode";
 import { db } from "./db";
 
 export function stockScope(actor: Actor): Prisma.StockItemWhereInput | null {
@@ -29,8 +29,10 @@ export interface ScanHit {
 
 export interface ScanResult {
   query: string;
-  /** Eşleşme türü: platform etiket kodu, EAN veya SKU */
-  by: "code" | "ean" | "sku" | null;
+  /** Eşleşme türü: platform etiket kodu, EAN, SKU veya raf etiketi (raftaki ürünler) */
+  by: "code" | "ean" | "sku" | "shelf" | null;
+  /** Raf etiketi okutulduysa konum */
+  shelf?: string;
   hits: ScanHit[];
 }
 
@@ -53,15 +55,19 @@ export async function lookupScan(actor: Actor, raw: string): Promise<ScanResult>
     tenantId: true,
     tenant: { select: { name: true } },
   } as const;
+  const shelf = parseShelfScan(raw);
   const tries: [ScanResult["by"], Prisma.StockItemWhereInput][] = [];
-  if (isLabelCode(query)) tries.push(["code", { labelCode: query }]);
-  if (/^\d{8,14}$/.test(query)) tries.push(["ean", { ean: query }]);
-  tries.push(["sku", { sku: { equals: raw.trim(), mode: "insensitive" } }]);
+  if (shelf) tries.push(["shelf", { location: shelf }]);
+  else {
+    if (isLabelCode(query)) tries.push(["code", { labelCode: query }]);
+    if (/^\d{8,14}$/.test(query)) tries.push(["ean", { ean: query }]);
+    tries.push(["sku", { sku: { equals: raw.trim(), mode: "insensitive" } }]);
+  }
   for (const [by, where] of tries) {
     const rows = await db().stockItem.findMany({
       where: { AND: [scope, where] },
       select,
-      take: 10,
+      take: shelf ? 50 : 10,
       orderBy: { sku: "asc" },
     });
     const allowed = rows.filter((r) => canAccessTenant(actor, r.tenantId));
@@ -69,6 +75,7 @@ export async function lookupScan(actor: Actor, raw: string): Promise<ScanResult>
       return {
         query,
         by,
+        ...(shelf ? { shelf } : {}),
         hits: allowed.map((r) => ({
           id: r.id,
           code: r.labelCode,
@@ -86,7 +93,7 @@ export async function lookupScan(actor: Actor, raw: string): Promise<ScanResult>
         })),
       };
   }
-  return { query, by: null, hits: [] };
+  return { query, by: shelf ? "shelf" : null, ...(shelf ? { shelf } : {}), hits: [] };
 }
 
 /**

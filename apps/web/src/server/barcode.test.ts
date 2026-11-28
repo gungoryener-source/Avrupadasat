@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { code128Bars, code128Svg, code128Widths, isLabelCode, normalizeScan } from "./barcode";
+import {
+  code128Bars,
+  code128Svg,
+  code128Widths,
+  isLabelCode,
+  normalizeScan,
+  parseShelfScan,
+  shelfBarcode,
+} from "./barcode";
 
 describe("barkod", () => {
   it("etiket kodu biçimi", () => {
@@ -38,5 +46,14 @@ describe("barkod", () => {
   it("geçersiz metni reddeder", () => {
     expect(() => code128Widths("")).toThrow();
     expect(() => code128Widths("ş")).toThrow();
+  });
+
+  it("raf etiketi: üretim ve çözme (klavye düzeni hatası dahil)", () => {
+    expect(shelfBarcode("A-03-2")).toBe("RAFA-03-2");
+    expect(parseShelfScan("RAFA-03-2\r")).toBe("A-03-2");
+    expect(parseShelfScan("rafa*03*2")).toBe("A-03-2");
+    expect(parseShelfScan("RAF")).toBeNull();
+    expect(parseShelfScan("DK01YAEQ")).toBeNull();
+    expect(parseShelfScan("RAF-bad")).toBeNull();
   });
 });
