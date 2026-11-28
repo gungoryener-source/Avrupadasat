@@ -352,8 +352,8 @@ export async function shipOrder(
   const t = forTenant(db(), tenantId);
   const o = await t.order.findFirst({ where: { id: orderId }, include: { lines: true } });
   if (!o) return { ok: false, reason: "Sipariş bulunamadı" };
-  if (o.status !== "ALLOCATED")
-    return { ok: false, reason: "Yalnız rezerve edilmiş sipariş kargolanabilir" };
+  if (o.status !== "ALLOCATED" && o.status !== "PACKED")
+    return { ok: false, reason: "Yalnız hazırlanan veya paketlenen sipariş kargolanabilir" };
   await db().$transaction(async (tx) => {
     for (const l of o.lines) {
       await tx.stockItem.update({
@@ -424,6 +424,64 @@ export async function shipOrder(
   return { ok: true };
 }
 
+/** Paketleme tamam (stok hâlâ ayrılmış; kargoya verilince düşer) */
+export async function packOrder(
+  tenantId: string,
+  orderId: string,
+  cartons: number,
+  actorUserId: string,
+): Promise<OpResult> {
+  if (!Number.isInteger(cartons) || cartons < 1 || cartons > 500)
+    return { ok: false, reason: "Koli sayısı 1–500 olmalı" };
+  const t = forTenant(db(), tenantId);
+  const o = await t.order.findFirst({ where: { id: orderId } });
+  if (!o) return { ok: false, reason: "Sipariş bulunamadı" };
+  if (o.status !== "ALLOCATED")
+    return { ok: false, reason: "Yalnız hazırlanan sipariş paketlenir" };
+  await db().$transaction(async (tx) => {
+    await tx.order.update({ where: { id: o.id }, data: { status: "PACKED" } });
+    await tx.workOrder.updateMany({
+      where: { orderId: o.id, status: "OPEN" },
+      data: { cartons },
+    });
+    await audit(
+      {
+        actorUserId,
+        tenantId,
+        action: "order.updated",
+        entity: "Order",
+        entityId: o.id,
+        meta: { status: "PACKED", cartons },
+      },
+      tx,
+    );
+  });
+  return { ok: true };
+}
+
+/** Teslim teyidi (kargo takibinden veya pazaryerinden gelen bilgiyle ekip işaretler) */
+export async function markDelivered(
+  tenantId: string,
+  orderId: string,
+  actorUserId: string,
+): Promise<OpResult> {
+  const t = forTenant(db(), tenantId);
+  const o = await t.order.findFirst({ where: { id: orderId } });
+  if (!o) return { ok: false, reason: "Sipariş bulunamadı" };
+  if (o.status !== "SHIPPED")
+    return { ok: false, reason: "Yalnız kargodaki sipariş teslim edilir" };
+  await t.order.update({ where: { id: o.id }, data: { status: "DELIVERED" } });
+  await audit({
+    actorUserId,
+    tenantId,
+    action: "order.updated",
+    entity: "Order",
+    entityId: o.id,
+    meta: { status: "DELIVERED" },
+  });
+  return { ok: true };
+}
+
 export async function cancelOrder(
   tenantId: string,
   orderId: string,
@@ -432,10 +490,10 @@ export async function cancelOrder(
   const t = forTenant(db(), tenantId);
   const o = await t.order.findFirst({ where: { id: orderId }, include: { lines: true } });
   if (!o) return { ok: false, reason: "Sipariş bulunamadı" };
-  if (!["NEW", "ON_HOLD", "ALLOCATED"].includes(o.status))
+  if (!["NEW", "ON_HOLD", "ALLOCATED", "PACKED"].includes(o.status))
     return { ok: false, reason: "Kargolanmış sipariş iptal edilemez" };
   await db().$transaction(async (tx) => {
-    if (o.status === "ALLOCATED") {
+    if (o.status === "ALLOCATED" || o.status === "PACKED") {
       for (const l of o.lines) {
         await tx.stockItem.update({
           where: { tenantId_sku: { tenantId, sku: l.sku } },
@@ -518,6 +576,12 @@ export async function processReturn(
         delta: condition === "DAMAGED" ? 0 : r.quantity,
         reason: condition === "DAMAGED" ? "DAMAGE" : "RETURN",
         refId: r.id,
+        note:
+          condition === "DAMAGED"
+            ? `${r.quantity} adet hasarlı iade, stoğa eklenmedi`
+            : condition === "REPACK"
+              ? "Yeniden paketlenecek"
+              : null,
         actorUserId,
       },
     });
@@ -526,6 +590,31 @@ export async function processReturn(
       data: { condition, status: "PROCESSED", processedAt: new Date() },
     });
     await emit(tx, "return.processed.v1", { returnId: r.id, sku: r.sku, condition }, { tenantId });
+    // Siparişin tüm kalemleri iade alındıysa sipariş "İade edildi" olur
+    if (r.orderId) {
+      const order = await tx.order.findUnique({
+        where: { id: r.orderId },
+        include: { lines: true },
+      });
+      if (order && (order.status === "SHIPPED" || order.status === "DELIVERED")) {
+        const done = await tx.returnItem.findMany({
+          where: { orderId: order.id, status: "PROCESSED" },
+        });
+        const back = (sku: string) =>
+          done.filter((x) => x.sku === sku).reduce((a, x) => a + x.quantity, 0);
+        if (order.lines.every((l) => back(l.sku) >= l.quantity))
+          await tx.order.update({ where: { id: order.id }, data: { status: "RETURNED" } });
+      }
+    }
+  });
+  await notifyTenant(tenantId, {
+    type: "return",
+    title: `İade işlendi: ${r.quantity}× ${r.sku}`,
+    body:
+      condition === "DAMAGED"
+        ? "Ürün hasarlı geldi; stoğa eklenmedi."
+        : "Ürün kontrol edildi ve stoğa geri eklendi.",
+    href: "/panel/iadeler",
   });
   return { ok: true };
 }

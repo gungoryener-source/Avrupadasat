@@ -15,6 +15,7 @@ import { DOC_KIND_LABEL, reviewDocument, uploadDocument } from "@/server/documen
 import { markRead } from "@/server/notifications";
 import { clientIp, requireStaff } from "@/server/session";
 import { changePackage, changeStaffRole, inviteStaff, setStaffDisabled } from "@/server/staff";
+import { adjustStock, setLocation, setProductImage } from "@/server/stock";
 import { createTask, updateTask } from "@/server/tasks";
 import { createTicket, replyTicket, updateTicket } from "@/server/tickets";
 
@@ -326,4 +327,81 @@ export async function staffReadNotificationsAction(fd: FormData) {
   const s = await requireStaff();
   await markRead(s.actor.userId, str(fd, "id") || undefined);
   revalidatePath("/admin", "layout");
+}
+
+/* ---------- Stok ---------- */
+
+function refreshStock(tenantId: string) {
+  refreshTenant(tenantId);
+  revalidatePath("/admin/stok");
+}
+
+export async function adjustStockAction(_: FormState, fd: FormData): Promise<FormState> {
+  const tenantId = str(fd, "tenantId");
+  const s = await staffFor("stock.write", tenantId);
+  const dir = str(fd, "dir") === "out" ? -1 : 1;
+  const qty = Number(str(fd, "qty"));
+  const r = await adjustStock(
+    s.actor,
+    tenantId,
+    { sku: str(fd, "sku"), delta: Number.isFinite(qty) ? dir * qty : NaN, note: str(fd, "note") },
+    await clientIp(),
+  );
+  if (!r.ok) return { error: r.error, fieldErrors: r.fieldErrors };
+  refreshStock(tenantId);
+  return { ok: "Stok güncellendi; hareket kaydedildi." };
+}
+
+export async function setLocationAction(_: FormState, fd: FormData): Promise<FormState> {
+  const tenantId = str(fd, "tenantId");
+  const s = await staffFor("stock.write", tenantId);
+  const r = await setLocation(s.actor, tenantId, str(fd, "sku"), str(fd, "location"));
+  if (!r.ok) return { error: r.error };
+  refreshStock(tenantId);
+  return { ok: "Konum kaydedildi." };
+}
+
+export async function staffProductImageAction(_: FormState, fd: FormData): Promise<FormState> {
+  const tenantId = str(fd, "tenantId");
+  const s = await staffFor("stock.write", tenantId);
+  const f = fd.get("image");
+  if (!(f instanceof File) || f.size === 0) return { error: "Görsel seçin" };
+  const r = await setProductImage(
+    s.actor,
+    tenantId,
+    str(fd, "sku"),
+    Buffer.from(await f.arrayBuffer()),
+    await clientIp(),
+  );
+  if (!r.ok) return { error: r.error };
+  refreshStock(tenantId);
+  return { ok: "Görsel kaydedildi." };
+}
+
+export async function taskAttachAction(_: FormState, fd: FormData): Promise<FormState> {
+  const s = await requireStaff("task.write");
+  const id = str(fd, "id");
+  const task = await db().task.findUnique({ where: { id } });
+  if (!task || !canAccessTenant(s.actor, task.tenantId)) return { error: "Görev bulunamadı" };
+  const f = fd.get("file");
+  if (!(f instanceof File) || f.size === 0) return { error: "Dosya seçin" };
+  // Ekip görevi müşteriye görünmüyorsa ek de iç kalır
+  const internal = bool(fd, "internal") || !task.customerVisible;
+  const r = await uploadDocument({
+    tenantId: task.tenantId,
+    kind: task.category === "VERGI" ? "VERGI" : task.category === "SIRKET" ? "SIRKET" : "DIGER",
+    filename: f.name,
+    data: Buffer.from(await f.arrayBuffer()),
+    actorUserId: s.userId,
+    ip: await clientIp(),
+    approved: true,
+    taskId: task.id,
+    internal,
+  });
+  if (!r.ok) return { error: r.reason };
+  revalidatePath("/admin/gorevler");
+  refreshTenant(task.tenantId);
+  return {
+    ok: internal ? "Ek kaydedildi (yalnız ekip)." : "Ek kaydedildi; müşteri görevde görür.",
+  };
 }

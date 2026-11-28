@@ -61,7 +61,11 @@ export async function runReminders(now = new Date()) {
 
   // Belgeler: 30 gün içinde süresi dolan, onaylı
   const docs = await db().document.findMany({
-    where: { review: "APPROVED", expiresAt: { gte: now, lte: new Date(+now + 30 * DAY) } },
+    where: {
+      review: "APPROVED",
+      internal: false,
+      expiresAt: { gte: now, lte: new Date(+now + 30 * DAY) },
+    },
     take: 500,
   });
   for (const d of docs) {

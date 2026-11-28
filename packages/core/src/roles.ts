@@ -4,6 +4,7 @@
  */
 export const ROLES = [
   "ADMIN",
+  "MANAGER",
   "OPS",
   "FINANCE",
   "SALES",
@@ -14,11 +15,19 @@ export const ROLES = [
 ] as const;
 export type Role = (typeof ROLES)[number];
 
-export const STAFF_ROLES: readonly Role[] = ["ADMIN", "OPS", "FINANCE", "SALES", "SUPPORT"];
+export const STAFF_ROLES: readonly Role[] = [
+  "ADMIN",
+  "MANAGER",
+  "OPS",
+  "FINANCE",
+  "SALES",
+  "SUPPORT",
+];
 
 /** Arayüzde rol adları (talimattaki rol adlarıyla eşleme) */
 export const ROLE_LABEL: Record<Role, string> = {
   ADMIN: "Süper yönetici",
+  MANAGER: "Yönetici",
   OPS: "Operasyon yöneticisi",
   FINANCE: "Muhasebe",
   SALES: "Satış",
@@ -69,6 +78,8 @@ export type Permission = (typeof PERMISSIONS)[number];
 
 const MATRIX: Record<Role, readonly Permission[]> = {
   ADMIN: PERMISSIONS,
+  /** Personel/yetki ve fiyat listesi yönetimi yalnız Süper yöneticide */
+  MANAGER: PERMISSIONS.filter((p) => p !== "staff.manage" && p !== "pricing.manage"),
   SALES: ["lead.read", "lead.write", "quote.write", "tenant.read", "ticket.read", "task.read"],
   OPS: [
     "tenant.read",

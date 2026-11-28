@@ -3,12 +3,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { packages } from "@avrupadasat/core/pricing";
+import { can } from "@avrupadasat/core/roles";
 import { forTenant } from "@avrupadasat/db";
 import { audit } from "@/server/audit";
 import { db } from "@/server/db";
-import { uploadDocument } from "@/server/documents";
+import { notifyDocumentUploaded, uploadDocument } from "@/server/documents";
 import { markRead, notifyStaff } from "@/server/notifications";
 import { clientIp, requireClient } from "@/server/session";
+import { setProductImage } from "@/server/stock";
 import { customerMarkDone } from "@/server/tasks";
 import { createTicket, replyTicket } from "@/server/tickets";
 
@@ -69,12 +71,27 @@ export async function replyTicketAction(_: FormState, fd: FormData): Promise<For
 
 export async function taskDoneAction(_: FormState, fd: FormData): Promise<FormState> {
   const s = await requireClient("task.read");
-  const r = await customerMarkDone(
-    s.actor,
-    String(fd.get("id") ?? ""),
-    String(fd.get("note") ?? ""),
-    await clientIp(),
-  );
+  const id = String(fd.get("id") ?? "");
+  const f = fd.get("file");
+  if (f instanceof File && f.size > 0) {
+    if (!can(s.actor.role, "document.write")) return { error: "Dosya yükleme yetkiniz yok" };
+    const task = await forTenant(db(), s.actor.tenantId).task.findFirst({
+      where: { id, customerVisible: true },
+    });
+    if (!task) return { error: "Görev bulunamadı" };
+    const up = await uploadDocument({
+      tenantId: s.actor.tenantId,
+      kind: task.category === "VERGI" ? "VERGI" : task.category === "SIRKET" ? "SIRKET" : "DIGER",
+      filename: f.name,
+      data: Buffer.from(await f.arrayBuffer()),
+      actorUserId: s.userId,
+      ip: await clientIp(),
+      taskId: task.id,
+    });
+    if (!up.ok) return { error: up.reason };
+    await notifyDocumentUploaded(s.actor.tenantId, f.name);
+  }
+  const r = await customerMarkDone(s.actor, id, String(fd.get("note") ?? ""), await clientIp());
   if (!r.ok) return { error: r.error };
   revalidatePath("/panel");
   // Form görevden kalktığı için onay mesajı sayfada gösterilir
@@ -165,5 +182,25 @@ export async function lowStockAction(fd: FormData) {
     where: { sku },
     data: { lowStockAt: n },
   });
+  revalidatePath("/panel/stok", "layout");
+}
+
+export async function productImageAction(_: FormState, fd: FormData): Promise<FormState> {
+  const s = await requireClient("catalog.write");
+  const f = fd.get("image");
+  if (!(f instanceof File) || f.size === 0) return { error: "Görsel seçin" };
+  const id = String(fd.get("id") ?? "");
+  const item = await forTenant(db(), s.actor.tenantId).stockItem.findFirst({ where: { id } });
+  if (!item) return { error: "Ürün bulunamadı" };
+  const r = await setProductImage(
+    s.actor,
+    s.actor.tenantId,
+    item.sku,
+    Buffer.from(await f.arrayBuffer()),
+    await clientIp(),
+  );
+  if (!r.ok) return { error: r.error };
+  revalidatePath(`/panel/stok/urun/${id}`);
   revalidatePath("/panel/stok");
+  return { ok: "Görsel kaydedildi." };
 }

@@ -15,7 +15,7 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
     include: {
       events: { orderBy: { at: "asc" } },
       lines: { orderBy: { sku: "asc" } },
-      documents: { orderBy: { createdAt: "desc" } },
+      documents: { where: { internal: false }, orderBy: { createdAt: "desc" } },
     },
   });
   if (!sh) notFound();

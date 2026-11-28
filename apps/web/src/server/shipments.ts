@@ -179,7 +179,15 @@ export async function receiveShipment(
       }
       if (c.damagedQty > 0) {
         await tx.stockMovement.create({
-          data: { tenantId, sku: c.sku, delta: 0, reason: "DAMAGE", refId: s.id, actorUserId },
+          data: {
+            tenantId,
+            sku: c.sku,
+            delta: 0,
+            reason: "DAMAGE",
+            refId: s.id,
+            actorUserId,
+            note: `Mal kabulde ${c.damagedQty} adet hasarlı`,
+          },
         });
       }
     }
@@ -286,7 +294,14 @@ export async function importStockCounts(tenantId: string, csvText: string, actor
       if (delta === 0) continue;
       await tx.stockItem.update({ where: { id: item.id }, data: { quantity: qty } });
       await tx.stockMovement.create({
-        data: { tenantId, sku, delta, reason: "ADJUST", actorUserId },
+        data: {
+          tenantId,
+          sku,
+          delta,
+          reason: "ADJUST",
+          actorUserId,
+          note: `Sayım: ${item.quantity} → ${qty}`,
+        },
       });
       adjusted++;
     }

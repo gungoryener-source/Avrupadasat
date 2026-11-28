@@ -3,11 +3,19 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { canAccessTenant } from "@avrupadasat/core/roles";
 import { fmtDate } from "@/components/AppShell";
-import { PageHeader, Tabs } from "@/components/panel/ui";
+import { EmptyState, Flash, PageHeader, Tabs } from "@/components/panel/ui";
 import { Submit } from "@/components/Submit";
 import { db } from "@/server/db";
 import { CHANNEL_LABEL, ORDER_STATUS } from "@/server/labels-ops";
-import { cancelOrder, retryHeld, shipOrder, shipTo, syncOrders } from "@/server/orders";
+import {
+  cancelOrder,
+  markDelivered,
+  packOrder,
+  retryHeld,
+  shipOrder,
+  shipTo,
+  syncOrders,
+} from "@/server/orders";
 import { requireStaff } from "@/server/session";
 
 export const metadata = { title: "Siparişler ve iadeler" };
@@ -29,24 +37,49 @@ async function shipAction(fd: FormData) {
     })
     .parse(Object.fromEntries(fd));
   const s = await guard(i.tenantId);
-  await shipOrder(i.tenantId, i.orderId, i.carrier, i.trackingNo.trim(), s.userId);
+  const r = await shipOrder(i.tenantId, i.orderId, i.carrier, i.trackingNo.trim(), s.userId);
+  done(r, "kargo");
+}
+
+/** Sonucu sayfa üstünde göstermek için yönlendirir (satır kuyruktan çıkabilir) */
+function done(r: { ok: boolean; reason?: string }, ok: string, view = ""): never {
   revalidatePath("/admin/siparisler");
+  const v = view ? `gorunum=${view}&` : "";
+  redirect(
+    r.ok
+      ? `/admin/siparisler?${v}sonuc=${ok}`
+      : `/admin/siparisler?${v}hata=${encodeURIComponent(r.reason ?? "İşlem yapılamadı")}`,
+  );
+}
+
+async function packAction(fd: FormData) {
+  "use server";
+  const i = z
+    .object({ tenantId: z.string(), orderId: z.string(), cartons: z.coerce.number().int() })
+    .parse(Object.fromEntries(fd));
+  const s = await guard(i.tenantId);
+  done(await packOrder(i.tenantId, i.orderId, i.cartons, s.userId), "paket");
+}
+
+async function deliveredAction(fd: FormData) {
+  "use server";
+  const i = z.object({ tenantId: z.string(), orderId: z.string() }).parse(Object.fromEntries(fd));
+  const s = await guard(i.tenantId);
+  done(await markDelivered(i.tenantId, i.orderId, s.userId), "teslim", "kargoda");
 }
 
 async function retryAction(fd: FormData) {
   "use server";
   const i = z.object({ tenantId: z.string(), orderId: z.string() }).parse(Object.fromEntries(fd));
   await guard(i.tenantId);
-  await retryHeld(i.tenantId, i.orderId);
-  revalidatePath("/admin/siparisler");
+  done(await retryHeld(i.tenantId, i.orderId), "tekrar");
 }
 
 async function cancelAction(fd: FormData) {
   "use server";
   const i = z.object({ tenantId: z.string(), orderId: z.string() }).parse(Object.fromEntries(fd));
   const s = await guard(i.tenantId);
-  await cancelOrder(i.tenantId, i.orderId, s.userId);
-  revalidatePath("/admin/siparisler");
+  done(await cancelOrder(i.tenantId, i.orderId, s.userId), "iptal");
 }
 
 async function syncAllAction() {
@@ -61,10 +94,11 @@ async function syncAllAction() {
 export default async function AdminOrders({
   searchParams,
 }: {
-  searchParams: Promise<{ firma?: string }>;
+  searchParams: Promise<{ firma?: string; gorunum?: string; sonuc?: string; hata?: string }>;
 }) {
   const s = await requireStaff("order.read");
-  const { firma } = await searchParams;
+  const { firma, gorunum, sonuc, hata } = await searchParams;
+  const shippedView = gorunum === "kargoda";
   const scope =
     s.actor.role === "PARTNER"
       ? { tenantId: { in: [...(s.actor.partnerTenantIds ?? [])] } }
@@ -72,7 +106,10 @@ export default async function AdminOrders({
         ? { tenantId: firma }
         : {};
   const queue = await db().order.findMany({
-    where: { ...scope, status: { in: ["ALLOCATED", "ON_HOLD"] } },
+    where: {
+      ...scope,
+      status: { in: shippedView ? ["SHIPPED"] : ["ALLOCATED", "PACKED", "ON_HOLD"] },
+    },
     include: { lines: true, tenant: { select: { name: true } } },
     orderBy: { orderedAt: "asc" },
     take: 200,
@@ -81,15 +118,31 @@ export default async function AdminOrders({
     <>
       <PageHeader
         title="Siparişler"
-        desc="Stok ayrılmış ve stok bekleyen siparişler. Kargolandığında takip numarası pazaryerine iletilir."
+        desc="Hazırlanan → Paketlendi → Kargoda → Teslim edildi. Kargolandığında takip numarası pazaryerine iletilir."
       />
       <Tabs
-        active="orders"
+        active={shippedView ? "shipped" : "orders"}
         items={[
-          { key: "orders", label: "Sipariş kuyruğu", href: "/admin/siparisler" },
+          { key: "orders", label: "Hazırlık kuyruğu", href: "/admin/siparisler" },
+          { key: "shipped", label: "Kargoda", href: "/admin/siparisler?gorunum=kargoda" },
           { key: "returns", label: "İadeler", href: "/admin/iadeler" },
         ]}
       />
+      <Flash
+        value={sonuc}
+        messages={{
+          kargo: "Sipariş kargolandı; stok düştü.",
+          paket: "Sipariş paketlendi.",
+          teslim: "Teslim edildi olarak işaretlendi.",
+          tekrar: "Stok ayrıldı; sipariş hazırlığa alındı.",
+          iptal: "Sipariş iptal edildi; ayrılan stok serbest bırakıldı.",
+        }}
+      />
+      {hata && (
+        <p className="alert-err" role="alert" style={{ marginBottom: 16 }}>
+          {hata.slice(0, 200)}
+        </p>
+      )}
       <form action={syncAllAction} style={{ marginBottom: 14 }}>
         <Submit className="btn btn-o btn-sm" pendingText="Çekiliyor…">
           Tüm bağlı kanallardan siparişleri çek
@@ -136,28 +189,20 @@ export default async function AdminOrders({
                     </span>
                   </td>
                   <td>
-                    {o.status === "ALLOCATED" ? (
-                      <form action={shipAction} className="inline-form">
-                        <input type="hidden" name="tenantId" value={o.tenantId} />
-                        <input type="hidden" name="orderId" value={o.id} />
-                        <select name="carrier" defaultValue="DHL" aria-label="Taşıyıcı">
-                          <option>DHL</option>
-                          <option>DPD</option>
-                          <option>Hermes</option>
-                          <option>GLS</option>
-                        </select>
-                        <input
-                          name="trackingNo"
-                          placeholder="Takip no"
-                          required
-                          aria-label={`${o.externalId} takip no`}
-                          style={{ width: 170 }}
-                        />
-                        <Submit className="btn btn-sm" pendingText="…">
-                          Kargolandı
-                        </Submit>
-                      </form>
-                    ) : (
+                    {o.status === "SHIPPED" ? (
+                      <>
+                        <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
+                          {o.carrier} {o.trackingNo}
+                        </div>
+                        <form action={deliveredAction}>
+                          <input type="hidden" name="tenantId" value={o.tenantId} />
+                          <input type="hidden" name="orderId" value={o.id} />
+                          <Submit className="btn btn-o btn-sm" pendingText="…">
+                            Teslim edildi
+                          </Submit>
+                        </form>
+                      </>
+                    ) : o.status === "ON_HOLD" ? (
                       <form action={retryAction}>
                         <input type="hidden" name="tenantId" value={o.tenantId} />
                         <input type="hidden" name="orderId" value={o.id} />
@@ -165,22 +210,67 @@ export default async function AdminOrders({
                           Stoğu yeniden dene
                         </Submit>
                       </form>
+                    ) : (
+                      <div className="grid" style={{ gap: 6 }}>
+                        {o.status === "ALLOCATED" && (
+                          <form action={packAction} className="inline-form">
+                            <input type="hidden" name="tenantId" value={o.tenantId} />
+                            <input type="hidden" name="orderId" value={o.id} />
+                            <input
+                              name="cartons"
+                              type="number"
+                              min={1}
+                              defaultValue={1}
+                              aria-label={`${o.externalId} koli sayısı`}
+                              style={{ width: 70 }}
+                            />
+                            <Submit className="btn btn-o btn-sm" pendingText="…">
+                              Paketlendi
+                            </Submit>
+                          </form>
+                        )}
+                        <form action={shipAction} className="inline-form">
+                          <input type="hidden" name="tenantId" value={o.tenantId} />
+                          <input type="hidden" name="orderId" value={o.id} />
+                          <select name="carrier" defaultValue="DHL" aria-label="Taşıyıcı">
+                            <option>DHL</option>
+                            <option>DPD</option>
+                            <option>Hermes</option>
+                            <option>GLS</option>
+                          </select>
+                          <input
+                            name="trackingNo"
+                            placeholder="Takip no"
+                            required
+                            aria-label={`${o.externalId} takip no`}
+                            style={{ width: 150 }}
+                          />
+                          <Submit className="btn btn-sm" pendingText="…">
+                            Kargolandı
+                          </Submit>
+                        </form>
+                      </div>
                     )}
-                    <form action={cancelAction} style={{ marginTop: 6 }}>
-                      <input type="hidden" name="tenantId" value={o.tenantId} />
-                      <input type="hidden" name="orderId" value={o.id} />
-                      <button className="btn btn-o btn-sm" type="submit">
-                        İptal
-                      </button>
-                    </form>
+                    {o.status !== "SHIPPED" && (
+                      <form action={cancelAction} style={{ marginTop: 6 }}>
+                        <input type="hidden" name="tenantId" value={o.tenantId} />
+                        <input type="hidden" name="orderId" value={o.id} />
+                        <button className="btn btn-o btn-sm" type="submit">
+                          İptal
+                        </button>
+                      </form>
+                    )}
                   </td>
                 </tr>
               );
             })}
             {queue.length === 0 && (
               <tr>
-                <td colSpan={6} className="muted">
-                  Kuyrukta sipariş yok.
+                <td colSpan={6}>
+                  <EmptyState
+                    title={shippedView ? "Kargoda sipariş yok" : "Kuyrukta sipariş yok"}
+                    text="Pazaryerlerinden yeni sipariş geldiğinde burada görünür."
+                  />
                 </td>
               </tr>
             )}

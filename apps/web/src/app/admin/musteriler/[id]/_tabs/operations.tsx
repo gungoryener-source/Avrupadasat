@@ -1,13 +1,14 @@
 import { can } from "@avrupadasat/core/roles";
 import type { WorkStatus } from "@avrupadasat/db";
 import { fmtDate } from "@/components/AppShell";
-import { CreateTaskForm, UpdateTaskForm } from "@/components/panel/TaskForms";
+import { CreateTaskForm, TaskAttachments, UpdateTaskForm } from "@/components/panel/TaskForms";
+import { signDownload } from "@/server/files";
 import { Badge, Card, EmptyState, Flash, Toolbar, WorkBadge } from "@/components/panel/ui";
 import { staffOptions } from "@/server/admin-data";
 import { listStaffTasks, TASK_CATEGORIES, WORK_STATUS_LABEL } from "@/server/tasks";
 import type { TabCtx } from "./ctx";
 
-export async function OperationsTab({ tenantId, actor, q }: TabCtx) {
+export async function OperationsTab({ tenantId, actor, userId, q }: TabCtx) {
   const write = can(actor.role, "task.write");
   const status =
     q.durum === "tumu"
@@ -70,6 +71,14 @@ export async function OperationsTab({ tenantId, actor, q }: TabCtx) {
                     <b>İç not:</b> {t.internalNote}
                   </p>
                 )}
+                <TaskAttachments
+                  taskId={t.id}
+                  items={t.attachments}
+                  urls={Object.fromEntries(
+                    t.attachments.map((a) => [a.id, signDownload(a.id, userId)]),
+                  )}
+                  write={write}
+                />
                 {write && (
                   <details className="drawer" style={{ marginTop: 10 }}>
                     <summary>Güncelle</summary>

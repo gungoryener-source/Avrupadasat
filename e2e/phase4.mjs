@@ -65,15 +65,27 @@ try {
   const ext = (await first.locator(".mono").first().textContent()).trim();
   await first.getByLabel(`${ext} takip no`).fill("x");
   await first.getByRole("button", { name: "Kargolandı" }).click();
-  await ap.waitForTimeout(800);
+  await ap.getByText("Geçersiz takip numarası").waitFor();
   assert((await ap.getByText(ext).count()) === 1, "geçersiz takip no kabul edildi");
   const row = ap.locator("tbody tr", { hasText: ext });
+  await row.getByLabel(`${ext} koli sayısı`).fill("2");
+  await row.getByRole("button", { name: "Paketlendi" }).click();
+  await ap.getByText("Sipariş paketlendi.").waitFor();
+  await row.locator("text=Paketlendi").first().waitFor();
   await row.getByLabel(`${ext} takip no`).fill("00340434161234567890");
   await row.getByRole("button", { name: "Kargolandı" }).click();
   await ap.waitForTimeout(800);
   assert((await ap.getByText(ext).count()) === 0, "sipariş kuyrukta kaldı");
   await op.goto(`${BASE}/panel/siparisler`);
   await op.getByText("DHL 00340434161234567890").waitFor();
+  await ap.goto(`${BASE}/admin/siparisler?gorunum=kargoda`);
+  await ap
+    .locator("tbody tr", { hasText: ext })
+    .getByRole("button", { name: "Teslim edildi" })
+    .click();
+  await ap.getByText("Teslim edildi olarak işaretlendi.").waitFor();
+  await op.reload();
+  await op.locator("tr", { hasText: ext }).getByText("Teslim edildi").waitFor();
   s.ok();
 
   s = step("İade kaydı ve işleme (satılabilir → stoğa dönüyor)");

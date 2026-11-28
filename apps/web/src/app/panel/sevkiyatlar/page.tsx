@@ -14,7 +14,10 @@ export default async function ShipmentsPage() {
   const s = await requireClient("shipment.read");
   const rows = await forTenant(db(), s.actor.tenantId).shipment.findMany({
     orderBy: { createdAt: "desc" },
-    include: { documents: { select: { kind: true } }, _count: { select: { lines: true } } },
+    include: {
+      documents: { where: { internal: false }, select: { kind: true } },
+      _count: { select: { lines: true } },
+    },
     take: 200,
   });
   return (

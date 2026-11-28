@@ -4,7 +4,7 @@ import { ActionForm, FieldError } from "@/components/panel/ActionForm";
 import { Submit } from "@/components/Submit";
 import { PRIORITY_LABEL } from "@/server/tickets";
 import { TASK_CATEGORIES, WORK_STATUS_LABEL } from "@/server/tasks";
-import { createTaskAction, updateTaskAction } from "@/app/admin/portal-actions";
+import { createTaskAction, taskAttachAction, updateTaskAction } from "@/app/admin/portal-actions";
 
 type Opt = { value: string; label: string };
 const ymd = (d?: Date | null) => (d ? d.toISOString().slice(0, 10) : "");
@@ -174,5 +174,58 @@ export function UpdateTaskForm({ task, staff, back }: { task: Task; staff: Opt[]
         </Submit>
       </div>
     </ActionForm>
+  );
+}
+
+type Att = { id: string; filename: string; internal: boolean };
+
+/** Görev ekleri listesi + ekip yüklemesi (iç ek seçeneğiyle) */
+export function TaskAttachments({
+  taskId,
+  items,
+  urls,
+  write,
+}: {
+  taskId: string;
+  items: Att[];
+  urls: Record<string, string>;
+  write: boolean;
+}) {
+  return (
+    <div style={{ marginTop: 10 }}>
+      {items.length > 0 && (
+        <div className="row-actions" style={{ fontSize: 13, marginBottom: 8 }}>
+          {items.map((a) => (
+            <a key={a.id} href={urls[a.id]}>
+              Ek: {a.filename}
+              {a.internal && " (iç)"}
+            </a>
+          ))}
+        </div>
+      )}
+      {write && (
+        <ActionForm
+          action={taskAttachAction}
+          encType="multipart/form-data"
+          className="form row-actions"
+        >
+          <input type="hidden" name="id" value={taskId} />
+          <input
+            name="file"
+            type="file"
+            required
+            accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx,.csv"
+            aria-label="Görev eki"
+            style={{ height: "auto", padding: 6 }}
+          />
+          <label className="chk" style={{ fontSize: 13 }}>
+            <input type="checkbox" name="internal" /> Yalnız ekip
+          </label>
+          <Submit className="btn btn-o btn-sm" pendingText="…">
+            Ek yükle
+          </Submit>
+        </ActionForm>
+      )}
+    </div>
   );
 }

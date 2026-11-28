@@ -46,6 +46,8 @@ export async function uploadDocument(args: {
   /** Ekip yüklemesi doğrudan onaylı; müşteri yüklemesi onay bekler */
   approved?: boolean;
   expiresAt?: Date | null;
+  taskId?: string | null;
+  internal?: boolean;
 }): Promise<UploadResult> {
   if (args.data.length === 0) return { ok: false, reason: "Dosya boş" };
   if (args.data.length > MAX_UPLOAD_BYTES)
@@ -54,6 +56,8 @@ export async function uploadDocument(args: {
   if (!type)
     return { ok: false, reason: "Desteklenmeyen dosya türü (PDF, PNG, JPG, XLSX, DOCX, CSV)" };
   const t = forTenant(db(), args.tenantId);
+  if (args.taskId && !(await t.task.findFirst({ where: { id: args.taskId } })))
+    return { ok: false, reason: "Görev bulunamadı" };
   if (args.shipmentId) {
     const s = await t.shipment.findFirst({ where: { id: args.shipmentId } });
     if (!s) return { ok: false, reason: "Sevkiyat bulunamadı" };
@@ -74,6 +78,8 @@ export async function uploadDocument(args: {
   const doc = await t.document.create({
     data: {
       shipmentId: args.shipmentId ?? null,
+      taskId: args.taskId ?? null,
+      internal: args.internal ?? false,
       kind: args.kind,
       filename: sanitizeFilename(args.filename, type.ext),
       mime: type.mime,
@@ -112,6 +118,8 @@ export interface DocFilter {
   page?: number;
   pageSize?: number;
   sort?: "new" | "old" | "name" | "expires";
+  /** Ekip görünümü: iç belgeler de listelenir */
+  staff?: boolean;
 }
 
 function docWhere(f: DocFilter): Prisma.DocumentWhereInput {
@@ -121,6 +129,8 @@ function docWhere(f: DocFilter): Prisma.DocumentWhereInput {
     ...(f.review ? { review: f.review } : {}),
     ...(f.expiring ? { expiresAt: { lte: soon } } : {}),
     ...(f.q ? { filename: { contains: f.q, mode: "insensitive" } } : {}),
+    // Müşteri listelerinde iç belgeler hiç dönmez; ekip görünümü staff: true ile çağırır
+    ...(f.staff ? {} : { internal: false }),
   };
 }
 
