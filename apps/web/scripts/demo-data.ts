@@ -66,7 +66,39 @@ async function user(email: string, name: string, staffRole: "ADMIN" | null, secr
   });
 }
 
+/**
+ * Demo giriş bilgilerini ortamdaki değerlere eşitler (DEMO_RESET_CREDENTIALS=1).
+ * Yalnız iki demo hesabına dokunur; açık oturumları kapatır, kilidi kaldırır. Değerler günlüğe yazılmaz.
+ */
+async function resetCredentials() {
+  if (!process.env.DEMO_PASSWORD || !process.env.DEMO_ADMIN_TOTP || !process.env.DEMO_OWNER_TOTP)
+    throw new Error("Sıfırlama için DEMO_PASSWORD, DEMO_ADMIN_TOTP ve DEMO_OWNER_TOTP gerekli");
+  const passwordHash = await hashPassword(DEMO.password);
+  for (const [email, secret] of [
+    [DEMO.admin, DEMO.adminSecret],
+    [DEMO.owner, DEMO.ownerSecret],
+  ] as const) {
+    const u = await db().user.findUnique({ where: { email } });
+    if (!u) continue;
+    await db().$transaction([
+      db().user.update({
+        where: { id: u.id },
+        data: {
+          passwordHash,
+          twoFactorSecretEnc: encryptField(secret),
+          twoFactorEnabledAt: new Date(),
+          failedLogins: 0,
+          lockedUntil: null,
+        },
+      }),
+      db().session.deleteMany({ where: { userId: u.id } }),
+    ]);
+  }
+  console.info("Demo giriş bilgileri ortam değerlerine eşitlendi");
+}
+
 async function main() {
+  if (process.env.DEMO_RESET_CREDENTIALS === "1") await resetCredentials();
   if (await db().tenant.findUnique({ where: { slug: "yildiz-tekstil" } })) {
     console.info("Demo verisi zaten yüklü, atlanıyor");
     return;
