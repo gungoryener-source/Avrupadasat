@@ -58,7 +58,9 @@ export default async function AdminHome({
       ? p.tenant.count({ where: { status: "ONBOARDING" } })
       : zero(),
     can(r, "order.read")
-      ? p.order.count({ where: { ...partnerScope, status: { in: ["ALLOCATED", "ON_HOLD"] } } })
+      ? p.order.count({
+          where: { ...partnerScope, status: { in: ["ALLOCATED", "PACKED", "ON_HOLD"] } },
+        })
       : zero(),
     can(r, "order.read")
       ? p.returnItem.count({ where: { ...partnerScope, status: "RECEIVED" } })

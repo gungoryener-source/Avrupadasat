@@ -2,8 +2,10 @@ export const ORDER_STATUS = {
   NEW: ["Alındı", ""],
   ON_HOLD: ["Beklemede", "red"],
   ALLOCATED: ["Hazırlanıyor", "warn"],
+  PACKED: ["Paketlendi", "warn"],
   SHIPPED: ["Kargoda", "ok"],
   DELIVERED: ["Teslim edildi", "ok"],
+  RETURNED: ["İade edildi", ""],
   CANCELLED: ["İptal", ""],
 } as const;
 

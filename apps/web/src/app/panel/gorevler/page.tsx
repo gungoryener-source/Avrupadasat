@@ -4,6 +4,7 @@ import { ActionForm } from "@/components/panel/ActionForm";
 import { Badge, EmptyState, PageHeader, Tabs, WorkBadge } from "@/components/panel/ui";
 import { IconChecklist } from "@/components/site/Icons";
 import { Submit } from "@/components/Submit";
+import { signDownload } from "@/server/files";
 import { requireClient } from "@/server/session";
 import { listCustomerTasks, TASK_CATEGORIES } from "@/server/tasks";
 import { taskDoneAction } from "../portal-actions";
@@ -36,13 +37,32 @@ export default async function TasksPage({
         </small>
         {t.description && <p className="task-d">{t.description}</p>}
         {t.customerUpdate && <p className="task-u">{t.customerUpdate}</p>}
+        {t.attachments.length > 0 && (
+          <div className="row-actions" style={{ fontSize: 13, marginTop: 6 }}>
+            {t.attachments.map((a) => (
+              <a key={a.id} href={signDownload(a.id, s.userId)}>
+                Ek: {a.filename}
+              </a>
+            ))}
+          </div>
+        )}
         {t.customerAction && t.status !== "COMPLETED" && (
-          <ActionForm action={taskDoneAction} className="task-f">
+          <ActionForm action={taskDoneAction} className="task-f" encType="multipart/form-data">
             <input type="hidden" name="id" value={t.id} />
             <label className="sr-only" htmlFor={`n-${t.id}`}>
               Not (isteğe bağlı)
             </label>
             <input id={`n-${t.id}`} name="note" placeholder="Not (isteğe bağlı)" maxLength={1000} />
+            <label className="sr-only" htmlFor={`f-${t.id}`}>
+              Dosya ekle (isteğe bağlı)
+            </label>
+            <input
+              id={`f-${t.id}`}
+              name="file"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx,.csv"
+              title="Dosya ekle (isteğe bağlı)"
+            />
             <Submit className="btn btn-sm">Yaptım, ekibe bildir</Submit>
           </ActionForm>
         )}

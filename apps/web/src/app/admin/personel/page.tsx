@@ -12,6 +12,7 @@ export const metadata = { title: "Personel ve yetkiler" };
 
 const ROLE_DESC: Record<string, string> = {
   ADMIN: "Tüm yetkiler, personel ve fiyat yönetimi",
+  MANAGER: "Personel ve fiyat yönetimi hariç tüm modüller",
   OPS: "Müşteri operasyonu, sevkiyat, stok, belge onayı, görevler",
   FINANCE: "Fatura, abonelik, vergi takvimi",
   SALES: "Başvurular ve teklifler",
@@ -28,7 +29,7 @@ export default async function StaffPage() {
         title="Personel ve yetkiler"
         desc="Rol değişikliğinde kişinin açık oturumları kapanır. Tüm değişiklikler denetim kaydına yazılır."
       />
-      <div className="grid grid-main">
+      <div className="grid">
         <div className="tw">
           <table className="tbl tbl-stack">
             <thead>
@@ -117,7 +118,7 @@ export default async function StaffPage() {
             </tbody>
           </table>
         </div>
-        <div className="grid" style={{ alignContent: "start" }}>
+        <div className="grid grid-2" style={{ alignItems: "start" }}>
           <Card title="Ekip üyesi davet et">
             <ActionForm action={inviteStaffAction}>
               <div className="field">

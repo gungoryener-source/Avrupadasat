@@ -14,6 +14,7 @@ import { notifyTenant } from "./notifications";
 
 export const STAFF_ROLE_OPTIONS: StaffRole[] = [
   "ADMIN",
+  "MANAGER",
   "OPS",
   "FINANCE",
   "SALES",

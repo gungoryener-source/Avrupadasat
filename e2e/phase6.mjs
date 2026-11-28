@@ -120,6 +120,49 @@ try {
   assert((await op.locator(".sh-bell span").count()) === 0, "sayaç sıfırlanmadı");
   s.ok();
 
+  s = step("Depo: ürün görseli, raf, stok düzeltmesi ve hareket geçmişi");
+  await op.goto(`${BASE}/panel/stok`);
+  await op.getByLabel("veya yapıştırın").fill("sku;ad\nE2E-RAF;Raf test ürünü");
+  await op.getByRole("button", { name: "İçe aktar" }).click();
+  await op.getByText("1 ürün eklendi").waitFor();
+  await op.getByRole("link", { name: "E2E-RAF" }).click();
+  const png = `${SHOTS}/e2e-urun.png`;
+  writeFileSync(
+    png,
+    Buffer.from(
+      "89504e470d0a1a0a0000000d4948445200000001000000010806000000" +
+        "1f15c4890000000d49444154789c6360000002000154a24f5d0000000049454e44ae426082",
+      "hex",
+    ),
+  );
+  await op.locator("#image").setInputFiles(png);
+  await op.getByRole("button", { name: "Görsel yükle" }).click();
+  await op.getByText("Görsel kaydedildi.").waitFor();
+  const img = await op.request.get(
+    `${BASE}${await op.locator("img.prod-img").getAttribute("src")}`,
+  );
+  assert(img.status() === 200 && img.headers()["content-type"] === "image/png", "görsel sunulmadı");
+  const foreign = await xp.request.get(
+    `${BASE}${await op.locator("img.prod-img").getAttribute("src")}`,
+  );
+  assert(foreign.status() === 404, `başka firma görseli açtı: ${foreign.status()}`);
+  await ap.goto(`${BASE}/admin/musteriler/${E.tenantId}?sekme=depo`);
+  await ap.getByLabel("E2E-RAF raf konumu").fill("b-12-1");
+  await ap.locator("tr", { hasText: "E2E-RAF" }).getByRole("button", { name: "Kaydet" }).click();
+  await ap.getByText("Konum kaydedildi.").waitFor();
+  await ap.locator("tr", { hasText: "E2E-RAF" }).locator("summary").click();
+  await ap.locator("#qty-E2E-RAF").fill("25");
+  await ap.locator("#note-E2E-RAF").fill("Açılış sayımı");
+  await ap.getByRole("button", { name: "Stoğu güncelle" }).click();
+  await ap.getByText("Stok güncellendi").waitFor();
+  await op.goto(`${BASE}/panel/stok?sekme=hareket`);
+  await op.getByText("Açılış sayımı").waitFor();
+  await op.getByText("Konum: — → B-12-1").waitFor();
+  await op.goto(`${BASE}/panel/stok`);
+  const r = op.getByRole("row", { name: /E2E-RAF/ });
+  assert((await r.textContent()).includes("B-12-1"), "raf görünmüyor");
+  s.ok();
+
   s = step("Mobil yerleşim: menü çekmecesi ve taşma yok");
   const mp = await (
     await b.newContext({ locale: "tr-TR", viewport: { width: 390, height: 844 } })

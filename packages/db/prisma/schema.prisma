@@ -13,6 +13,8 @@ datasource db {
 
 enum StaffRole {
   ADMIN
+  /// Yönetici: personel ve fiyat yönetimi hariç tüm yetkiler
+  MANAGER
   OPS
   FINANCE
   SALES
@@ -358,6 +360,11 @@ model StockItem {
   reserved          Int       @default(0)
   /// Bu miktarın altına inince düşük stok bildirimi
   lowStockAt        Int?
+  /// Depo içi konum (raf/göz), ör. A-03-2
+  location          String?
+  /// Ürün görseli (depolama anahtarı; public dizin dışında, yetkili rota ile sunulur)
+  imageKey          String?
+  imageType         String?
   /// Almanca ürün içeriği onaylandı mı (Aşama 5'te içerik üretimiyle dolar)
   contentApprovedAt DateTime?
   updatedAt         DateTime  @updatedAt
@@ -496,6 +503,10 @@ model Document {
   id           String       @id @default(cuid())
   tenantId     String
   shipmentId   String?
+  /// Bir göreve eklenmiş dosya (görev eki)
+  taskId       String?
+  /// Yalnız ekip görür (müşteri listesinde ve indirme rotasında gizli)
+  internal     Boolean      @default(false)
   kind         DocumentKind
   filename     String
   mime         String
@@ -516,8 +527,10 @@ model Document {
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  task     Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, createdAt])
+  @@index([taskId])
 }
 
 model StockMovement {
@@ -525,9 +538,11 @@ model StockMovement {
   tenantId    String
   sku         String
   delta       Int
-  /// RECEIVE, ORDER, RETURN, ADJUST, DAMAGE
+  /// RECEIVE, ORDER, RETURN, ADJUST, DAMAGE, MOVE
   reason      String
   refId       String?
+  /// Açıklama (ör. hasarlı adet, düzeltme nedeni, raf değişikliği)
+  note        String?
   actorUserId String?
   createdAt   DateTime @default(now())
 
@@ -568,8 +583,10 @@ enum OrderStatus {
   NEW
   ON_HOLD
   ALLOCATED
+  PACKED
   SHIPPED
   DELIVERED
+  RETURNED
   CANCELLED
 }
 
@@ -874,7 +891,8 @@ model Task {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  attachments Document[]
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, status, dueAt])
   @@index([assigneeId, status])

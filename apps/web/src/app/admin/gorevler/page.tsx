@@ -2,7 +2,8 @@ import Link from "next/link";
 import { can } from "@avrupadasat/core/roles";
 import type { WorkStatus } from "@avrupadasat/db";
 import { fmtDate } from "@/components/AppShell";
-import { CreateTaskForm, UpdateTaskForm } from "@/components/panel/TaskForms";
+import { CreateTaskForm, TaskAttachments, UpdateTaskForm } from "@/components/panel/TaskForms";
+import { signDownload } from "@/server/files";
 import {
   Badge,
   Card,
@@ -137,6 +138,14 @@ export default async function AdminTasks({
                 {t.description && (
                   <p style={{ margin: "10px 0 0", fontSize: 14 }}>{t.description}</p>
                 )}
+                <TaskAttachments
+                  taskId={t.id}
+                  items={t.attachments}
+                  urls={Object.fromEntries(
+                    t.attachments.map((a) => [a.id, signDownload(a.id, s.userId)]),
+                  )}
+                  write={write}
+                />
                 {write && (
                   <details className="drawer" open={q.id === t.id} style={{ marginTop: 12 }}>
                     <summary>Güncelle</summary>

@@ -39,6 +39,12 @@ export const CUSTOMER_TASK_SELECT = {
   completedAt: true,
   updatedAt: true,
   createdAt: true,
+  // Görev ekleri: iç (yalnız ekip) dosyalar müşteriye hiç dönmez
+  attachments: {
+    where: { internal: false },
+    select: { id: true, filename: true, createdAt: true, review: true },
+    orderBy: { createdAt: "asc" },
+  },
 } as const;
 
 const taskInput = z.object({
@@ -310,7 +316,13 @@ export async function listStaffTasks(f: TaskFilter = {}) {
   const [items, total] = await Promise.all([
     db().task.findMany({
       where: w,
-      include: { tenant: { select: { name: true } } },
+      include: {
+        tenant: { select: { name: true } },
+        attachments: {
+          select: { id: true, filename: true, internal: true, createdAt: true, uploadedById: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
       orderBy: [{ status: "asc" }, { dueAt: { sort: "asc", nulls: "last" } }],
       take: size,
       skip: (page - 1) * size,

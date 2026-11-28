@@ -65,9 +65,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           perm: "document.review",
           badge: pendingDocs,
         },
+        { href: "/admin/stok", label: "Depo ve stok", icon: "box", perm: "stock.read" },
         {
           href: "/admin/sevkiyatlar",
-          label: "Depo ve sevkiyat",
+          label: "Sevkiyatlar",
           icon: "truck",
           perm: "shipment.read",
         },
@@ -123,9 +124,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         .filter(
           (i) =>
             r !== "PARTNER" ||
-            ["/admin", "/admin/sevkiyatlar", "/admin/siparisler", "/admin/iadeler"].includes(
-              i.href,
-            ),
+            [
+              "/admin",
+              "/admin/stok",
+              "/admin/sevkiyatlar",
+              "/admin/siparisler",
+              "/admin/iadeler",
+            ].includes(i.href),
         )
         .map((i) => ({
           href: i.href,

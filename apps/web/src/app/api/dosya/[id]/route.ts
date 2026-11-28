@@ -22,6 +22,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const doc = await db().document.findUnique({ where: { id } });
   if (!doc || !canAccessTenant(s.actor, doc.tenantId))
     return new Response("Bulunamadı", { status: 404 });
+  // İç belge: müşteri rolleri hiçbir koşulda indiremez
+  if (doc.internal && s.actor.tenantId) return new Response("Bulunamadı", { status: 404 });
   if (doc.scanStatus === "infected") return new Response("Engellendi", { status: 403 });
   const data = await getObject(doc.storageKey);
   // Önizleme yalnız PDF ve görsellerde; diğerleri her zaman indirilir

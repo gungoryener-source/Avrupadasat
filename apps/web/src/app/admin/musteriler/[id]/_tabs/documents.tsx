@@ -12,7 +12,13 @@ const PREVIEW = /\.(pdf|png|jpe?g)$/i;
 export async function DocumentsTab({ tenantId, userId, q }: TabCtx) {
   const review = q.durum && q.durum in DOC_REVIEW_LABEL ? (q.durum as DocReview) : undefined;
   const kind = q.tur && q.tur in DOC_KIND_LABEL ? (q.tur as DocumentKind) : undefined;
-  const r = await listDocuments(tenantId, { q: q.q, review, kind, page: pageNum(q.sayfa) });
+  const r = await listDocuments(tenantId, {
+    q: q.q,
+    review,
+    kind,
+    page: pageNum(q.sayfa),
+    staff: true,
+  });
   return (
     <div className="grid grid-main">
       <div>

@@ -31,7 +31,10 @@ export default async function TaxPage() {
     listFilings(tid),
     t.registrationTask.findMany({ where: { step: { in: ["VERGI_NO", "UST_ID", "EORI"] } } }),
     t.document.findMany({
-      where: { kind: { in: ["VERGI", "MUHASEBE"] } },
+      where: {
+        internal: false,
+        kind: { in: ["VERGI", "MUHASEBE"] },
+      },
       orderBy: { createdAt: "desc" },
       take: 10,
     }),

@@ -40,7 +40,7 @@ export default async function PanelHome() {
       take: 5,
     }),
     listNotifications(s.actor.userId, { take: 5 }),
-    t.document.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+    t.document.findMany({ where: { internal: false }, orderBy: { createdAt: "desc" }, take: 5 }),
     t.order.findMany({ orderBy: { orderedAt: "desc" }, take: 5 }),
     t.taxFiling.findMany({
       where: { status: { not: "COMPLETED" } },

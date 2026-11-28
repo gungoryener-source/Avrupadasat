@@ -575,9 +575,27 @@
   color: var(--p);
   text-decoration: underline;
 }
+/* Sayısal sütun: sitedeki adım dairesi (.num) stilini tamamen sıfırlar */
 .app2 .tbl .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  display: table-cell;
+  font-size: inherit;
+  font-weight: inherit;
+}
+@media (max-width: 720px) {
+  .app2 .tbl-stack td.num {
+    display: block;
+    text-align: left;
+  }
+  .app2 .tbl-stack th.num {
+    display: none;
+  }
 }
 .app2 .th-sort {
   display: inline-flex;
@@ -1145,4 +1163,51 @@
 .app2 form.form.row-actions > .alert-err {
   flex-basis: 100%;
   margin: 0;
+}
+
+/* Ürün görseli */
+.app2 .thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: #f2f5fa;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.app2 .thumb-empty {
+  background:
+    linear-gradient(135deg, transparent 46%, #dfe5ef 46%, #dfe5ef 54%, transparent 54%), #f2f5fa;
+}
+.app2 .prod {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.app2 .prod-img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #f7f9fc;
+}
+.app2 .task-f input[type="file"] {
+  flex: 1 1 200px;
+  font-size: 12.5px;
+  color: var(--mute);
+  align-self: center;
+}
+.app2 .tbl th.num {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--mute);
+  background: #fafbfd;
+}
+@media (max-width: 720px) {
+  .app2 .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
