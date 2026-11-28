@@ -360,6 +360,9 @@ model StockItem {
   sku               String
   name              String
   ean               String?
+  /// Platform etiket kodu (Code 128): firma+ürün başına tek, depoda okutulur.
+  /// Veritabanında üretilir (gen_label_code), elle atanmaz.
+  labelCode         String    @unique @default(dbgenerated("gen_label_code()"))
   quantity          Int       @default(0)
   reserved          Int       @default(0)
   /// Bu miktarın altına inince düşük stok bildirimi

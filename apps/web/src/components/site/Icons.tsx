@@ -171,6 +171,12 @@ export const IconFolder = (p: P) => (
     <path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z" />
   </Svg>
 );
+export const IconScan = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" />
+    <path d="M8 8v8M11 8v8M14 8v8M17 8v8" />
+  </Svg>
+);
 export const IconBox = (p: P) => (
   <Svg {...p}>
     <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z" />

@@ -28,6 +28,7 @@ export default async function AdminStock({
             { sku: { contains: q.q, mode: "insensitive" } },
             { name: { contains: q.q, mode: "insensitive" } },
             { location: { contains: q.q, mode: "insensitive" } },
+            { labelCode: { equals: q.q.trim().toUpperCase() } },
           ],
         }
       : {}),
@@ -58,10 +59,15 @@ export default async function AdminStock({
       <PageHeader
         title="Depo ve stok"
         desc="Tüm firmaların ürünleri. Düzeltme, raf ve görsel işlemleri firma detayındaki Depo sekmesindedir."
+        actions={
+          <Link className="btn btn-p btn-sm" href="/admin/okut">
+            Barkod okut
+          </Link>
+        }
       />
       <Toolbar
         q={q.q}
-        placeholder="SKU, ad veya raf"
+        placeholder="SKU, ad, raf veya etiket kodu"
         filters={[
           { name: "firma", label: "Firma", value: q.firma, options: tenants },
           {
@@ -93,6 +99,9 @@ export default async function AdminStock({
                 <th className="num">Depoda</th>
                 <th className="num">Ayrılmış</th>
                 <th className="num">Kullanılabilir</th>
+                <th>
+                  <span className="sr-only">Etiket</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -107,6 +116,7 @@ export default async function AdminStock({
                         <div>
                           <span className="mono">{i.sku}</span>
                           <div style={{ fontSize: 13 }}>{i.name}</div>
+                          <small className="mono muted">{i.labelCode}</small>
                         </div>
                       </div>
                     </td>
@@ -128,6 +138,16 @@ export default async function AdminStock({
                     </td>
                     <td data-l="Kullanılabilir" className="num">
                       <b>{avail}</b> {low && <Badge tone="amber">Düşük</Badge>}
+                    </td>
+                    <td>
+                      <a
+                        href={`/api/etiket?u=${i.id}:1`}
+                        target="_blank"
+                        rel="noopener"
+                        title={`${i.sku} için 1 termal etiket`}
+                      >
+                        Etiket
+                      </a>
                     </td>
                   </tr>
                 );

@@ -48,6 +48,12 @@ export default async function StockPage({
         desc="Almanya deposundaki ürünleriniz: depodaki, yoldaki ve siparişlere ayrılmış miktarlar."
         actions={
           <div className="row-actions">
+            <Link className="btn btn-p btn-sm" href="/panel/stok/etiketler">
+              Etiket bas
+            </Link>
+            <Link className="btn btn-o btn-sm" href="/panel/stok/okut">
+              Barkod okut
+            </Link>
             <a className="btn btn-o btn-sm" href="/panel/stok/csv" download>
               CSV indir
             </a>

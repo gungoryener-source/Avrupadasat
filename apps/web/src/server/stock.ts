@@ -37,6 +37,7 @@ export async function listStock(
           { sku: { contains: f.q, mode: "insensitive" as const } },
           { name: { contains: f.q, mode: "insensitive" as const } },
           { location: { contains: f.q, mode: "insensitive" as const } },
+          { labelCode: { equals: f.q.trim().toUpperCase() } },
         ],
       }
     : {};
