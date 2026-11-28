@@ -2529,3 +2529,282 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* =====================================================================
+   Kabuk: konum, arama, komut paleti, daraltılabilir menü, plan kartı
+   ===================================================================== */
+.app2 .sh-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--mute);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.app2 .sh-crumb b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.app2 .sh-crumb a {
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.app2 .sh-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  min-width: 220px;
+  padding: 0 8px 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--mute);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+.app2 .sh-search:hover {
+  border-color: var(--line-2);
+}
+.app2 .sh-search kbd,
+.app2 .cmd-in kbd {
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--mute);
+}
+.app2 .cmd-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(16, 27, 53, 0.36);
+  display: grid;
+  justify-items: center;
+  align-items: start;
+  padding: 12vh 16px 16px;
+  animation: fade 0.15s var(--ease);
+}
+.app2 .cmd {
+  width: min(620px, 100%);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--card);
+  box-shadow: 0 24px 64px -12px rgba(16, 27, 53, 0.4);
+  overflow: hidden;
+}
+.app2 .cmd-in {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--mute);
+}
+.app2 .cmd-in input {
+  flex: 1;
+  height: 52px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+.app2 .cmd-in input:focus-visible {
+  box-shadow: none;
+}
+.app2 .cmd-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 52vh;
+  overflow-y: auto;
+}
+.app2 .cmd-list li {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.app2 .cmd-list li.is-sel {
+  background: var(--p-soft);
+}
+.app2 .cmd-k {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+.app2 .cmd-t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app2 .cmd-s {
+  font-size: 12px;
+  color: var(--mute);
+}
+.app2 .cmd-empty {
+  color: var(--mute);
+  cursor: default !important;
+}
+
+/* Kenar menüsü: aktif çizgi, şirket rozeti, alt bölüm */
+.app2 .sh-nav a {
+  position: relative;
+}
+.app2 .sh-nav a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+.app2 .sh-context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app2 .sh-co {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.app2 .sh-lbl {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app2 .sh-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  display: grid;
+  gap: 4px;
+}
+.app2 .sh-plan {
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #dbe2ee;
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+.app2 .sh-plan small {
+  color: #8592ab;
+  font-size: 11.5px;
+}
+.app2 .sh-plan b {
+  font-weight: 600;
+}
+.app2 .sh-plan-cta {
+  color: #9db8ff;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.app2 .sh-help,
+.app2 .sh-collapse {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: #8f9bb3;
+  font: inherit;
+  font-size: 13.5px;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+.app2 .sh-help:hover,
+.app2 .sh-collapse:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+/* Daraltılmış (ikon) mod — yalnız masaüstü */
+@media (min-width: 961px) {
+  .app2 .sh-side[data-collapsed="true"] {
+    width: 72px;
+  }
+  .app2:has(.sh-side[data-collapsed="true"]) .sh-body {
+    margin-left: 72px;
+  }
+  .app2 .sh-side[data-collapsed="true"] .sh-lbl,
+  .app2 .sh-side[data-collapsed="true"] .sh-gt,
+  .app2 .sh-side[data-collapsed="true"] .sh-plan small,
+  .app2 .sh-side[data-collapsed="true"] .sh-logo {
+    display: none;
+  }
+  .app2 .sh-side[data-collapsed="true"] .sh-nav a,
+  .app2 .sh-side[data-collapsed="true"] .sh-help,
+  .app2 .sh-side[data-collapsed="true"] .sh-collapse {
+    justify-content: center;
+    padding: 6px;
+  }
+  .app2 .sh-side[data-collapsed="true"] .sh-badge {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    margin: 0;
+  }
+  .app2 .sh-side[data-collapsed="true"] .sh-context {
+    justify-content: center;
+    padding: 6px;
+    margin: 0 0 12px;
+  }
+  .app2 .sh-side[data-collapsed="true"] .sh-plan {
+    display: none;
+  }
+  .app2 .sh-side,
+  .app2 .sh-body {
+    transition:
+      width 0.2s var(--ease),
+      margin-left 0.2s var(--ease);
+  }
+}
+@media (max-width: 960px) {
+  .app2 .sh-collapse {
+    display: none;
+  }
+}
+@media (max-width: 720px) {
+  .app2 .sh-search {
+    min-width: 0;
+    width: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+  .app2 .sh-search span,
+  .app2 .sh-search kbd {
+    display: none;
+  }
+  .app2 .sh-crumb span,
+  .app2 .sh-crumb [aria-hidden] {
+    display: none;
+  }
+}
