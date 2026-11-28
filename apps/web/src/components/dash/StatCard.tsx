@@ -32,6 +32,7 @@ export function StatCard({
   /** Artışın kötü olduğu metrikler için renkleri ters çevir */
   invert?: boolean;
 }) {
+  const noData = value === 0 && (change === 0 || change === null);
   const dir = change === null || change === 0 ? "flat" : change > 0 ? "up" : "down";
   const good = dir === "flat" ? null : (dir === "up") !== invert;
   return (
@@ -47,17 +48,22 @@ export function StatCard({
         <span className={`kpi-ch ${good === null ? "" : good ? "is-good" : "is-bad"}`}>
           {dir === "up" && <IconTrendUp size={14} />}
           {dir === "down" && <IconTrendDown size={14} />}
-          {change === null
-            ? "yeni"
-            : change > 0
-              ? `+%${change}`
-              : change < 0
-                ? `−%${Math.abs(change)}`
-                : "%0"}
-          <span className="sr-only"> {compareLabel}</span>
+          {noData
+            ? "—"
+            : change === null
+              ? "yeni"
+              : change > 0
+                ? `+%${change}`
+                : change < 0
+                  ? `−%${Math.abs(change)}`
+                  : "%0"}
+          <span className="sr-only">
+            {" "}
+            {change === null ? "önceki dönemde veri yok" : compareLabel}
+          </span>
         </span>
         <span className="kpi-cmp" aria-hidden="true">
-          {compareLabel}
+          {change === null ? "önceki dönemde veri yok" : compareLabel}
         </span>
         {line && (
           <span className="kpi-sp">

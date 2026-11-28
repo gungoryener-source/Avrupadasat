@@ -1334,6 +1334,7 @@
    ===================================================================== */
 .app2 .dash {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-6);
   max-width: 1440px;
 }
@@ -1507,7 +1508,7 @@
   margin: 12px 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
   gap: 6px 20px;
 }
 .app2 .onb-list li {
@@ -1954,7 +1955,7 @@
 .app2 .ot-h,
 .app2 .ot-row {
   display: grid;
-  grid-template-columns: minmax(150px, 1.2fr) minmax(160px, 2fr) minmax(80px, 1fr) 96px 130px 96px;
+  grid-template-columns: minmax(120px, 1.1fr) minmax(0, 2fr) minmax(0, 1fr) 84px 120px 84px;
   gap: 12px;
   align-items: center;
   padding: 10px var(--sp-6);
@@ -2780,11 +2781,8 @@
   .app2 .sh-side[data-collapsed="true"] .sh-plan {
     display: none;
   }
-  .app2 .sh-side,
-  .app2 .sh-body {
-    transition:
-      width 0.2s var(--ease),
-      margin-left 0.2s var(--ease);
+  .app2 .sh-side {
+    transition: width 0.2s var(--ease);
   }
 }
 @media (max-width: 960px) {
@@ -2807,4 +2805,16 @@
   .app2 .sh-crumb [aria-hidden] {
     display: none;
   }
+}
+
+@media (prefers-color-scheme: dark) {
+  .app2 .sh-avatar {
+    background: var(--p);
+    color: #fff;
+  }
+}
+.app2 .ot-city {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
