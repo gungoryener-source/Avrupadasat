@@ -194,7 +194,7 @@ export default async function StockPage({
             params={{ q: q.q, durum: q.durum }}
           />
           {can(s.actor.role, "catalog.write") && (
-            <div style={{ marginTop: 20 }}>
+            <div style={{ marginTop: 20 }} id="katalog">
               <CatalogForm />
             </div>
           )}

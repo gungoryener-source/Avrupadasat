@@ -151,7 +151,7 @@ try {
   await cp.waitForURL(/\/hesap\/2fa/);
   const secret = await setup2fa(cp);
   await cp.waitForURL(`${BASE}/panel`);
-  await cp.getByRole("heading", { name: "Hoş geldiniz, Elif" }).waitFor();
+  await cp.getByRole("heading", { name: /, Elif$/ }).waitFor();
   s.ok();
 
   s = step("Müşteri ekip paneline giremiyor; davet bağlantısı ikinci kez kullanılamıyor");

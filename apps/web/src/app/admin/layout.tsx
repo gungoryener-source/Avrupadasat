@@ -150,6 +150,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       unread={unread}
       bellHref="/admin/bildirimler"
       home="/admin"
+      root="Ekip paneli"
     >
       {children}
     </AppShell>

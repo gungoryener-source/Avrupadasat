@@ -81,7 +81,9 @@ export default async function ShipmentsPage() {
           )}
         </tbody>
       </table>
-      <AsnForm />
+      <div id="yeni">
+        <AsnForm />
+      </div>
     </>
   );
 }
